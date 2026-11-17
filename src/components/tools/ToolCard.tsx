@@ -21,7 +21,13 @@ const spring = { stiffness: 260, damping: 20, mass: 0.6 };
  * A tool as a sheet of paper: glass card, dog-eared corner that peels a little
  * further on hover, and a gentle tilt toward the mouse.
  */
-export function ToolCard({ tool }: { tool: ToolInfo }) {
+interface ToolCardProps {
+  tool: ToolInfo;
+  /** Wide layout with a bigger icon, used for the first card on large screens. */
+  featured?: boolean;
+}
+
+export function ToolCard({ tool, featured = false }: ToolCardProps) {
   const reduced = useReducedMotion();
   // Pointer position over the card, -0.5 to 0.5 on each axis.
   const px = useMotionValue(0);
@@ -50,22 +56,38 @@ export function ToolCard({ tool }: { tool: ToolInfo }) {
     >
       <Link
         to={toolPath(tool.id)}
+        aria-labelledby={`tool-${tool.id}-name`}
+        aria-describedby={`tool-${tool.id}-blurb`}
         onPointerMove={track}
         onPointerLeave={reset}
-        className={`group relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-surface p-5 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color] duration-300 hover:border-line-strong focus-visible:rounded-card sm:p-6 ${accentGlow[tool.accent]}`}
+        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color] duration-300 hover:border-line-strong focus-visible:rounded-card sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
       >
         <span
           aria-hidden="true"
-          className={`absolute top-0 right-0 size-9 rounded-bl-xl bg-linear-to-bl from-canvas from-50% to-50% transition-[width,height] duration-300 ease-spring group-hover:size-12 group-focus-visible:size-12 motion-reduce:transition-none ${fold[tool.accent]}`}
+          className={`absolute top-0 right-0 size-8 rounded-bl-xl bg-linear-to-bl from-canvas from-50% to-50% transition-[width,height] duration-300 ease-spring group-hover:size-12 group-focus-visible:size-12 motion-reduce:transition-none sm:size-9 ${fold[tool.accent]}`}
         />
         <span
-          className={`flex size-12 items-center justify-center rounded-2xl border ${accentSoft[tool.accent]}`}
+          className={`flex size-11 items-center justify-center rounded-2xl border sm:size-12 ${featured ? 'lg:row-span-2 lg:size-20 lg:rounded-3xl' : ''} ${accentSoft[tool.accent]}`}
         >
-          <ToolIcon id={tool.id} className="size-6" />
+          <ToolIcon id={tool.id} className={`size-6 ${featured ? 'lg:size-10' : ''}`} />
         </span>
-        <h3 className="mt-5 font-display text-xl font-bold tracking-tight">{tool.name}</h3>
-        <p className="mt-1.5 text-[0.95rem] leading-relaxed text-muted">{tool.blurb}</p>
-        <span className="mt-auto pt-5 text-sm font-medium text-muted">
+        <div className={featured ? 'lg:max-w-md' : undefined}>
+          <h3
+            id={`tool-${tool.id}-name`}
+            className={`pr-6 font-display text-lg font-bold tracking-tight sm:mt-5 sm:pr-0 sm:text-xl ${featured ? 'lg:mt-0 lg:text-3xl' : ''}`}
+          >
+            {tool.name}
+          </h3>
+          <p
+            id={`tool-${tool.id}-blurb`}
+            className={`mt-1 text-[0.95rem] leading-relaxed text-muted sm:mt-1.5 ${featured ? 'lg:text-lg' : ''}`}
+          >
+            {tool.blurb}
+          </p>
+        </div>
+        <span
+          className={`mt-auto hidden pt-5 text-sm font-medium text-muted sm:block ${featured ? 'lg:col-start-2 lg:mt-0 lg:pt-3' : ''}`}
+        >
           {tool.category === 'pdf' ? 'PDF' : 'Image'}
         </span>
       </Link>

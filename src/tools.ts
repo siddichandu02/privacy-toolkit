@@ -96,12 +96,7 @@ export type CategoryFilter = 'all' | ToolCategory;
 
 /** Normalise for search: lowercase, no accents, single spaces. */
 const fold = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 /**
  * Tools in the chosen category whose name or blurb contains every word of the

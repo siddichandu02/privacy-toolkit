@@ -1,10 +1,9 @@
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Fragment, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { PromiseStrip } from '../components/PromiseStrip';
+import { ToolGrid } from '../components/tools/ToolGrid';
 import { Badge, Button, useToast } from '../components/ui';
-import { accentDot } from '../components/ui/accent';
-import { TOOLS, toolPath } from '../tools';
+import { TOOLS } from '../tools';
 import { useDocumentTitle } from '../useDocumentTitle';
 
 const line: Variants = {
@@ -77,31 +76,16 @@ export default function Home() {
       <section
         ref={toolsRef}
         tabIndex={-1}
-        aria-labelledby="coming-heading"
+        aria-labelledby="tools-heading"
         className="mt-16 scroll-mt-28 sm:mt-24"
       >
         <h2
-          id="coming-heading"
-          className="font-display text-2xl font-bold tracking-tight sm:text-3xl"
+          id="tools-heading"
+          className="font-display text-3xl font-bold tracking-tight sm:text-4xl"
         >
-          Tools on the way
+          Pick a tool
         </h2>
-        <ul className="mt-5 flex flex-wrap gap-2.5">
-          {TOOLS.map((tool) => (
-            <li key={tool.id}>
-              <Link
-                to={toolPath(tool.id)}
-                className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-2 text-sm backdrop-blur-md transition-colors hover:border-line-strong hover:bg-surface-strong"
-              >
-                <span
-                  className={`size-2.5 rounded-full ${accentDot[tool.accent]}`}
-                  aria-hidden="true"
-                />
-                {tool.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ToolGrid tools={TOOLS} featureEnds className="mt-6 sm:mt-8" />
       </section>
     </div>
   );

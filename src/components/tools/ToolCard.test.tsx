@@ -29,7 +29,9 @@ describe('ToolCard', () => {
 
   it('shows the blurb and category', () => {
     renderCard();
-    expect(screen.getByText(merge.blurb)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Merge PDF' })).toHaveAccessibleDescription(
+      merge.blurb,
+    );
     expect(screen.getByText('PDF')).toBeInTheDocument();
   });
 

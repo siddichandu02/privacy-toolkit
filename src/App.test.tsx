@@ -13,7 +13,7 @@ describe('home route', () => {
 
   it('links to every planned tool', () => {
     renderApp('/');
-    const section = screen.getByRole('region', { name: /tools on the way/i });
+    const section = screen.getByRole('region', { name: /pick a tool/i });
     expect(within(section).getAllByRole('link')).toHaveLength(TOOLS.length);
     expect(within(section).getByRole('link', { name: 'Merge PDF' })).toHaveAttribute(
       'href',
@@ -42,7 +42,7 @@ describe('home hero', () => {
   it('jumps to the tool list from the main button', async () => {
     renderApp('/');
     await userEvent.click(screen.getByRole('button', { name: /browse the tools/i }));
-    expect(screen.getByRole('region', { name: /tools on the way/i })).toHaveFocus();
+    expect(screen.getByRole('region', { name: /pick a tool/i })).toHaveFocus();
   });
 });
 
