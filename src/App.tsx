@@ -6,6 +6,7 @@ import { MeshBackground } from './components/layout/MeshBackground';
 import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
 import Home from './routes/Home';
 import NotFound from './routes/NotFound';
+import PipLab from './routes/PipLab';
 import ToolPage from './routes/ToolPage';
 
 function Layout() {
@@ -31,6 +32,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="tools/:id" element={<ToolPage />} />
+        <Route path="lab/pip" element={<PipLab />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

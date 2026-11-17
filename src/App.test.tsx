@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from './test/renderApp';
 import { TOOLS } from './tools';
@@ -68,5 +68,27 @@ describe('not found route', () => {
       'href',
       '/',
     );
+  });
+});
+
+describe('pip lab route', () => {
+  it('shows every pose and a wait screen that follows the slider', async () => {
+    renderApp('/lab/pip');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Pip lab' })).toBeInTheDocument();
+    for (const pose of ['sit', 'wave', 'puzzled']) {
+      expect(screen.getByRole('img', { name: `Pip, ${pose} pose` })).toBeInTheDocument();
+    }
+    fireEvent.change(screen.getByRole('slider', { name: 'Progress' }), {
+      target: { value: '0.9' },
+    });
+    expect(screen.getByRole('progressbar', { name: 'Merging 3 PDFs' })).toHaveAttribute(
+      'aria-valuenow',
+      '90',
+    );
+  });
+
+  it('is not linked from the header', () => {
+    renderApp('/');
+    expect(screen.queryByRole('link', { name: /pip lab/i })).not.toBeInTheDocument();
   });
 });
