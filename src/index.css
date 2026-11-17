@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+/* Core tokens. Day 2 expands these into the full design system. */
+@theme {
+  --color-ink: #0b0b1a;
+  --color-paper: #f5f5ff;
+  --color-muted: #a3a3c2;
+  --color-glass: rgb(255 255 255 / 0.06);
+  --color-violet: #7c5cff;
+  --color-coral: #ff6b8b;
+  --color-mint: #3ddc97;
+  --color-sunshine: #ffc857;
+  --color-sky: #4cc9f0;
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  background: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sky);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Slowly drifting gradient mesh behind the page */
+.mesh {
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 35% at 20% 25%, rgb(124 92 255 / 0.45), transparent 70%),
+    radial-gradient(35% 30% at 80% 20%, rgb(255 107 139 / 0.28), transparent 70%),
+    radial-gradient(40% 35% at 70% 80%, rgb(76 201 240 / 0.22), transparent 70%),
+    radial-gradient(30% 25% at 25% 85%, rgb(61 220 151 / 0.16), transparent 70%);
+  filter: blur(40px);
+  animation: mesh-drift 38s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -2%, 0) rotate(6deg) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-2%, 3%, 0) rotate(-4deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh {
+    animation: none;
+  }
+}
