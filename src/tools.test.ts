@@ -1,4 +1,4 @@
-import { TOOLS } from './tools';
+import { TOOLS, getTool, toolPath } from './tools';
 
 describe('TOOLS registry', () => {
   it('has unique, URL-safe ids', () => {
@@ -10,5 +10,20 @@ describe('TOOLS registry', () => {
   it('covers both PDF and image categories', () => {
     const categories = new Set(TOOLS.map((t) => t.category));
     expect(categories).toEqual(new Set(['pdf', 'image']));
+  });
+});
+
+describe('getTool', () => {
+  it('finds a tool by id', () => {
+    expect(getTool('merge')?.name).toBe('Merge PDF');
+  });
+
+  it('returns undefined for unknown or missing ids', () => {
+    expect(getTool('nope')).toBeUndefined();
+    expect(getTool(undefined)).toBeUndefined();
+  });
+
+  it('builds tool paths', () => {
+    expect(toolPath('split')).toBe('/tools/split');
   });
 });
