@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { filterTools, type CategoryFilter as Category, type ToolInfo } from '../../tools';
+import { Pip } from '../pip/Pip';
 import { Button } from '../ui';
 import { CategoryFilter, type CategoryOption } from './CategoryFilter';
 import { ToolGrid } from './ToolGrid';
@@ -60,23 +61,7 @@ export function ToolBrowser({ tools }: { tools: readonly ToolInfo[] }) {
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
             className="flex flex-col items-center rounded-panel border border-dashed border-line-strong px-6 py-12 text-center"
           >
-            <svg viewBox="0 0 64 64" aria-hidden="true" className="size-16 text-muted">
-              <path
-                d="M16 8h22l12 12v34a2 2 0 0 1-2 2H16a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M38 8v10a2 2 0 0 0 2 2h10M25 36h.01M39 36h.01M26 46c3.5-2.5 8.5-2.5 12 0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Pip pose="puzzled" className="h-28" />
             <h3 className="mt-4 font-display text-xl font-bold tracking-tight text-balance">
               {deferredQuery.trim()
                 ? `No tool called “${deferredQuery.trim()}” yet`

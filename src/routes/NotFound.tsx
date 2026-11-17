@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
+import { Pip } from '../components/pip/Pip';
 import { useDocumentTitle } from '../useDocumentTitle';
 
 export default function NotFound() {
   useDocumentTitle('Page not found');
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center px-4 py-24 text-center sm:px-8">
+    <div className="mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-24 text-center sm:px-8">
+      <Pip pose="puzzled" className="mb-8 h-36 sm:h-44" />
       <h1 className="font-display text-4xl leading-tight font-extrabold tracking-tight text-balance sm:text-6xl">
         This page folded itself away.
       </h1>
