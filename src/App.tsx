@@ -1,3 +1,4 @@
+import { ThemeToggle } from './components/ThemeToggle';
 import { TOOLS } from './tools';
 
 const dotClass: Record<(typeof TOOLS)[number]['accent'], string> = {
@@ -12,6 +13,9 @@ export default function App() {
   return (
     <>
       <div className="mesh" aria-hidden="true" />
+      <div className="fixed top-4 right-4 z-20 sm:top-6 sm:right-6">
+        <ThemeToggle />
+      </div>
       <main className="relative z-10 mx-auto flex min-h-dvh max-w-5xl flex-col justify-center px-4 py-16 sm:px-8">
         <p className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-muted backdrop-blur-md">
           <span className="size-2 rounded-full bg-mint" aria-hidden="true" />
