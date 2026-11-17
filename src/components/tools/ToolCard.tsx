@@ -51,7 +51,6 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
       className="h-full"
       style={reduced ? undefined : { rotateX, rotateY, transformPerspective: 900 }}
       whileHover={reduced ? undefined : { y: -4 }}
-      whileTap={reduced ? undefined : { scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 24 }}
     >
       <Link
@@ -60,7 +59,7 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
         aria-describedby={`tool-${tool.id}-blurb`}
         onPointerMove={track}
         onPointerLeave={reset}
-        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color] duration-300 hover:border-line-strong focus-visible:rounded-card sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
+        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale] duration-300 hover:border-line-strong focus-visible:rounded-card active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
       >
         <span
           aria-hidden="true"

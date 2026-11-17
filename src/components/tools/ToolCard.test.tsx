@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import type { ToolInfo } from '../../tools';
 import { ToolCard } from './ToolCard';
@@ -46,5 +47,16 @@ describe('ToolCard', () => {
     fireEvent.pointerMove(link, { clientX: 10, clientY: 10, pointerType: 'mouse' });
     fireEvent.pointerLeave(link);
     expect(link).toBeInTheDocument();
+  });
+});
+
+describe('ToolCard keyboard', () => {
+  it('is a single tab stop', async () => {
+    const user = userEvent.setup();
+    renderCard();
+    await user.tab();
+    expect(screen.getByRole('link')).toHaveFocus();
+    await user.tab();
+    expect(document.body).toHaveFocus();
   });
 });
