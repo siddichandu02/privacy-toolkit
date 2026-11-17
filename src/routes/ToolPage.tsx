@@ -16,7 +16,7 @@ function ToolPlaceholder({ tool }: { tool: ToolInfo }) {
   useDocumentTitle(tool.name);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-16 sm:px-8">
+    <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
       <Link
         to="/"
         className="inline-flex items-center gap-1.5 rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg"
