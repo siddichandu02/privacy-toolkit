@@ -21,6 +21,7 @@ export interface PipProps {
 const paper = (accent: Accent): CSSProperties =>
   ({
     '--pip': `var(--${accent})`,
+    '--pip-base': 'var(--pip)',
     '--pip-light': 'color-mix(in srgb, var(--pip) 70%, white)',
     '--pip-shade': 'color-mix(in srgb, var(--pip) 72%, #1b1033)',
     '--pip-deep': 'color-mix(in srgb, var(--pip) 48%, #1b1033)',
@@ -108,10 +109,10 @@ export function Pip({ pose = 'sit', accent = 'coral', title, className }: PipPro
         animate={animated ? { rotate: [0, 6, 0] } : undefined}
         transition={{ duration: 3.4, ease: 'easeInOut', repeat: Infinity }}
       >
-        <polygon points="98,166 150,92 132,148" style={fill('base')} />
-        <polygon points="98,166 132,148 116,170" style={fill('shade')} />
-        <polygon points="150,92 144.6,108.8 138.6,108.3" fill={WHITE} />
-        <line x1="98" y1="166" x2="150" y2="92" {...CREASE} />
+        <polygon points="94,168 148,92 146,146" style={fill('base')} />
+        <polygon points="94,168 146,146 120,172" style={fill('shade')} />
+        <polygon points="148,92 147.4,107 137.2,107.2" fill={WHITE} />
+        <line x1="94" y1="168" x2="148" y2="92" {...CREASE} />
       </motion.g>
 
       {/* Body and chest */}
@@ -144,12 +145,12 @@ export function Pip({ pose = 'sit', accent = 'coral', title, className }: PipPro
         transition={{ type: 'spring', stiffness: 220, damping: 14 }}
       >
         <motion.g data-part="ear-left" style={{ originX: 0.5, originY: 1 }} animate={leftEar}>
-          <polygon points="42,48 50,10 70,46" style={fill('base')} />
-          <polygon points="50,44 52,22 63,45" style={fill('deep')} />
+          <polygon points="42,48 50,16 70,46" style={fill('base')} />
+          <polygon points="50,44 52,27 63,45" style={fill('deep')} />
         </motion.g>
         <motion.g data-part="ear-right" style={{ originX: 0.5, originY: 1 }} animate={rightEar}>
-          <polygon points="90,46 110,10 118,48" style={fill('shade')} />
-          <polygon points="97,45 108,22 110,44" style={fill('deep')} />
+          <polygon points="90,46 110,16 118,48" style={fill('shade')} />
+          <polygon points="97,45 108,27 110,44" style={fill('deep')} />
         </motion.g>
 
         <polygon points="40,46 80,46 80,104" style={fill('base')} />
