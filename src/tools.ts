@@ -91,3 +91,31 @@ export function getTool(id: string | undefined): ToolInfo | undefined {
 }
 
 export const toolPath = (id: string) => `/tools/${id}`;
+
+export type CategoryFilter = 'all' | ToolCategory;
+
+/** Normalise for search: lowercase, no accents, single spaces. */
+const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * Tools in the chosen category whose name or blurb contains every word of the
+ * query, in any order. An empty query matches everything.
+ */
+export function filterTools(
+  tools: readonly ToolInfo[],
+  category: CategoryFilter,
+  query: string,
+): ToolInfo[] {
+  const words = fold(query).split(' ').filter(Boolean);
+  return tools.filter((t) => {
+    if (category !== 'all' && t.category !== category) return false;
+    const haystack = fold(`${t.name} ${t.blurb}`);
+    return words.every((w) => haystack.includes(w));
+  });
+}

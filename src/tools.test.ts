@@ -1,4 +1,4 @@
-import { TOOLS, getTool, toolPath } from './tools';
+import { TOOLS, filterTools, getTool, toolPath } from './tools';
 
 describe('TOOLS registry', () => {
   it('has unique, URL-safe ids', () => {
@@ -25,5 +25,37 @@ describe('getTool', () => {
 
   it('builds tool paths', () => {
     expect(toolPath('split')).toBe('/tools/split');
+  });
+});
+
+describe('filterTools', () => {
+  const ids = (list: { id: string }[]) => list.map((t) => t.id);
+
+  it('returns every tool for "all" and an empty query', () => {
+    expect(filterTools(TOOLS, 'all', '')).toHaveLength(TOOLS.length);
+  });
+
+  it('filters by category', () => {
+    const images = filterTools(TOOLS, 'image', '');
+    expect(images.length).toBeGreaterThan(0);
+    expect(images.every((t) => t.category === 'image')).toBe(true);
+  });
+
+  it('matches name and blurb, ignoring case and extra spaces', () => {
+    expect(ids(filterTools(TOOLS, 'all', '  MERGE '))).toEqual(['merge']);
+    expect(ids(filterTools(TOOLS, 'all', 'heic'))).toEqual(['convert']);
+  });
+
+  it('needs every word but not in order', () => {
+    expect(ids(filterTools(TOOLS, 'all', 'pdf compress'))).toEqual(['compress-pdf']);
+  });
+
+  it('combines category and query', () => {
+    expect(filterTools(TOOLS, 'pdf', 'photo').every((t) => t.category === 'pdf')).toBe(true);
+    expect(ids(filterTools(TOOLS, 'image', 'merge'))).toEqual([]);
+  });
+
+  it('ignores accents in the query', () => {
+    expect(ids(filterTools(TOOLS, 'all', 'résize'))).toEqual(['resize']);
   });
 });
