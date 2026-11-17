@@ -1,5 +1,7 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
-import { ThemeToggle } from './components/ThemeToggle';
+import { Footer } from './components/layout/Footer';
+import { Header } from './components/layout/Header';
+import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
 import Home from './routes/Home';
 import NotFound from './routes/NotFound';
 import ToolPage from './routes/ToolPage';
@@ -8,12 +10,14 @@ function Layout() {
   return (
     <>
       <div className="mesh" aria-hidden="true" />
-      <div className="fixed top-4 right-4 z-20 sm:top-6 sm:right-6">
-        <ThemeToggle />
+      <SkipLink />
+      <div className="relative z-10 flex min-h-dvh flex-col">
+        <Header />
+        <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
+          <Outlet />
+        </main>
+        <Footer />
       </div>
-      <main className="relative z-10 min-h-dvh">
-        <Outlet />
-      </main>
     </>
   );
 }
