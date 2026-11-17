@@ -18,9 +18,8 @@ export default function App() {
           Opening soon
         </p>
         <h1 className="font-display text-5xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl">
-          Your files stay
-          <br />
-          on your device.
+          <span className="block">Your files stay</span>{' '}
+          <span className="block">on your device.</span>
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
           Privacy Toolkit is a set of free PDF and image tools that run entirely in your browser.
