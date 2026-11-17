@@ -4,7 +4,7 @@ Free PDF and image tools that run entirely in your browser. Your files never lea
 
 **Live site:** https://siddichandu02.github.io/privacy-toolkit/
 
-> Work in progress. See [PROJECTS.md](PROJECTS.md) for the 30-day plan.
+> Work in progress. More tools are on the way.
 
 ## Why
 

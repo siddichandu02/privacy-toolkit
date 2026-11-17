@@ -3,9 +3,3 @@ coverage
 playwright-report
 test-results
 package-lock.json
-
-# Owner-authored planning docs keep their own formatting
-CLAUDE.md
-FEEDBACK.md
-PROJECTS.md
-docs/
