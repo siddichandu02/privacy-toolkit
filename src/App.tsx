@@ -1,4 +1,5 @@
-import { Outlet, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import { AnimatedOutlet } from './components/layout/AnimatedOutlet';
 import { Footer } from './components/layout/Footer';
 import { Header } from './components/layout/Header';
 import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
@@ -14,7 +15,7 @@ function Layout() {
       <div className="relative z-10 flex min-h-dvh flex-col">
         <Header />
         <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
-          <Outlet />
+          <AnimatedOutlet />
         </main>
         <Footer />
       </div>

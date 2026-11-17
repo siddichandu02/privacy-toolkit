@@ -126,6 +126,11 @@ body {
     color 300ms ease;
 }
 
+/* Headings and <main> receive focus by script on navigation; no ring there. */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 :focus-visible {
   outline: 3px solid var(--sky);
   outline-offset: 3px;

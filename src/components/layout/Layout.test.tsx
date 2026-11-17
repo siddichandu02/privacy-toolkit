@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 
@@ -40,5 +40,24 @@ describe('app shell', () => {
     expect(skip).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(screen.getByRole('main')).toHaveFocus();
+  });
+});
+
+describe('navigation', () => {
+  it('moves to a tool page and focuses its heading', async () => {
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.click(screen.getByRole('link', { name: 'Split PDF' }));
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Split PDF' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
+  it('comes back home from the header wordmark', async () => {
+    const user = userEvent.setup();
+    renderApp('/tools/sign');
+    await user.click(screen.getByRole('link', { name: /privacy toolkit, home/i }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /your files stay on your device/i }),
+    ).toBeInTheDocument();
   });
 });
