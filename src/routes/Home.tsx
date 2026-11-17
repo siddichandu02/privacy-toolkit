@@ -1,7 +1,7 @@
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Fragment, useRef } from 'react';
 import { PromiseStrip } from '../components/PromiseStrip';
-import { ToolGrid } from '../components/tools/ToolGrid';
+import { ToolBrowser } from '../components/tools/ToolBrowser';
 import { Badge, Button, useToast } from '../components/ui';
 import { TOOLS } from '../tools';
 import { useDocumentTitle } from '../useDocumentTitle';
@@ -85,7 +85,7 @@ export default function Home() {
         >
           Pick a tool
         </h2>
-        <ToolGrid tools={TOOLS} featureEnds className="mt-6 sm:mt-8" />
+        <ToolBrowser tools={TOOLS} />
       </section>
     </div>
   );
