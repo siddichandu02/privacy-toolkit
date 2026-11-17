@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { AnimatedOutlet } from './components/layout/AnimatedOutlet';
 import { Footer } from './components/layout/Footer';
 import { Header } from './components/layout/Header';
+import { MeshBackground } from './components/layout/MeshBackground';
 import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
 import Home from './routes/Home';
 import NotFound from './routes/NotFound';
@@ -10,7 +11,7 @@ import ToolPage from './routes/ToolPage';
 function Layout() {
   return (
     <>
-      <div className="mesh" aria-hidden="true" />
+      <MeshBackground />
       <SkipLink />
       <div className="relative z-10 flex min-h-dvh flex-col">
         <Header />

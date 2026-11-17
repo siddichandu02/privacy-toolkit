@@ -154,6 +154,28 @@ body {
   animation: mesh-drift 38s ease-in-out infinite alternate;
 }
 
+/* Per-tool glow layered over the mesh on tool pages */
+.mesh-accent {
+  position: fixed;
+  inset: -10% -10% auto;
+  height: 80vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--mesh-opacity);
+  background:
+    radial-gradient(
+      50% 55% at 50% 0%,
+      color-mix(in srgb, var(--tint) 42%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      30% 35% at 15% 10%,
+      color-mix(in srgb, var(--tint) 22%, transparent),
+      transparent 70%
+    );
+  filter: blur(30px);
+}
+
 @keyframes mesh-drift {
   0% {
     transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
