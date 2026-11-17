@@ -1,4 +1,5 @@
-import { motion, useAnimationControls, useReducedMotionConfig } from 'framer-motion';
+import { motion, useAnimationControls } from 'framer-motion';
+import { useStillMotion } from '../../useStillMotion';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Accent } from '../ui/accent';
 
@@ -67,7 +68,7 @@ function useRandomTimer(enabled: boolean, min: number, max: number, fn: () => vo
  * its own: ears twitch, eyes blink, tail sways, and a paw waves hello.
  */
 export function Pip({ pose = 'sit', accent = 'coral', title, className }: PipProps) {
-  const reduced = useReducedMotionConfig() ?? false;
+  const reduced = useStillMotion();
   const animated = !reduced;
   const [blink, setBlink] = useState(false);
   const leftEar = useAnimationControls();

@@ -1,4 +1,5 @@
-import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useStillMotion } from '../../useStillMotion';
 import type { ReactNode } from 'react';
 import { Pip } from '../pip/Pip';
 import { accentDot, accentFill, accentText, type Accent } from '../ui/accent';
@@ -32,7 +33,7 @@ export function WaitStage({
   scene,
   className = '',
 }: WaitStageProps) {
-  const reduced = useReducedMotionConfig() ?? false;
+  const reduced = useStillMotion();
   const value = overallProgress(steps, current, progress);
   const pct = Math.round(value * 100);
   const index = Math.max(
