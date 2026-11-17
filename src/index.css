@@ -2,25 +2,113 @@
 @import '@fontsource-variable/bricolage-grotesque';
 @import '@fontsource-variable/plus-jakarta-sans';
 
-/* Core tokens. Day 2 expands these into the full design system. */
+/*
+ * Theme values live on <html data-theme="dark|light">. The @theme block maps
+ * them to Tailwind utilities (bg-canvas, text-fg, shadow-glow-violet ...), so
+ * components never hardcode a palette and switching theme is one attribute.
+ */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #0b0b1a;
+  --canvas-raised: #13132a;
+  --surface: rgb(255 255 255 / 0.06);
+  --surface-strong: rgb(255 255 255 / 0.1);
+  --line: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.18);
+  --fg: #f5f5ff;
+  --muted: #a3a3c2;
+
+  --violet: #7c5cff;
+  --coral: #ff6b8b;
+  --mint: #3ddc97;
+  --sunshine: #ffc857;
+  --sky: #4cc9f0;
+  /* Text that sits on a filled accent button */
+  --on-accent: #0b0b1a;
+  --on-violet: #ffffff;
+
+  --shadow-color: 240 60% 2%;
+  --glow-strength: 0.45;
+  --mesh-opacity: 1;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --canvas: #faf8ff;
+  --canvas-raised: #ffffff;
+  --surface: #ffffff;
+  --surface-strong: #f1edff;
+  --line: rgb(40 30 90 / 0.1);
+  --line-strong: rgb(40 30 90 / 0.18);
+  --fg: #16142b;
+  --muted: #5d5a7a;
+
+  --violet: #6440f0;
+  --coral: #e0436a;
+  --mint: #138a5c;
+  --sunshine: #b87a0a;
+  --sky: #0f84ad;
+  --on-accent: #ffffff;
+  --on-violet: #ffffff;
+
+  --shadow-color: 250 40% 40%;
+  --glow-strength: 0.28;
+  --mesh-opacity: 0.55;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-raised: var(--canvas-raised);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-on-accent: var(--on-accent);
+  --color-on-violet: var(--on-violet);
+
+  --color-violet: var(--violet);
+  --color-coral: var(--coral);
+  --color-mint: var(--mint);
+  --color-sunshine: var(--sunshine);
+  --color-sky: var(--sky);
+
+  /* Layered soft shadows: a tight contact shadow plus a wide ambient one */
+  --shadow-soft:
+    0 1px 2px hsl(var(--shadow-color) / 0.12), 0 4px 12px -2px hsl(var(--shadow-color) / 0.14),
+    0 16px 32px -12px hsl(var(--shadow-color) / 0.2);
+  --shadow-lifted:
+    0 2px 4px hsl(var(--shadow-color) / 0.12), 0 12px 24px -6px hsl(var(--shadow-color) / 0.2),
+    0 32px 64px -24px hsl(var(--shadow-color) / 0.32);
+
+  --shadow-glow-violet: 0 10px 40px -8px
+    color-mix(in srgb, var(--violet) calc(var(--glow-strength) * 100%), transparent);
+  --shadow-glow-coral: 0 10px 40px -8px
+    color-mix(in srgb, var(--coral) calc(var(--glow-strength) * 100%), transparent);
+  --shadow-glow-mint: 0 10px 40px -8px
+    color-mix(in srgb, var(--mint) calc(var(--glow-strength) * 100%), transparent);
+  --shadow-glow-sunshine: 0 10px 40px -8px
+    color-mix(in srgb, var(--sunshine) calc(var(--glow-strength) * 100%), transparent);
+  --shadow-glow-sky: 0 10px 40px -8px
+    color-mix(in srgb, var(--sky) calc(var(--glow-strength) * 100%), transparent);
+}
+
 @theme {
-  --color-ink: #0b0b1a;
-  --color-paper: #f5f5ff;
-  --color-muted: #a3a3c2;
-  --color-glass: rgb(255 255 255 / 0.06);
-  --color-violet: #7c5cff;
-  --color-coral: #ff6b8b;
-  --color-mint: #3ddc97;
-  --color-sunshine: #ffc857;
-  --color-sky: #4cc9f0;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.5rem;
+  --radius-control: 1rem;
 
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html {
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--canvas);
+  color: var(--fg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -28,11 +116,14 @@ body {
   margin: 0;
   min-height: 100dvh;
   font-family: var(--font-sans);
-  background: var(--color-ink);
+  background: var(--canvas);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-sky);
+  outline: 3px solid var(--sky);
   outline-offset: 3px;
   border-radius: 8px;
 }
@@ -43,12 +134,14 @@ body {
   inset: -20%;
   z-index: 0;
   pointer-events: none;
+  opacity: var(--mesh-opacity);
   background:
     radial-gradient(40% 35% at 20% 25%, rgb(124 92 255 / 0.45), transparent 70%),
     radial-gradient(35% 30% at 80% 20%, rgb(255 107 139 / 0.28), transparent 70%),
     radial-gradient(40% 35% at 70% 80%, rgb(76 201 240 / 0.22), transparent 70%),
     radial-gradient(30% 25% at 25% 85%, rgb(61 220 151 / 0.16), transparent 70%);
   filter: blur(40px);
+  transition: opacity 400ms ease;
   animation: mesh-drift 38s ease-in-out infinite alternate;
 }
 
@@ -67,5 +160,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .mesh {
     animation: none;
+  }
+  body {
+    transition: none;
   }
 }
