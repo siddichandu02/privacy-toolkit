@@ -37,7 +37,10 @@ export default function App() {
                 key={tool.id}
                 className="flex items-center gap-2 rounded-2xl border border-white/10 bg-glass px-4 py-2 text-sm backdrop-blur-md"
               >
-                <span className={`size-2.5 rounded-full ${dotClass[tool.accent]}`} aria-hidden="true" />
+                <span
+                  className={`size-2.5 rounded-full ${dotClass[tool.accent]}`}
+                  aria-hidden="true"
+                />
                 {tool.name}
               </li>
             ))}
