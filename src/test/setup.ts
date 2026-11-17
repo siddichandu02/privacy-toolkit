@@ -5,3 +5,7 @@ import { afterEach } from 'vitest';
 afterEach(() => {
   cleanup();
 });
+
+// jsdom has no layout, so scrolling APIs are missing.
+Element.prototype.scrollIntoView = () => {};
+window.scrollTo = () => {};

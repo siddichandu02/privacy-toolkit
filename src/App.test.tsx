@@ -28,6 +28,24 @@ describe('home route', () => {
   });
 });
 
+describe('home hero', () => {
+  it('lists the three privacy promises', () => {
+    renderApp('/');
+    const strip = screen.getByRole('list', { name: /how your files are handled/i });
+    expect(
+      within(strip)
+        .getAllByRole('heading', { level: 3 })
+        .map((h) => h.textContent),
+    ).toEqual(['Works in this tab', 'No sign-up', 'Nothing kept']);
+  });
+
+  it('jumps to the tool list from the main button', async () => {
+    renderApp('/');
+    await userEvent.click(screen.getByRole('button', { name: /browse the tools/i }));
+    expect(screen.getByRole('region', { name: /tools on the way/i })).toHaveFocus();
+  });
+});
+
 describe('tool routes', () => {
   it.each(TOOLS.map((t) => [t.id, t.name]))('renders /tools/%s', async (id, name) => {
     renderApp(`/tools/${id}`);
