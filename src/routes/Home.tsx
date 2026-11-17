@@ -1,5 +1,6 @@
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Fragment, useRef } from 'react';
+import { Pip } from '../components/pip/Pip';
 import { PromiseStrip } from '../components/PromiseStrip';
 import { ToolBrowser } from '../components/tools/ToolBrowser';
 import { Badge, Button, useToast } from '../components/ui';
@@ -15,6 +16,16 @@ const line: Variants = {
     transition: { type: 'spring', stiffness: 260, damping: 24, delay: 0.08 + i * 0.12 },
   }),
 };
+
+/** Pip hops in once the headline has landed. */
+const hop = (reduced: boolean | null) =>
+  reduced
+    ? {}
+    : {
+        initial: { opacity: 0, y: 28, scale: 0.9 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        transition: { type: 'spring' as const, stiffness: 260, damping: 16, delay: 0.45 },
+      };
 
 export default function Home() {
   const { toast } = useToast();
@@ -39,9 +50,14 @@ export default function Home() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
-      <Badge accent="mint" dot className="mb-6 w-fit px-3.5 py-1 text-sm">
-        Opening soon
-      </Badge>
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <Badge accent="mint" dot className="w-fit px-3.5 py-1 text-sm">
+          Opening soon
+        </Badge>
+        <motion.div {...hop(reduced)} className="-mb-2 lg:hidden">
+          <Pip pose="wave" className="h-20 sm:h-24" />
+        </motion.div>
+      </div>
       <h1 className="font-display text-[clamp(2.75rem,10vw,7.5rem)] leading-[0.92] font-extrabold tracking-[-0.035em] text-balance">
         {['Your files stay', 'on your device.'].map((text, i) => (
           <Fragment key={text}>
@@ -58,17 +74,24 @@ export default function Home() {
           </Fragment>
         ))}
       </h1>
-      <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:mt-8 sm:text-xl">
-        Free PDF and image tools that do all the work inside your browser. Nothing is uploaded,
-        tracked or stored on a server.
-      </p>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Button size="lg" onClick={showTools}>
-          Browse the tools
-        </Button>
-        <Button size="lg" variant="ghost" onClick={explainPrivacy}>
-          How can I check that?
-        </Button>
+      <div className="flex items-end justify-between gap-10">
+        <div>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:mt-8 sm:text-xl">
+            Free PDF and image tools that do all the work inside your browser. Nothing is uploaded,
+            tracked or stored on a server.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button size="lg" onClick={showTools}>
+              Browse the tools
+            </Button>
+            <Button size="lg" variant="ghost" onClick={explainPrivacy}>
+              How can I check that?
+            </Button>
+          </div>
+        </div>
+        <motion.div {...hop(reduced)} className="mr-4 -mb-6 hidden shrink-0 lg:block xl:mr-10">
+          <Pip pose="wave" className="h-64" />
+        </motion.div>
       </div>
 
       <PromiseStrip className="mt-14 sm:mt-20" />
