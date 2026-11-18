@@ -38,7 +38,11 @@ export async function mergePdfs(
   const docs: PDFDocument[] = [];
   for (const [i, source] of sources.entries()) {
     try {
-      docs.push(await PDFDocument.load(source.bytes, { ignoreEncryption: false }));
+      const doc = await PDFDocument.load(source.bytes, { ignoreEncryption: false });
+      // pdf-lib is lenient: a file with a PDF header but a broken body loads
+      // fine and only fails later. Touching the page tree catches that here.
+      if (doc.getPageCount() === 0) throw new Error('no pages');
+      docs.push(doc);
     } catch (err) {
       const locked = err instanceof Error && /encrypt/i.test(err.message);
       throw new MergeError(
@@ -54,8 +58,13 @@ export async function mergePdfs(
   onProgress({ stage: 'working', progress: 0 });
   const out = await PDFDocument.create();
   for (const [i, doc] of docs.entries()) {
-    const pages = await out.copyPages(doc, doc.getPageIndices());
-    for (const page of pages) out.addPage(page);
+    const name = sources[i]?.name ?? 'One of the files';
+    try {
+      const pages = await out.copyPages(doc, doc.getPageIndices());
+      for (const page of pages) out.addPage(page);
+    } catch {
+      throw new MergeError(`${name} has pages that could not be copied. It may be damaged.`, name);
+    }
     onProgress({ stage: 'working', progress: (i + 1) / docs.length });
   }
 

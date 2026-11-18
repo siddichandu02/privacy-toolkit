@@ -52,6 +52,16 @@ describe('mergePdfs', () => {
     ).rejects.toMatchObject({ name: 'MergeError', fileName: 'broken.pdf' });
   });
 
+  it('catches a file with a pdf header but a broken body', async () => {
+    const junk = new TextEncoder().encode('%PDF-1.4 nope');
+    await expect(
+      mergePdfs([
+        { name: 'fine.pdf', bytes: await makePdf(1) },
+        { name: 'junk.pdf', bytes: junk },
+      ]),
+    ).rejects.toMatchObject({ name: 'MergeError', fileName: 'junk.pdf' });
+  });
+
   it('refuses an empty list', async () => {
     await expect(mergePdfs([])).rejects.toBeInstanceOf(MergeError);
   });
