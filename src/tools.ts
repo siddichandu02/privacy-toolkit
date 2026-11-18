@@ -2,6 +2,12 @@ import type { Accent } from './components/ui/accent';
 
 export type ToolCategory = 'pdf' | 'image';
 
+export interface ToolInput {
+  kind: 'pdf' | 'image';
+  multiple: boolean;
+  ordered: boolean;
+}
+
 export interface ToolInfo {
   id: string;
   name: string;
@@ -10,6 +16,8 @@ export interface ToolInfo {
   accent: Accent;
   /** One plain sentence about what the tool does. */
   blurb: string;
+  /** What the tool takes: file kind, one or many, and whether order matters. */
+  input: ToolInput;
 }
 
 /** Tools planned for v1, in build order. */
@@ -20,6 +28,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'violet',
     blurb: 'Combine several PDFs into one file, in the order you choose.',
+    input: { kind: 'pdf', multiple: true, ordered: true },
   },
   {
     id: 'split',
@@ -27,6 +36,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'coral',
     blurb: 'Pull out page ranges or single pages into new PDFs.',
+    input: { kind: 'pdf', multiple: false, ordered: false },
   },
   {
     id: 'rotate',
@@ -34,6 +44,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'sunshine',
     blurb: 'Turn sideways pages upright and drop the ones you do not need.',
+    input: { kind: 'pdf', multiple: false, ordered: false },
   },
   {
     id: 'images-to-pdf',
@@ -41,6 +52,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'mint',
     blurb: 'Turn photos and scans into a single, tidy PDF.',
+    input: { kind: 'image', multiple: true, ordered: true },
   },
   {
     id: 'sign',
@@ -48,6 +60,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'sky',
     blurb: 'Draw or type your signature and place it on any page.',
+    input: { kind: 'pdf', multiple: false, ordered: false },
   },
   {
     id: 'compress-pdf',
@@ -55,6 +68,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'pdf',
     accent: 'coral',
     blurb: 'Shrink a PDF so it fits in an email or upload form.',
+    input: { kind: 'pdf', multiple: false, ordered: false },
   },
   {
     id: 'compress-image',
@@ -62,6 +76,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'image',
     accent: 'mint',
     blurb: 'Make photos smaller while keeping them sharp.',
+    input: { kind: 'image', multiple: true, ordered: false },
   },
   {
     id: 'convert',
@@ -69,6 +84,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'image',
     accent: 'sky',
     blurb: 'Switch between HEIC, PNG, WebP and JPG.',
+    input: { kind: 'image', multiple: true, ordered: false },
   },
   {
     id: 'resize',
@@ -76,6 +92,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'image',
     accent: 'sunshine',
     blurb: 'Fit a photo to a passport, profile or banner size.',
+    input: { kind: 'image', multiple: false, ordered: false },
   },
   {
     id: 'exif',
@@ -83,6 +100,7 @@ export const TOOLS: readonly ToolInfo[] = [
     category: 'image',
     accent: 'violet',
     blurb: 'See and strip the location and camera details hidden in a photo.',
+    input: { kind: 'image', multiple: true, ordered: false },
   },
 ];
 

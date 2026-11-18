@@ -10,6 +10,7 @@ const merge: ToolInfo = {
   category: 'pdf',
   accent: 'violet',
   blurb: 'Combine several PDFs into one file.',
+  input: { kind: 'pdf', multiple: true, ordered: true },
 };
 
 function renderCard() {

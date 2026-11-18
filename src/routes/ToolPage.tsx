@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
 import { getTool, type ToolInfo } from '../tools';
@@ -42,6 +43,9 @@ function ToolPlaceholder({ tool }: { tool: ToolInfo }) {
       <Badge accent={tool.accent} dot className="mt-8 px-3.5 py-1 text-sm">
         Being built right now
       </Badge>
+      <div className="max-w-3xl">
+        <ToolWorkbench tool={tool} />
+      </div>
     </div>
   );
 }
