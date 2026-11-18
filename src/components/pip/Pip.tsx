@@ -3,7 +3,7 @@ import { useStillMotion } from '../../useStillMotion';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Accent } from '../ui/accent';
 
-export type PipPose = 'sit' | 'wave' | 'puzzled';
+export type PipPose = 'sit' | 'wave' | 'puzzled' | 'hold';
 
 export interface PipProps {
   pose?: PipPose;
@@ -135,6 +135,15 @@ export function Pip({ pose = 'sit', accent = 'coral', title, className }: PipPro
           <polygon points="104,121 130,84 124,82" style={fill('shade')} />
           <polygon points="120,77 130,84 133,72 124,68" fill={WHITE} />
         </motion.g>
+      ) : null}
+
+      {pose === 'hold' ? (
+        <g data-part="paw">
+          {/* Reaches out to the right and grips a handle at about (142, 117). */}
+          <polygon points="90,108 100,124 140,122 140,112" style={fill('base')} />
+          <polygon points="100,124 140,122 140,118" style={fill('shade')} />
+          <ellipse cx="142" cy="117" rx="6" ry="6.5" fill={WHITE} />
+        </g>
       ) : null}
 
       {/* Head, ears and face move together when Pip tilts */}

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Pip, type PipPose } from '../components/pip/Pip';
 import type { Accent } from '../components/ui';
 import { DEFAULT_STEPS } from '../components/wait/progress';
+import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
-const POSES: PipPose[] = ['sit', 'wave', 'puzzled'];
+const POSES: PipPose[] = ['sit', 'wave', 'puzzled', 'hold'];
 const ACCENTS: Accent[] = ['coral', 'violet', 'mint', 'sunshine', 'sky'];
 
 /**
@@ -64,6 +65,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="violet"
+        scene={<PancakeScene progress={scrub} accent="violet" />}
       />
     </div>
   );
