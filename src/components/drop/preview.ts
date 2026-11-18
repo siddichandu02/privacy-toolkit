@@ -15,21 +15,26 @@ export function isPdf(file: File): boolean {
 }
 
 type PdfJs = typeof import('pdfjs-dist');
-let pdfjsReady: Promise<PdfJs> | null = null;
+interface PdfKit {
+  pdfjs: PdfJs;
+  worker: InstanceType<PdfJs['PDFWorker']>;
+}
+let pdfReady: Promise<PdfKit> | null = null;
 
 /**
  * Load pdf.js on first use only, with its worker served from our own build
- * (no CDN), so the rest of the app stays light.
+ * (no CDN), so the rest of the app stays light. One worker is shared by every
+ * document; starting a new one per file is slow.
  */
-function loadPdfJs(): Promise<PdfJs> {
-  pdfjsReady ??= Promise.all([
+function loadPdfJs(): Promise<PdfKit> {
+  pdfReady ??= Promise.all([
     import('pdfjs-dist'),
     import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
-  ]).then(([pdfjs, worker]) => {
-    pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-    return pdfjs;
+  ]).then(([pdfjs, workerUrl]) => {
+    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl.default;
+    return { pdfjs, worker: new pdfjs.PDFWorker() };
   });
-  return pdfjsReady;
+  return pdfReady;
 }
 
 function canvasToUrl(canvas: HTMLCanvasElement): Promise<string | null> {
@@ -40,9 +45,9 @@ function canvasToUrl(canvas: HTMLCanvasElement): Promise<string | null> {
 
 /** Draw the first page of a PDF about `width` CSS pixels wide. */
 async function previewPdf(file: File, width: number): Promise<FilePreview> {
-  const pdfjs = await loadPdfJs();
+  const { pdfjs, worker } = await loadPdfJs();
   const data = new Uint8Array(await file.arrayBuffer());
-  const task = pdfjs.getDocument({ data });
+  const task = pdfjs.getDocument({ data, worker });
   const doc = await task.promise;
   try {
     const page = await doc.getPage(1);
