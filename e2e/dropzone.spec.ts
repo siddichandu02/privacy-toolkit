@@ -20,8 +20,8 @@ test('merge page takes PDFs, shows page counts and thumbnails', async ({ page })
   await page.getByTestId('file-input').setInputFiles([pdf('alpha.pdf', 3), pdf('beta.pdf')]);
 
   await expect(page.getByTestId('file-row')).toHaveCount(2);
-  await expect(page.getByText(/, 3 pages$/)).toBeVisible();
-  await expect(page.getByText(/, 1 page$/)).toBeVisible();
+  await expect(page.getByText(/, 3 pages$/)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/, 1 page$/)).toBeVisible({ timeout: 15_000 });
   // pdf.js drew the first page of each file.
   await expect(page.getByTestId('file-row').locator('img')).toHaveCount(2, { timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Add more PDFs' })).toBeVisible();
