@@ -41,3 +41,5 @@ export function useFileQueue() {
 
   return { items, setItems, add, remove, move, clear };
 }
+
+export type FileQueue = ReturnType<typeof useFileQueue>;

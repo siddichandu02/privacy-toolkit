@@ -1,19 +1,30 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { DropZone, RejectionNotice } from './DropZone';
 import { FileList } from './FileList';
-import { useFileQueue } from './useFileQueue';
+import { useFileQueue, type FileQueue } from './useFileQueue';
 import { formatBytes, rulesFor, type Rejection } from './validate';
 
 /**
  * Where a tool's files are gathered: a big drop sheet to start, then the file
  * list with a slim "add more" strip under it.
  */
-export function ToolWorkbench({ tool }: { tool: ToolInfo }) {
+export function ToolWorkbench({
+  tool,
+  queue: outside,
+  footer,
+}: {
+  tool: ToolInfo;
+  /** Pass a queue to keep the files when the workbench unmounts (e.g. while a job runs). */
+  queue?: FileQueue;
+  /** The tool's main action, shown under the list once there are files. */
+  footer?: ReactNode;
+}) {
   const still = useStillMotion();
-  const queue = useFileQueue();
+  const own = useFileQueue();
+  const queue = outside ?? own;
   // Shared by the full and compact zones so a message survives the swap.
   const [rejected, setRejected] = useState<Rejection[]>([]);
   const rules = rulesFor(tool.input);
@@ -83,6 +94,7 @@ export function ToolWorkbench({ tool }: { tool: ToolInfo }) {
             ) : (
               <RejectionNotice rejected={rejected} onDismiss={() => setRejected([])} />
             )}
+            {footer ? <div className="mt-8">{footer}</div> : null}
           </motion.div>
         ) : (
           <motion.div key="empty" {...swap} transition={{ duration: 0.22 }}>
