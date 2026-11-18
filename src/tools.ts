@@ -18,6 +18,8 @@ export interface ToolInfo {
   blurb: string;
   /** What the tool takes: file kind, one or many, and whether order matters. */
   input: ToolInput;
+  /** True once the tool works end to end. */
+  ready?: boolean;
 }
 
 /** Tools planned for v1, in build order. */
@@ -29,6 +31,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'violet',
     blurb: 'Combine several PDFs into one file, in the order you choose.',
     input: { kind: 'pdf', multiple: true, ordered: true },
+    ready: true,
   },
   {
     id: 'split',

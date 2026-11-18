@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
+import { MergeTool } from '../components/merge/MergeTool';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
 import { getTool, type ToolInfo } from '../tools';
@@ -10,10 +11,10 @@ export default function ToolPage() {
   const { id } = useParams();
   const tool = getTool(id);
   if (!tool) return <NotFound />;
-  return <ToolPlaceholder tool={tool} />;
+  return <ToolView tool={tool} />;
 }
 
-function ToolPlaceholder({ tool }: { tool: ToolInfo }) {
+function ToolView({ tool }: { tool: ToolInfo }) {
   useDocumentTitle(tool.name);
 
   return (
@@ -40,11 +41,13 @@ function ToolPlaceholder({ tool }: { tool: ToolInfo }) {
         {tool.name}
       </h1>
       <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">{tool.blurb}</p>
-      <Badge accent={tool.accent} dot className="mt-8 px-3.5 py-1 text-sm">
-        Being built right now
-      </Badge>
+      {tool.ready ? null : (
+        <Badge accent={tool.accent} dot className="mt-8 px-3.5 py-1 text-sm">
+          Being built right now
+        </Badge>
+      )}
       <div className="max-w-3xl">
-        <ToolWorkbench tool={tool} />
+        {tool.id === 'merge' ? <MergeTool tool={tool} /> : <ToolWorkbench tool={tool} />}
       </div>
     </div>
   );
