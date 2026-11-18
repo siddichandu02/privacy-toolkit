@@ -58,7 +58,12 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
           />
         </motion.div>
       ) : (
-        <motion.div key={job.status} {...swap} transition={transition} className="mt-12 sm:mt-16">
+        <motion.div
+          key={job.status}
+          {...swap}
+          transition={transition}
+          className="mt-12 max-w-xl sm:mt-16"
+        >
           {job.status === 'running' ? (
             <WaitStage
               title={`Merging ${count} PDFs`}
@@ -83,7 +88,12 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
               onBack={reset}
             />
           ) : (
-            <MergeFailed message={job.message} onRetry={run} onBack={reset} />
+            <MergeFailed
+              message={job.message}
+              fileName={job.fileName}
+              onRetry={run}
+              onBack={reset}
+            />
           )}
         </motion.div>
       )}
@@ -133,7 +143,7 @@ function useFocusOnMount<T extends HTMLElement>() {
 }
 
 const panel =
-  'relative mx-auto max-w-xl overflow-hidden rounded-panel border border-line bg-surface px-6 py-8 text-center shadow-lifted backdrop-blur-xl sm:px-10 sm:py-10';
+  'relative overflow-hidden rounded-panel border border-line bg-surface px-6 py-8 text-center shadow-lifted backdrop-blur-xl sm:px-10 sm:py-10';
 
 function MergeDone({
   accent,
@@ -198,14 +208,27 @@ function MergeDone({
 
 function MergeFailed({
   message,
+  fileName,
   onRetry,
   onBack,
 }: {
   message: string;
+  /** Set when one file is to blame. Retrying would fail again, so going back leads. */
+  fileName?: string;
   onRetry: () => void;
   onBack: () => void;
 }) {
   const heading = useFocusOnMount<HTMLHeadingElement>();
+  const retry = (
+    <Button key="retry" variant={fileName ? 'ghost' : 'primary'} onClick={onRetry}>
+      Try again
+    </Button>
+  );
+  const back = (
+    <Button key="back" variant={fileName ? 'primary' : 'ghost'} onClick={onBack}>
+      Back to your files
+    </Button>
+  );
   return (
     <section role="alert" aria-labelledby="merge-failed" className={panel}>
       <Pip pose="puzzled" className="mx-auto h-32" />
@@ -219,10 +242,7 @@ function MergeFailed({
       </h2>
       <p className="mx-auto mt-3 max-w-md text-muted">{message}</p>
       <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-        <Button onClick={onRetry}>Try again</Button>
-        <Button variant="ghost" onClick={onBack}>
-          Back to your files
-        </Button>
+        {fileName ? [back, retry] : [retry, back]}
       </div>
     </section>
   );
