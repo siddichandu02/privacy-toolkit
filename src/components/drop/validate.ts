@@ -10,6 +10,8 @@ export interface DropRules {
   maxFiles?: number;
   /** Plain name for the accepted kind, used in messages ("PDFs", "images"). */
   kindLabel: string;
+  /** The same for one file ("a PDF"), used when maxFiles is 1. */
+  singleLabel?: string;
 }
 
 export type RejectReason = 'type' | 'size' | 'count' | 'empty';
@@ -88,7 +90,10 @@ export function validateFiles(
       rejected.push({
         name,
         reason: 'count',
-        message: `${name} was left out. You can add up to ${rules.maxFiles} files.`,
+        message:
+          rules.maxFiles === 1
+            ? `${name} was left out. This tool works on one file at a time.`
+            : `${name} was left out. You can add up to ${rules.maxFiles} files.`,
       });
     } else {
       accepted.push(file);
@@ -103,6 +108,7 @@ export const PDF_RULES: DropRules = {
   maxSize: 200 * 1024 * 1024,
   maxFiles: 50,
   kindLabel: 'PDFs',
+  singleLabel: 'a PDF',
 };
 
 export const IMAGE_RULES: DropRules = {
@@ -111,4 +117,16 @@ export const IMAGE_RULES: DropRules = {
   maxSize: 50 * 1024 * 1024,
   maxFiles: 100,
   kindLabel: 'images',
+  singleLabel: 'an image',
 };
+
+/** "PDFs", or "a PDF" when the zone takes a single file. */
+export function zoneNoun(rules: DropRules): string {
+  return rules.maxFiles === 1 && rules.singleLabel ? rules.singleLabel : rules.kindLabel;
+}
+
+/** Rules for a tool's input: its file kind, limited to one file if it works on one. */
+export function rulesFor(input: { kind: 'pdf' | 'image'; multiple: boolean }): DropRules {
+  const base = input.kind === 'pdf' ? PDF_RULES : IMAGE_RULES;
+  return input.multiple ? base : { ...base, maxFiles: 1 };
+}

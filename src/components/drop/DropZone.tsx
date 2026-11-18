@@ -11,7 +11,14 @@ import {
 import { useStillMotion } from '../../useStillMotion';
 import { Pip } from '../pip/Pip';
 import { accentFill, accentSoft, accentText, type Accent } from '../ui/accent';
-import { acceptAttr, formatBytes, validateFiles, type DropRules, type Rejection } from './validate';
+import {
+  acceptAttr,
+  formatBytes,
+  validateFiles,
+  zoneNoun,
+  type DropRules,
+  type Rejection,
+} from './validate';
 
 /* Full class strings so Tailwind keeps them. */
 const dashed: Record<Accent, string> = {
@@ -47,6 +54,12 @@ export interface DropZoneProps {
   compact?: boolean;
   /** Also take files pasted anywhere on the page. */
   acceptPaste?: boolean;
+  /**
+   * Files left out of the last add. Pass with onRejectedChange to keep the
+   * message when the zone swaps between full and compact.
+   */
+  rejected?: Rejection[];
+  onRejectedChange?: (rejected: Rejection[]) => void;
 }
 
 function hasFiles(e: DragEvent) {
@@ -65,12 +78,16 @@ export function DropZone({
   existingCount = 0,
   compact = false,
   acceptPaste = true,
+  rejected: rejectedProp,
+  onRejectedChange,
 }: DropZoneProps) {
   const still = useStillMotion();
   const input = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
   const [over, setOver] = useState(false);
-  const [rejected, setRejected] = useState<Rejection[]>([]);
+  const [ownRejected, setOwnRejected] = useState<Rejection[]>([]);
+  const rejected = rejectedProp ?? ownRejected;
+  const setRejected = onRejectedChange ?? setOwnRejected;
   const hintId = useId();
   const errorId = useId();
 
@@ -141,18 +158,26 @@ export function DropZone({
     e.target.value = '';
   };
 
-  const limits = [
-    rules.maxFiles ? `Up to ${rules.maxFiles} files` : null,
-    rules.maxSize ? `${formatBytes(rules.maxSize)} each` : null,
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const single = rules.maxFiles === 1;
+  const noun = zoneNoun(rules);
+  const limits = single
+    ? rules.maxSize
+      ? `Up to ${formatBytes(rules.maxSize)}`
+      : ''
+    : [
+        rules.maxFiles ? `Up to ${rules.maxFiles} files` : null,
+        rules.maxSize ? `${formatBytes(rules.maxSize)} each` : null,
+      ]
+        .filter(Boolean)
+        .join(', ');
 
   const title = over
-    ? 'Let go to add them'
+    ? single
+      ? 'Let go to add it'
+      : 'Let go to add them'
     : compact
       ? `Add more ${rules.kindLabel}`
-      : `Drop ${rules.kindLabel} here`;
+      : `Drop ${noun} here`;
 
   return (
     <div className="relative">
@@ -160,19 +185,19 @@ export function DropZone({
       {!compact ? (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute right-10 bottom-full h-16 w-20 overflow-hidden sm:right-16"
+          className="pointer-events-none absolute right-10 bottom-full h-20 w-28 overflow-hidden sm:right-16"
         >
           <AnimatePresence>
             {over ? (
               <motion.div
                 key="pip"
                 initial={still ? { opacity: 0 } : { y: '100%' }}
-                animate={still ? { opacity: 1 } : { y: '8%' }}
+                animate={still ? { opacity: 1 } : { y: '6%' }}
                 exit={still ? { opacity: 0 } : { y: '100%' }}
                 transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-                className="w-20"
+                className="w-28"
               >
-                <Pip accent={accent} className="w-20" />
+                <Pip accent={accent} className="w-28" />
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -182,7 +207,7 @@ export function DropZone({
       <motion.div
         role="button"
         tabIndex={0}
-        aria-label={compact ? `Add more ${rules.kindLabel}` : `Choose ${rules.kindLabel}`}
+        aria-label={compact ? `Add more ${rules.kindLabel}` : `Choose ${noun}`}
         aria-describedby={rejected.length > 0 ? `${hintId} ${errorId}` : hintId}
         data-dragging={over}
         onClick={open}
@@ -228,11 +253,20 @@ export function DropZone({
           <div className="flex flex-col items-center text-center">
             <PagesArt accent={accent} lifted={over} still={still} />
             <p className="mt-6 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-              {title}
+              {over ? (
+                title
+              ) : (
+                <>
+                  {/* Phones cannot drag files in, so they get a tap prompt. */}
+                  <span className="pointer-coarse:hidden">{title}</span>
+                  <span className="hidden pointer-coarse:inline">Choose {noun}</span>
+                </>
+              )}
             </p>
             <p id={hintId} className="mt-3 max-w-md text-base leading-relaxed text-muted">
-              Or paste them, or pick them from your device. {limits}. They are opened right here in
-              your browser and never uploaded.
+              {single ? 'Or paste it, or pick it' : 'Or paste them, or pick them'} from your device.{' '}
+              {limits ? `${limits}. ` : null}
+              {single ? 'It is' : 'They are'} opened right here in your browser and never uploaded.
             </p>
             <span
               aria-hidden="true"
@@ -257,26 +291,41 @@ export function DropZone({
         data-testid="file-input"
       />
 
-      <div id={errorId} aria-live="polite">
-        {rejected.length > 0 ? (
-          <div className="mt-3 flex items-start gap-3 rounded-card border border-coral/30 bg-coral/10 px-4 py-3 text-sm">
-            <ul className="min-w-0 flex-1 space-y-1">
-              {rejected.map((r, i) => (
-                <li key={`${r.name}-${i}`} className="break-words">
-                  {r.message}
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => setRejected([])}
-              className={`shrink-0 rounded-lg px-1.5 font-semibold ${accentText.coral} hover:underline`}
-            >
-              Dismiss
-            </button>
-          </div>
-        ) : null}
-      </div>
+      <RejectionNotice id={errorId} rejected={rejected} onDismiss={() => setRejected([])} />
+    </div>
+  );
+}
+
+/** Why some files were left out, with a way to clear the message. */
+export function RejectionNotice({
+  id,
+  rejected,
+  onDismiss,
+}: {
+  id?: string;
+  rejected: readonly Rejection[];
+  onDismiss: () => void;
+}) {
+  return (
+    <div id={id} aria-live="polite">
+      {rejected.length > 0 ? (
+        <div className="mt-3 flex items-start gap-3 rounded-card border border-coral/30 bg-coral/10 px-4 py-3 text-sm">
+          <ul className="min-w-0 flex-1 space-y-1">
+            {rejected.map((r, i) => (
+              <li key={`${r.name}-${i}`} className="break-words">
+                {r.message}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className={`shrink-0 rounded-lg px-1.5 font-semibold ${accentText.coral} hover:underline`}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

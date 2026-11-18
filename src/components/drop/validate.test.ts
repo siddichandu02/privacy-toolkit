@@ -5,7 +5,9 @@ import {
   formatBytes,
   IMAGE_RULES,
   PDF_RULES,
+  rulesFor,
   validateFiles,
+  zoneNoun,
   type DropRules,
 } from './validate';
 
@@ -78,5 +80,22 @@ describe('preset rules', () => {
   it('builds accept attributes', () => {
     expect(acceptAttr(PDF_RULES)).toBe('.pdf,application/pdf');
     expect(acceptAttr(IMAGE_RULES)).toContain('.heic');
+  });
+});
+
+describe('single file rules', () => {
+  const single = rulesFor({ kind: 'pdf', multiple: false });
+
+  it('limits to one file and names it in the singular', () => {
+    expect(single.maxFiles).toBe(1);
+    expect(zoneNoun(single)).toBe('a PDF');
+    expect(zoneNoun(rulesFor({ kind: 'image', multiple: true }))).toBe('images');
+  });
+
+  it('says why extra files were left out', () => {
+    const r = validateFiles([file('a.pdf'), file('b.pdf')], single);
+    expect(r.rejected[0]?.message).toBe(
+      'b.pdf was left out. This tool works on one file at a time.',
+    );
   });
 });
