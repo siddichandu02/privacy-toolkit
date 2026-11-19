@@ -16,6 +16,9 @@ export interface PageEdit {
   keep: boolean;
 }
 
+/** A page left as it is. */
+export const NO_EDIT: PageEdit = { turns: 0, keep: true };
+
 export interface RotateRequest {
   name: string;
   bytes: ArrayBuffer | Uint8Array;

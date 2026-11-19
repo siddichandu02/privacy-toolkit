@@ -49,6 +49,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sunshine',
     blurb: 'Turn sideways pages upright and drop the ones you do not need.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    ready: true,
   },
   {
     id: 'images-to-pdf',

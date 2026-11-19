@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { MergeTool } from '../components/merge/MergeTool';
+import { RotateTool } from '../components/rotate/RotateTool';
 import { SplitTool } from '../components/split/SplitTool';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
@@ -52,6 +53,8 @@ function ToolView({ tool }: { tool: ToolInfo }) {
           <MergeTool tool={tool} />
         ) : tool.id === 'split' ? (
           <SplitTool tool={tool} />
+        ) : tool.id === 'rotate' ? (
+          <RotateTool tool={tool} />
         ) : (
           <ToolWorkbench tool={tool} />
         )}
