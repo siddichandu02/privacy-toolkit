@@ -5,6 +5,7 @@ import { ErrorCard } from '../components/result/ErrorCard';
 import type { Accent } from '../components/ui';
 import { DEFAULT_STEPS } from '../components/wait/progress';
 import { BreadScene } from '../components/wait/scenes/BreadScene';
+import { PizzaScene } from '../components/wait/scenes/PizzaScene';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
@@ -79,6 +80,14 @@ export default function PipLab() {
         progress={within}
         accent="coral"
         scene={<BreadScene progress={scrub} accent="coral" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Turning scan.pdf"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="sunshine"
+        scene={<PizzaScene progress={scrub} accent="sunshine" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">

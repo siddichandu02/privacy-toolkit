@@ -19,9 +19,9 @@ test('lab page shows the wait screen progress', async ({ page }) => {
   await expect(bar).toHaveAttribute('aria-valuenow', '40');
   await page.getByRole('slider', { name: 'Progress' }).fill('1');
   await expect(bar).toHaveAttribute('aria-valuenow', '100');
-  // The merge and split stages share the slider; both reach the last step.
+  // Every lab stage shares the slider; all of them reach the last step.
   const last = page.getByRole('listitem').filter({ hasText: 'Packing it up' });
-  await expect(last).toHaveCount(2);
+  await expect(last).toHaveCount(3);
   for (const item of await last.all()) await expect(item).toHaveAttribute('aria-current', 'step');
   await expect(page.getByRole('progressbar', { name: 'Splitting report.pdf' })).toHaveAttribute(
     'aria-valuenow',
