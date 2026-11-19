@@ -1,4 +1,10 @@
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
+import {
+  AnimatePresence,
+  PresenceContext,
+  motion,
+  useReducedMotion,
+  type Variants,
+} from 'framer-motion';
 import { useLayoutEffect, useState } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
 
@@ -45,7 +51,15 @@ export function AnimatedOutlet() {
         exit="exit"
       >
         <RouteFocus enabled={location.key !== firstKey} />
-        <FrozenOutlet />
+        {/*
+          initial={false} above is only meant to skip the slide on first load.
+          Framer passes it down through presence context, which would also make
+          every animation inside the first page jump straight to its end
+          (confetti, Pip's loops). A fresh context stops it at the page edge.
+        */}
+        <PresenceContext.Provider value={null}>
+          <FrozenOutlet />
+        </PresenceContext.Provider>
       </motion.div>
     </AnimatePresence>
   );
