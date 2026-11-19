@@ -4,6 +4,7 @@ import { DoneCard } from '../components/result/DoneCard';
 import { ErrorCard } from '../components/result/ErrorCard';
 import type { Accent } from '../components/ui';
 import { DEFAULT_STEPS } from '../components/wait/progress';
+import { BreadScene } from '../components/wait/scenes/BreadScene';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
@@ -70,6 +71,14 @@ export default function PipLab() {
         progress={within}
         accent="violet"
         scene={<PancakeScene progress={scrub} accent="violet" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Splitting report.pdf"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="coral"
+        scene={<BreadScene progress={scrub} accent="coral" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
