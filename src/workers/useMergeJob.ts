@@ -1,68 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import type { MergeStage } from '../lib/pdf/merge';
-import type { MergeReply } from './merge-protocol';
+import type { MergeRequest } from './merge-protocol';
+import { useWorkerJob, type WorkerFactory, type WorkerJob } from './useWorkerJob';
 
-export type MergeJob =
-  | { status: 'idle' }
-  | { status: 'running'; stage: MergeStage; progress: number }
-  | { status: 'done'; blob: Blob; size: number; pages: number }
-  | { status: 'error'; message: string; fileName?: string };
+export type { WorkerFactory };
 
-export type WorkerFactory = () => Worker;
+export type MergeJob = WorkerJob<MergeStage, { blob: Blob; size: number; pages: number }>;
 
 const defaultFactory: WorkerFactory = () =>
   new Worker(new URL('./merge.worker.ts', import.meta.url), { type: 'module', name: 'merge' });
 
-/**
- * Runs a merge in a Web Worker so the page stays smooth. Each run gets a fresh
- * worker that is closed when it finishes, is reset, or the page unmounts.
- */
+const finish = ({ bytes, pages }: { bytes: Uint8Array; pages: number }) => {
+  const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+  return { blob, size: blob.size, pages };
+};
+
+/** Merge PDFs in a Web Worker. */
 export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
-  const [job, setJob] = useState<MergeJob>({ status: 'idle' });
-  const worker = useRef<Worker | null>(null);
-
-  const stop = useCallback(() => {
-    worker.current?.terminate();
-    worker.current = null;
-  }, []);
-
-  useEffect(() => stop, [stop]);
-
-  const start = useCallback(
-    (files: File[]) => {
-      stop();
-      const w = createWorker();
-      worker.current = w;
-      setJob({ status: 'running', stage: 'reading', progress: 0 });
-      w.onmessage = (event: MessageEvent<MergeReply>) => {
-        if (worker.current !== w) return;
-        const msg = event.data;
-        if (msg.type === 'progress') {
-          setJob({ status: 'running', stage: msg.stage, progress: msg.progress });
-        } else if (msg.type === 'done') {
-          const blob = new Blob([msg.bytes as BlobPart], { type: 'application/pdf' });
-          setJob({ status: 'done', blob, size: blob.size, pages: msg.pages });
-          stop();
-        } else {
-          setJob({ status: 'error', message: msg.message, fileName: msg.fileName });
-          stop();
-        }
-      };
-      w.onerror = (event) => {
-        event.preventDefault();
-        if (worker.current !== w) return;
-        setJob({ status: 'error', message: 'Something went wrong while merging. Try again.' });
-        stop();
-      };
-      w.postMessage({ files });
-    },
-    [createWorker, stop],
-  );
-
-  const reset = useCallback(() => {
-    stop();
-    setJob({ status: 'idle' });
-  }, [stop]);
-
-  return { job, start, reset };
+  const { job, start, reset } = useWorkerJob<
+    MergeRequest,
+    MergeStage,
+    Parameters<typeof finish>[0],
+    ReturnType<typeof finish>
+  >({
+    createWorker,
+    firstStage: 'reading',
+    finish,
+    crashMessage: 'Something went wrong while merging. Try again.',
+  });
+  const merge = useCallback((files: File[]) => start({ files }), [start]);
+  return { job: job as MergeJob, start: merge, reset };
 }
