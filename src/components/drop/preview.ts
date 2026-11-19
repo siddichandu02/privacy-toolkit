@@ -77,3 +77,53 @@ export async function makePreview(file: File, width = 120): Promise<FilePreview>
   }
   return { url: null, pages: null };
 }
+
+export interface PdfPages {
+  count: number;
+  /**
+   * Draw one page (1-based) about `width` CSS pixels wide. Renders run one at
+   * a time so a long document does not flood the worker. The caller owns the
+   * returned URL and must revoke it.
+   */
+  render: (page: number, width: number) => Promise<string | null>;
+  close: () => void;
+}
+
+/** Open a PDF to draw any of its pages on demand, e.g. for a page picker. */
+export async function openPdfPages(file: File): Promise<PdfPages> {
+  const { pdfjs, worker } = await loadPdfJs();
+  const data = new Uint8Array(await file.arrayBuffer());
+  const task = pdfjs.getDocument({ data, worker });
+  const doc = await task.promise;
+  let closed = false;
+  let queue: Promise<unknown> = Promise.resolve();
+
+  const draw = async (n: number, width: number): Promise<string | null> => {
+    if (closed) return null;
+    const page = await doc.getPage(n);
+    const base = page.getViewport({ scale: 1 });
+    const scale = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    const context = canvas.getContext('2d');
+    if (!context || closed) return null;
+    await page.render({ canvas, canvasContext: context, viewport }).promise;
+    page.cleanup();
+    return closed ? null : canvasToUrl(canvas);
+  };
+
+  return {
+    count: doc.numPages,
+    render: (n, width) => {
+      const next = queue.then(() => draw(n, width));
+      queue = next.catch(() => null);
+      return next;
+    },
+    close: () => {
+      closed = true;
+      void task.destroy();
+    },
+  };
+}
