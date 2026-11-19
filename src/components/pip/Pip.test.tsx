@@ -43,6 +43,19 @@ describe('Pip', () => {
     expect(container.querySelector('[data-part="question"]')).toHaveTextContent('?');
   });
 
+  it('throws both paws up to celebrate', () => {
+    const { container } = render(<Pip pose="celebrate" />);
+    expect(part(container, 'paws')).toBeInTheDocument();
+    expect(part(container, 'scratch')).not.toBeInTheDocument();
+  });
+
+  it('shrugs with one paw out and the other scratching its head', () => {
+    const { container } = render(<Pip pose="shrug" />);
+    expect(part(container, 'paws')).toBeInTheDocument();
+    expect(part(container, 'scratch')).toBeInTheDocument();
+    expect(part(container, 'question')).not.toBeInTheDocument();
+  });
+
   it('blinks every few seconds', () => {
     vi.useFakeTimers();
     // Longest gap, so the blink lands exactly at the end of the range

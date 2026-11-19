@@ -6,7 +6,7 @@ import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
-const POSES: PipPose[] = ['sit', 'wave', 'puzzled', 'hold'];
+const POSES: PipPose[] = ['sit', 'wave', 'puzzled', 'hold', 'celebrate', 'shrug'];
 const ACCENTS: Accent[] = ['coral', 'violet', 'mint', 'sunshine', 'sky'];
 
 /**
