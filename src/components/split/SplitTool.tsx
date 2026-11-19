@@ -16,7 +16,7 @@ import { overallProgress, type WaitStep } from '../wait/progress';
 import { BreadScene } from '../wait/scenes/BreadScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePicker } from './PagePicker';
-import { usePdfPages } from './usePdfPages';
+import { usePdfPages } from '../pages/usePdfPages';
 
 const pagesWord = (n: number) => (n === 1 ? '1 page' : `${n} pages`);
 const pdfsWord = (n: number) => (n === 1 ? '1 PDF' : `${n} PDFs`);
