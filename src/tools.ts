@@ -40,6 +40,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'coral',
     blurb: 'Pull out page ranges or single pages into new PDFs.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    ready: true,
   },
   {
     id: 'rotate',

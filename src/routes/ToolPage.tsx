@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { MergeTool } from '../components/merge/MergeTool';
+import { SplitTool } from '../components/split/SplitTool';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
 import { getTool, type ToolInfo } from '../tools';
@@ -47,7 +48,13 @@ function ToolView({ tool }: { tool: ToolInfo }) {
         </Badge>
       )}
       <div className="max-w-3xl">
-        {tool.id === 'merge' ? <MergeTool tool={tool} /> : <ToolWorkbench tool={tool} />}
+        {tool.id === 'merge' ? (
+          <MergeTool tool={tool} />
+        ) : tool.id === 'split' ? (
+          <SplitTool tool={tool} />
+        ) : (
+          <ToolWorkbench tool={tool} />
+        )}
       </div>
     </div>
   );
