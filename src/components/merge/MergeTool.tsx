@@ -15,6 +15,8 @@ import { overallProgress, type WaitStep } from '../wait/progress';
 import { PancakeScene } from '../wait/scenes/PancakeScene';
 import { WaitStage } from '../wait/WaitStage';
 
+const pageCount = (n: number) => (n === 1 ? '1 page' : `${n} pages`);
+
 const STEPS: readonly WaitStep[] = [
   { id: 'reading', label: 'Reading your PDFs' },
   { id: 'working', label: 'Joining the pages' },
@@ -81,7 +83,7 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
               title="Your PDF is ready"
               fileName={name}
               blob={job.blob}
-              details={`${count} files joined, ${formatBytes(job.blob.size)}.`}
+              details={`${count} files joined, ${pageCount(job.pages)}, ${formatBytes(job.blob.size)}.`}
               downloadLabel="Download PDF"
               actions={[
                 { label: 'Merge other PDFs', onClick: startOver },

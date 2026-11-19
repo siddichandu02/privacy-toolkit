@@ -28,10 +28,16 @@ export class MergeError extends Error {
  * Join PDFs in the given order into one document. Reports real progress:
  * once per file read, once per file copied, then while saving.
  */
+export interface MergeResult {
+  bytes: Uint8Array;
+  /** Pages in the merged file. */
+  pages: number;
+}
+
 export async function mergePdfs(
   sources: readonly MergeSource[],
   onProgress: (p: MergeProgress) => void = () => {},
-): Promise<Uint8Array> {
+): Promise<MergeResult> {
   if (sources.length === 0) throw new MergeError('There are no files to merge.');
 
   onProgress({ stage: 'reading', progress: 0 });
@@ -71,7 +77,7 @@ export async function mergePdfs(
   onProgress({ stage: 'packing', progress: 0 });
   const bytes = await out.save();
   onProgress({ stage: 'packing', progress: 1 });
-  return bytes;
+  return { bytes, pages: out.getPageCount() };
 }
 
 /** "report.pdf" -> "report-merged.pdf". Falls back to "merged.pdf". */

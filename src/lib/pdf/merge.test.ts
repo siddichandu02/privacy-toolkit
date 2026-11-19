@@ -16,12 +16,12 @@ describe('mergePdfs', () => {
   it('keeps every page in order', async () => {
     const a = await makePdf(2, 300);
     const b = await makePdf(3, 500);
-    const result = await PDFDocument.load(
-      await mergePdfs([
-        { name: 'a.pdf', bytes: a },
-        { name: 'b.pdf', bytes: b },
-      ]),
-    );
+    const merged = await mergePdfs([
+      { name: 'a.pdf', bytes: a },
+      { name: 'b.pdf', bytes: b },
+    ]);
+    expect(merged.pages).toBe(5);
+    const result = await PDFDocument.load(merged.bytes);
     expect(result.getPageCount()).toBe(5);
     const widths = result.getPages().map((p) => p.getWidth());
     expect(widths).toEqual([300, 300, 500, 500, 500]);

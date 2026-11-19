@@ -5,7 +5,7 @@ import type { MergeReply } from './merge-protocol';
 export type MergeJob =
   | { status: 'idle' }
   | { status: 'running'; stage: MergeStage; progress: number }
-  | { status: 'done'; blob: Blob; size: number }
+  | { status: 'done'; blob: Blob; size: number; pages: number }
   | { status: 'error'; message: string; fileName?: string };
 
 export type WorkerFactory = () => Worker;
@@ -41,7 +41,7 @@ export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
           setJob({ status: 'running', stage: msg.stage, progress: msg.progress });
         } else if (msg.type === 'done') {
           const blob = new Blob([msg.bytes as BlobPart], { type: 'application/pdf' });
-          setJob({ status: 'done', blob, size: blob.size });
+          setJob({ status: 'done', blob, size: blob.size, pages: msg.pages });
           stop();
         } else {
           setJob({ status: 'error', message: msg.message, fileName: msg.fileName });

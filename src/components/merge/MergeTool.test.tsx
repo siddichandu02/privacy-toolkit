@@ -76,7 +76,7 @@ describe('MergeTool', () => {
   it('offers the merged file for download and focuses the heading', async () => {
     const { user, rerender } = setup();
     await user.upload(screen.getByTestId('file-input'), [pdf('Report.pdf'), pdf('b.pdf')]);
-    state.job = { status: 'done', blob: new Blob(['%PDF']), size: 4 };
+    state.job = { status: 'done', blob: new Blob(['%PDF']), size: 4, pages: 5 };
     rerender(
       <MotionConfig reducedMotion="always">
         <MergeTool tool={tool} />
@@ -87,6 +87,7 @@ describe('MergeTool', () => {
     const link = screen.getByRole('link', { name: 'Download PDF' });
     expect(link).toHaveAttribute('download', 'Report-merged.pdf');
     expect(link).toHaveAttribute('href', 'blob:merged');
+    expect(screen.getByText(/2 files joined, 5 pages, 4 B\./)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Change the order' }));
     expect(state.reset).toHaveBeenCalled();
   });

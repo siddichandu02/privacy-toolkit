@@ -30,6 +30,7 @@ test('merges PDFs on the device and downloads one file', async ({ page, baseURL 
   await expect(heading).toBeVisible({ timeout: 15_000 });
   await expect(heading).toBeFocused();
   await expect(page.getByText('first-merged.pdf')).toBeVisible();
+  await expect(page.getByText(/2 files joined, 5 pages/)).toBeVisible();
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),

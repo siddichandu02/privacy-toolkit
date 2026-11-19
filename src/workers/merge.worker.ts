@@ -10,8 +10,8 @@ self.onmessage = async (event: MessageEvent<MergeRequest>) => {
   try {
     const sources: MergeSource[] = [];
     for (const file of files) sources.push({ name: file.name, bytes: await file.arrayBuffer() });
-    const bytes = await mergePdfs(sources, (p) => post({ type: 'progress', ...p }));
-    post({ type: 'done', bytes }, [bytes.buffer]);
+    const { bytes, pages } = await mergePdfs(sources, (p) => post({ type: 'progress', ...p }));
+    post({ type: 'done', bytes, pages }, [bytes.buffer]);
   } catch (err) {
     post({
       type: 'error',

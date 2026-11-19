@@ -39,11 +39,12 @@ describe('useMergeJob', () => {
     act(() => workers[0]?.reply({ type: 'progress', stage: 'working', progress: 0.5 }));
     expect(hook.result.current.job).toMatchObject({ stage: 'working', progress: 0.5 });
 
-    act(() => workers[0]?.reply({ type: 'done', bytes: new Uint8Array([1, 2, 3]) }));
+    act(() => workers[0]?.reply({ type: 'done', bytes: new Uint8Array([1, 2, 3]), pages: 7 }));
     const job = hook.result.current.job;
     expect(job.status).toBe('done');
     if (job.status === 'done') {
       expect(job.size).toBe(3);
+      expect(job.pages).toBe(7);
       expect(job.blob.type).toBe('application/pdf');
     }
     expect(workers[0]?.terminate).toHaveBeenCalled();
