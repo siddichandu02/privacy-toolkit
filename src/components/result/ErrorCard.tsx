@@ -37,7 +37,7 @@ export function ErrorCard({
   );
   return (
     <section role="alert" aria-labelledby={id} className={resultPanel}>
-      <Pip pose="puzzled" className="mx-auto h-32" />
+      <Pip pose="shrug" className="mx-auto h-32" />
       <h2
         id={id}
         ref={heading}

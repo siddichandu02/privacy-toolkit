@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Pip, type PipPose } from '../components/pip/Pip';
+import { DoneCard } from '../components/result/DoneCard';
+import { ErrorCard } from '../components/result/ErrorCard';
 import type { Accent } from '../components/ui';
 import { DEFAULT_STEPS } from '../components/wait/progress';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
@@ -7,6 +9,7 @@ import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
 const POSES: PipPose[] = ['sit', 'wave', 'puzzled', 'hold', 'celebrate', 'shrug'];
+const LAB_BLOB = new Blob(['%PDF-1.7'], { type: 'application/pdf' });
 const ACCENTS: Accent[] = ['coral', 'violet', 'mint', 'sunshine', 'sky'];
 
 /**
@@ -16,6 +19,7 @@ const ACCENTS: Accent[] = ['coral', 'violet', 'mint', 'sunshine', 'sky'];
 export default function PipLab() {
   useDocumentTitle('Pip lab');
   const [scrub, setScrub] = useState(0.4);
+  const [replay, setReplay] = useState(0);
   const slice = Math.min(DEFAULT_STEPS.length - 1, Math.floor(scrub * DEFAULT_STEPS.length));
   const within = scrub * DEFAULT_STEPS.length - slice;
 
@@ -67,6 +71,39 @@ export default function PipLab() {
         accent="violet"
         scene={<PancakeScene progress={scrub} accent="violet" />}
       />
+
+      <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
+        <h2 className="font-display text-3xl font-bold tracking-tight">Result cards</h2>
+        <button
+          type="button"
+          onClick={() => setReplay((n) => n + 1)}
+          className="rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg"
+        >
+          Replay the flip
+        </button>
+      </div>
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <DoneCard
+          key={replay}
+          accent="violet"
+          title="Your PDF is ready"
+          fileName="Quarterly-report-merged.pdf"
+          blob={LAB_BLOB}
+          details="3 files joined, 24 pages, 1.2 MB."
+          downloadLabel="Download PDF"
+          actions={[
+            { label: 'Merge other PDFs', onClick: () => {} },
+            { label: 'Change the order', onClick: () => {} },
+          ]}
+        />
+        <ErrorCard
+          title="The merge did not finish"
+          message="scan-02.pdf could not be read. It may be damaged or password protected."
+          fileName="scan-02.pdf"
+          onRetry={() => {}}
+          onBack={() => {}}
+        />
+      </div>
     </div>
   );
 }
