@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useStillMotion } from '../../useStillMotion';
 import { Pip } from '../pip/Pip';
 import { accentButtonGlow, accentFill, accentText, type Accent } from '../ui/accent';
@@ -64,7 +64,8 @@ export function DoneCard({
   }, [still]);
 
   // Keep the download face out of the tab order until it is facing the visitor.
-  useEffect(() => {
+  // A layout effect, so inert is lifted before the heading tries to take focus.
+  useLayoutEffect(() => {
     if (back.current) back.current.inert = !open;
   }, [open]);
 
@@ -77,7 +78,7 @@ export function DoneCard({
         transition={{ type: 'spring', stiffness: 120, damping: 15, mass: 0.9 }}
         onAnimationComplete={() => setPhase((p) => (p === 'flipping' ? 'open' : p))}
       >
-        {still ? null : <SealedFace accent={accent} fileName={fileName} />}
+        {still || open ? null : <SealedFace accent={accent} fileName={fileName} />}
         <div
           ref={back}
           className={`[backface-visibility:hidden] [grid-area:1/1] ${still ? '' : '[transform:rotateY(180deg)]'}`}

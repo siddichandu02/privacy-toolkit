@@ -88,5 +88,6 @@ describe('DoneCard with motion', () => {
     });
     expect(root()).toHaveAttribute('data-phase', 'open');
     expect(heading).toHaveFocus();
+    expect(screen.queryByTestId('sealed-face')).not.toBeInTheDocument();
   });
 });
