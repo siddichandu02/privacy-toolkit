@@ -5,6 +5,9 @@ const BASE = `http://localhost:${PORT}/privacy-toolkit/`;
 
 export default defineConfig({
   testDir: './e2e',
+  // Whole tool flows (load pdf.js, run a worker, download) get slow when all
+  // test workers run at once on a small machine.
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
