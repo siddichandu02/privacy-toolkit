@@ -22,8 +22,10 @@ Ready now:
 - **Images to PDF**: one page per image, A4, Letter or sized to the photo, with margins.
   Phone photos are turned upright using their EXIF orientation.
 - **Sign PDF**: draw or type a signature, drag it into place on one page or all of them.
+- **Compress PDF**: three levels, from a lossless tidy-up to re-saving large photos as smaller
+  JPEGs. Shows the size before and after, and never hands back a bigger file.
 
-On the way: Compress PDF, Compress image, Convert image, Resize and crop, Remove EXIF.
+On the way: Compress image, Convert image, Resize and crop, Remove EXIF.
 
 ## Develop
 
