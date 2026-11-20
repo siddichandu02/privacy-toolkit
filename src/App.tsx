@@ -16,7 +16,7 @@ function Layout() {
       <SkipLink />
       <div className="relative z-10 flex min-h-dvh flex-col">
         <Header />
-        <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
+        <main id={MAIN_ID} tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
           <AnimatedOutlet />
         </main>
         <Footer />

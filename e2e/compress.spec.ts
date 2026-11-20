@@ -72,6 +72,12 @@ test('shrinks the photos in a pdf and shows the saving', async ({ page, baseURL 
   });
   await expect(page.getByText('1 photo re-saved.', { exact: false })).toBeVisible();
   await expect(page.getByTestId('size-compare')).toBeVisible();
+  // Confetti drifting off the side must never make the page scroll sideways.
+  await page.waitForTimeout(2000);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('link', { name: 'Download PDF' }).click(),
