@@ -149,8 +149,11 @@ describe('imagesToPdf', () => {
     await expect(run).rejects.toBeInstanceOf(ImagesError);
     await expect(run).rejects.toMatchObject({
       fileName: 'broken.heic',
-      message: expect.stringContaining('broken.heic could not be read'),
+      message: expect.stringContaining('broken.heic is a HEIC photo'),
     });
+    await expect(
+      imagesToPdf([{ name: 'odd.bmp', type: '', bytes: new Uint8Array([0]) }], opts(), noDecode),
+    ).rejects.toThrow('odd.bmp could not be read.');
   });
 
   it('needs at least one image', async () => {

@@ -188,8 +188,11 @@ export async function imagesToPdf(
     try {
       image = await embed(doc, bytes, source.type, decode);
     } catch {
+      const heic = /\.hei[cf]$/i.test(source.name) || /hei[cf]/i.test(source.type);
       throw new ImagesError(
-        `${source.name} could not be read. It may be damaged, or a kind of image this browser cannot open.`,
+        heic
+          ? `${source.name} is a HEIC photo, and this browser cannot open those yet. Save it as a JPG first, then try again.`
+          : `${source.name} could not be read. It may be damaged, or a kind of image this browser cannot open.`,
         source.name,
       );
     }
