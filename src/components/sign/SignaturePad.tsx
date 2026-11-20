@@ -15,13 +15,13 @@ import {
   signatureFromText,
   type HandId,
   type InkId,
+  type PadMode,
+  type SignatureDraft,
   type Signature,
   type Stroke,
 } from './ink';
 
-type Mode = 'draw' | 'type';
-
-const MODES: readonly SegmentOption<Mode>[] = [
+const MODES: readonly SegmentOption<PadMode>[] = [
   { id: 'draw', label: 'Draw', icon: <PenIcon /> },
   { id: 'type', label: 'Type', icon: <TypeIcon /> },
 ];
@@ -37,6 +37,8 @@ const PAD_HEIGHT = 'clamp(9rem, 28vw, 12rem)';
 
 export interface SignaturePadProps {
   accent: Accent;
+  draft: SignatureDraft;
+  onDraftChange: (draft: SignatureDraft) => void;
   /** Called with a fresh signature after every change, or null when the pad is empty. */
   onChange: (signature: Signature | null) => void;
 }
@@ -46,12 +48,15 @@ export interface SignaturePadProps {
  * in a script face. The signature is rebuilt as a trimmed transparent PNG
  * after every stroke or keystroke, all on the device.
  */
-export function SignaturePad({ accent, onChange }: SignaturePadProps) {
-  const [mode, setMode] = useState<Mode>('draw');
-  const [ink, setInk] = useState<InkId>('blue');
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
-  const [text, setText] = useState('');
-  const [hand, setHand] = useState<HandId>('flowing');
+export function SignaturePad({ accent, draft, onDraftChange, onChange }: SignaturePadProps) {
+  const { mode, ink, strokes, text, hand } = draft;
+  const set = <K extends keyof SignatureDraft>(key: K, value: SignatureDraft[K]) =>
+    onDraftChange({ ...draft, [key]: value });
+  const setMode = (v: PadMode) => set('mode', v);
+  const setInk = (v: InkId) => set('ink', v);
+  const setStrokes = (v: Stroke[]) => set('strokes', v);
+  const setText = (v: string) => set('text', v);
+  const setHand = (v: HandId) => set('hand', v);
   const textId = useId();
   const still = useStillMotion();
 
@@ -183,7 +188,7 @@ export function SignaturePad({ accent, onChange }: SignaturePadProps) {
             </p>
             <div className="flex gap-2 text-sm font-semibold">
               <PadButton
-                onClick={() => setStrokes((s) => s.slice(0, -1))}
+                onClick={() => setStrokes(strokes.slice(0, -1))}
                 disabled={strokes.length === 0}
               >
                 Undo

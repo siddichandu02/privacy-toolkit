@@ -91,6 +91,25 @@ export function drawStrokes(
   }
 }
 
+export type PadMode = 'draw' | 'type';
+
+/** Everything on the signature pad, kept by the page so it survives a trip to the done screen. */
+export interface SignatureDraft {
+  mode: PadMode;
+  ink: InkId;
+  strokes: Stroke[];
+  text: string;
+  hand: HandId;
+}
+
+export const EMPTY_DRAFT: SignatureDraft = {
+  mode: 'draw',
+  ink: 'blue',
+  strokes: [],
+  text: '',
+  hand: 'flowing',
+};
+
 export interface Bounds {
   x: number;
   y: number;
