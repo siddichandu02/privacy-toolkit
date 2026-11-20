@@ -20,8 +20,8 @@ Ready now:
 - **Split PDF**: pull out page ranges, as one PDF or one PDF per range (zipped).
 - **Rotate pages**: turn pages and drop the ones you do not need.
 - **Images to PDF**: one page per image, A4, Letter or sized to the photo, with margins.
-- **Sign PDF**: draw or type a signature, drag it into place on one page or all of them.
   Phone photos are turned upright using their EXIF orientation.
+- **Sign PDF**: draw or type a signature, drag it into place on one page or all of them.
 
 On the way: Compress PDF, Compress image, Convert image, Resize and crop, Remove EXIF.
 
