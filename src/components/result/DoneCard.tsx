@@ -20,6 +20,8 @@ export interface DoneCardProps {
   blob: Blob;
   /** One plain line under the file name, e.g. "3 files joined, 1.2 MB." */
   details: ReactNode;
+  /** Shown between the details and the download button, e.g. a size chart. */
+  extra?: ReactNode;
   downloadLabel?: string;
   actions?: DoneAction[];
 }
@@ -42,6 +44,7 @@ export function DoneCard({
   fileName,
   blob,
   details,
+  extra,
   downloadLabel = 'Download',
   actions = [],
 }: DoneCardProps) {
@@ -98,6 +101,7 @@ export function DoneCard({
               <br />
               {details} Made on this device, never uploaded.
             </p>
+            {extra}
             <a
               href={url ?? undefined}
               download={fileName}
