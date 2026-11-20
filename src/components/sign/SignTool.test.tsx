@@ -105,19 +105,22 @@ describe('SignTool', () => {
     expect(state.start.mock.calls[0]?.[0].pages).toEqual([0, 1, 2]);
   });
 
-  it('shows the signing steps and the result after', async () => {
+  it('shows the signing steps while it works', () => {
     state.job = { status: 'running', stage: 'working', progress: 0.5 };
-    const { rerender } = render(ui());
+    render(ui());
     expect(screen.getByTestId('step-announcer')).toHaveTextContent('Signing the pages');
+  });
+
+  it('says where it signed on the done card', () => {
     state.job = {
       status: 'done',
-      blob: new Blob(['%PDF'], { type: 'application/pdf' }),
+      blob: new Blob([new Uint8Array(2048)], { type: 'application/pdf' }),
       name: 'lease-signed.pdf',
       pages: 3,
       signed: 3,
     };
-    rerender(ui());
-    expect(await screen.findByRole('heading', { name: 'Your signed PDF is ready' })).toBeVisible();
-    expect(screen.getByText('Signed on all 3 pages', { exact: false })).toBeVisible();
+    render(ui());
+    expect(screen.getByText('Signed on all 3 pages, 2 KB.', { exact: false })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Move the signature' })).toBeVisible();
   });
 });
