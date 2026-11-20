@@ -12,16 +12,17 @@ Most "free" online PDF and image tools upload your files to a server. Privacy To
 work locally, in your browser, using Web Workers. There are no uploads, no analytics, no trackers and
 no third-party requests at runtime. Fonts are self-hosted.
 
-## Tools (planned)
+## Tools
 
-| PDF           | Image           |
-| ------------- | --------------- |
-| Merge PDF     | Compress image  |
-| Split PDF     | Convert image   |
-| Rotate pages  | Resize and crop |
-| Images to PDF | Remove EXIF     |
-| Sign PDF      |                 |
-| Compress PDF  |                 |
+Ready now:
+
+- **Merge PDF**: join PDFs in the order you choose.
+- **Split PDF**: pull out page ranges, as one PDF or one PDF per range (zipped).
+- **Rotate pages**: turn pages and drop the ones you do not need.
+- **Images to PDF**: one page per image, A4, Letter or sized to the photo, with margins.
+  Phone photos are turned upright using their EXIF orientation.
+
+On the way: Sign PDF, Compress PDF, Compress image, Convert image, Resize and crop, Remove EXIF.
 
 ## Develop
 
