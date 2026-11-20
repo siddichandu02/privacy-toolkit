@@ -67,6 +67,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sky',
     blurb: 'Draw or type your signature and place it on any page.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    ready: true,
   },
   {
     id: 'compress-pdf',

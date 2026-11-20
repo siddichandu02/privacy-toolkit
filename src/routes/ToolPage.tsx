@@ -3,6 +3,7 @@ import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { ImagesTool } from '../components/images/ImagesTool';
 import { MergeTool } from '../components/merge/MergeTool';
 import { RotateTool } from '../components/rotate/RotateTool';
+import { SignTool } from '../components/sign/SignTool';
 import { SplitTool } from '../components/split/SplitTool';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
@@ -58,6 +59,8 @@ function ToolView({ tool }: { tool: ToolInfo }) {
           <RotateTool tool={tool} />
         ) : tool.id === 'images-to-pdf' ? (
           <ImagesTool tool={tool} />
+        ) : tool.id === 'sign' ? (
+          <SignTool tool={tool} />
         ) : (
           <ToolWorkbench tool={tool} />
         )}
