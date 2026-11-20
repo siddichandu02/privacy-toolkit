@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { CompressTool } from '../components/compress/CompressTool';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { ImagesTool } from '../components/images/ImagesTool';
 import { MergeTool } from '../components/merge/MergeTool';
@@ -61,6 +62,8 @@ function ToolView({ tool }: { tool: ToolInfo }) {
           <ImagesTool tool={tool} />
         ) : tool.id === 'sign' ? (
           <SignTool tool={tool} />
+        ) : tool.id === 'compress-pdf' ? (
+          <CompressTool tool={tool} />
         ) : (
           <ToolWorkbench tool={tool} />
         )}

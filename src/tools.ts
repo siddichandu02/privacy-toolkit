@@ -76,6 +76,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'coral',
     blurb: 'Shrink a PDF so it fits in an email or upload form.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    ready: true,
   },
   {
     id: 'compress-image',
