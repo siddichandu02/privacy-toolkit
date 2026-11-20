@@ -9,6 +9,7 @@ import { PizzaScene } from '../components/wait/scenes/PizzaScene';
 import { QuillScene } from '../components/wait/scenes/QuillScene';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
+import { SuitcaseScene } from '../components/wait/scenes/SuitcaseScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
@@ -106,6 +107,14 @@ export default function PipLab() {
         progress={within}
         accent="sky"
         scene={<QuillScene progress={scrub} accent="sky" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Shrinking brochure.pdf"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="coral"
+        scene={<SuitcaseScene progress={scrub} accent="coral" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
