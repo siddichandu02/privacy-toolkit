@@ -25,11 +25,11 @@ export function SizeCompare({ before, after, accent }: SizeCompareProps) {
       aria-label={`${formatBytes(before)} before, ${formatBytes(after)} after, ${percent}% smaller`}
       data-testid="size-compare"
     >
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-baseline gap-2.5">
         <span className={`font-display text-5xl leading-none font-extrabold ${accentText[accent]}`}>
           {percent}%
         </span>
-        <span className="text-right text-sm text-muted">smaller than before</span>
+        <span className="text-muted">smaller than before</span>
       </div>
       <div className="mt-4 grid grid-cols-[3.25rem_1fr_auto] items-center gap-x-3 gap-y-2 text-sm">
         <span className="text-muted">Before</span>

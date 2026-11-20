@@ -15,7 +15,7 @@ const H = 180;
 const INK = '#1b1633';
 const DESK_Y = 162;
 /** Front face of the case. The seam is where the lid meets the body. */
-const CASE = { x: 150, w: 130, seam: 122, bottom: 158 };
+const CASE = { x: 92, w: 130, seam: 122, bottom: 158 };
 const LID_H = 16;
 /** How far the overstuffed lid gapes open before anything is zipped. */
 const GAPE = 14;
@@ -29,9 +29,9 @@ const SEAT = 0.93 * PIP_H;
 
 /** Clothes stuffed in the gap: a striped shirt, a sock and a scarf. */
 const CLOTHES = [
-  { x: 172, w: 30, fill: 'var(--sky)', stripe: '#fbf9ff' },
-  { x: 200, w: 26, fill: 'var(--sunshine)', stripe: INK },
-  { x: 226, w: 34, fill: 'var(--mint)', stripe: '#fbf9ff' },
+  { x: CASE.x + 22, w: 30, fill: 'var(--sky)', stripe: '#fbf9ff' },
+  { x: CASE.x + 50, w: 26, fill: 'var(--sunshine)', stripe: INK },
+  { x: CASE.x + 76, w: 34, fill: 'var(--mint)', stripe: '#fbf9ff' },
 ] as const;
 
 /**
@@ -69,8 +69,8 @@ export function SuitcaseScene({ progress, accent = 'coral', className = '' }: Su
         overflow="visible"
       >
         {/* Floor */}
-        <rect x={130} y={DESK_Y} width={166} height={7} rx={3} fill="#4b4466" />
-        <rect x={130} y={DESK_Y} width={166} height={2.4} rx={1.2} fill="#6c6590" />
+        <rect x={CASE.x - 22} y={DESK_Y} width={CASE.w + 48} height={7} rx={3} fill="#4b4466" />
+        <rect x={CASE.x - 22} y={DESK_Y} width={CASE.w + 48} height={2.4} rx={1.2} fill="#6c6590" />
 
         {/* Wheels and the shadow under the case */}
         <ellipse cx={CASE.x + CASE.w / 2} cy={DESK_Y} rx={70} ry={3} fill={INK} opacity={0.25} />
@@ -82,7 +82,7 @@ export function SuitcaseScene({ progress, accent = 'coral', className = '' }: Su
           {CLOTHES.map((c, i) => (
             <path
               key={i}
-              d={`M${c.x} ${CASE.seam - GAPE - 2} q${c.w / 4} -5 ${c.w / 2} 0 t${c.w / 2} 0 V${CASE.seam + 2} h${-c.w} z`}
+              d={`M${c.x} ${CASE.seam - gap - 4} q${c.w / 4} -5 ${c.w / 2} 0 t${c.w / 2} 0 V${CASE.seam + 2} h${-c.w} z`}
               fill={c.fill}
             />
           ))}
