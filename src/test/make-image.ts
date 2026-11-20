@@ -92,7 +92,16 @@ function fromBase64(text: string): Uint8Array {
  */
 export function makeJpeg(orientation?: number, littleEndian = false): Uint8Array {
   const base = fromBase64(JPEG_1X1);
-  if (orientation === undefined) return base;
+  return orientation === undefined ? base : withOrientation(base, orientation, littleEndian);
+}
+
+/** Put an EXIF orientation tag (1 to 8) at the front of any JPEG. */
+export function withOrientation(
+  jpeg: Uint8Array,
+  orientation: number,
+  littleEndian = false,
+): Uint8Array {
+  const base = jpeg;
   const le = littleEndian;
   const u16 = (n: number) => (le ? [n & 255, n >>> 8] : [n >>> 8, n & 255]);
   const u32x = (n: number) => (le ? u32(n).reverse() : u32(n));
