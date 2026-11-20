@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
+import { ImagesTool } from '../components/images/ImagesTool';
 import { MergeTool } from '../components/merge/MergeTool';
 import { RotateTool } from '../components/rotate/RotateTool';
 import { SplitTool } from '../components/split/SplitTool';
@@ -55,6 +56,8 @@ function ToolView({ tool }: { tool: ToolInfo }) {
           <SplitTool tool={tool} />
         ) : tool.id === 'rotate' ? (
           <RotateTool tool={tool} />
+        ) : tool.id === 'images-to-pdf' ? (
+          <ImagesTool tool={tool} />
         ) : (
           <ToolWorkbench tool={tool} />
         )}

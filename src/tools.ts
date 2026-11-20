@@ -58,6 +58,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'mint',
     blurb: 'Turn photos and scans into a single, tidy PDF.',
     input: { kind: 'image', multiple: true, ordered: true },
+    ready: true,
   },
   {
     id: 'sign',

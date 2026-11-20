@@ -110,17 +110,17 @@ export function ScrapbookScene({ progress, accent = 'mint', className = '' }: Sc
         <rect x={168} y={DESK_Y} width={128} height={7} rx={3} fill="#4b4466" />
         <rect x={168} y={DESK_Y} width={128} height={2.4} rx={1.2} fill="#6c6590" />
 
-        {/* Back cover peeking out under the open pages. */}
+        {/* Back cover peeking out under the right page. */}
         <rect
-          x={SPINE - BOOK.page - 3}
+          x={SPINE}
           y={BOOK.top - 2}
-          width={BOOK.page * 2 + 6}
+          width={BOOK.page + 3}
           height={BOOK.h + 5}
           rx={3}
           fill={cover}
         />
 
-        {/* Left page and its photos fold over onto the right when done. */}
+        {/* Left page, with its half of the cover, folds over onto the right when done. */}
         <motion.g
           data-part="left-page"
           style={fold}
@@ -128,6 +128,14 @@ export function ScrapbookScene({ progress, accent = 'mint', className = '' }: Sc
           animate={{ scaleX: closed ? 0 : 1 }}
           transition={still ? { duration: 0 } : { duration: 0.32, ease: 'easeIn' }}
         >
+          <rect
+            x={SPINE - BOOK.page - 3}
+            y={BOOK.top - 2}
+            width={BOOK.page + 3}
+            height={BOOK.h + 5}
+            rx={3}
+            fill={cover}
+          />
           <rect
             x={SPINE - BOOK.page}
             y={BOOK.top}
