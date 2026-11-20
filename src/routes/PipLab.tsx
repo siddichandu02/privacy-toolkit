@@ -7,6 +7,7 @@ import { DEFAULT_STEPS } from '../components/wait/progress';
 import { BreadScene } from '../components/wait/scenes/BreadScene';
 import { PizzaScene } from '../components/wait/scenes/PizzaScene';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
+import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
@@ -88,6 +89,14 @@ export default function PipLab() {
         progress={within}
         accent="sunshine"
         scene={<PizzaScene progress={scrub} accent="sunshine" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Making a PDF of 4 photos"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="mint"
+        scene={<ScrapbookScene progress={scrub} accent="mint" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
