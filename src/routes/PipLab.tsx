@@ -6,6 +6,7 @@ import type { Accent } from '../components/ui';
 import { DEFAULT_STEPS } from '../components/wait/progress';
 import { BreadScene } from '../components/wait/scenes/BreadScene';
 import { PizzaScene } from '../components/wait/scenes/PizzaScene';
+import { QuillScene } from '../components/wait/scenes/QuillScene';
 import { PancakeScene } from '../components/wait/scenes/PancakeScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { WaitStage } from '../components/wait/WaitStage';
@@ -97,6 +98,14 @@ export default function PipLab() {
         progress={within}
         accent="mint"
         scene={<ScrapbookScene progress={scrub} accent="mint" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Signing lease.pdf"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="sky"
+        scene={<QuillScene progress={scrub} accent="sky" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
