@@ -32,7 +32,7 @@ const HAND_OPTIONS: readonly SegmentOption<HandId>[] = HANDS.map((h) => ({
 }));
 
 /** Pen width on the pad, in CSS pixels. */
-const PEN = 2.6;
+const PEN = 3;
 const PAD_HEIGHT = 'clamp(9rem, 28vw, 12rem)';
 
 export interface SignaturePadProps {
@@ -128,7 +128,11 @@ export function SignaturePad({ accent, draft, onDraftChange, onChange }: Signatu
                 className={`block rounded-full ring-2 ring-offset-2 ring-offset-canvas transition-all duration-200 ${
                   ink === i.id ? 'size-7 ring-line-strong' : 'size-5 ring-transparent'
                 }`}
-                style={{ background: i.color }}
+                style={{
+                  background: i.color,
+                  boxShadow:
+                    'inset 0 0 0 1.5px rgba(255,255,255,0.28), 0 0 0 1px rgba(127,120,170,0.45)',
+                }}
               />
             </label>
           ))}
