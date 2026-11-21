@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SplitReply } from './split-protocol';
 import { useSplitJob } from './useSplitJob';
@@ -77,13 +77,15 @@ describe('useSplitJob', () => {
     expect(job.status === 'done' && job.blob.type).toBe('application/pdf');
   });
 
-  it('reports a crash in plain words', () => {
+  it('reports a crash in plain words', async () => {
     const { hook, workers } = setup();
     act(() => hook.result.current.start(request));
     act(() => workers[0]?.onerror?.({ preventDefault() {} } as ErrorEvent));
-    expect(hook.result.current.job).toEqual({
-      status: 'error',
-      message: 'Something went wrong while splitting. Try again.',
-    });
+    await waitFor(() =>
+      expect(hook.result.current.job).toEqual({
+        status: 'error',
+        message: 'Something went wrong while splitting. Try again.',
+      }),
+    );
   });
 });

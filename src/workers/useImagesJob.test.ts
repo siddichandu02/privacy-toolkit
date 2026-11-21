@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_OPTIONS } from '../lib/pdf/images';
 import type { ImagesReply } from './images-protocol';
@@ -68,13 +68,15 @@ describe('useImagesJob', () => {
     });
   });
 
-  it('reports a crash in plain words', () => {
+  it('reports a crash in plain words', async () => {
     const { hook, workers } = setup();
     act(() => hook.result.current.start(request));
     act(() => workers[0]?.onerror?.({ preventDefault: () => {} } as ErrorEvent));
-    expect(hook.result.current.job).toEqual({
-      status: 'error',
-      message: 'Something went wrong while making your PDF. Try again.',
-    });
+    await waitFor(() =>
+      expect(hook.result.current.job).toEqual({
+        status: 'error',
+        message: 'Something went wrong while making your PDF. Try again.',
+      }),
+    );
   });
 });
