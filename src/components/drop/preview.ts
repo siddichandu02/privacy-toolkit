@@ -63,14 +63,36 @@ export function limitConcurrency(limit: number) {
 
 const previewSlot = limitConcurrency(3);
 
-function canvasToUrl(canvas: HTMLCanvasElement): Promise<string | null> {
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob ? URL.createObjectURL(blob) : null), 'image/png');
-  });
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
+
+interface DrawnPage {
+  blob: Blob | null;
+  pages: number;
+}
+
+/**
+ * First pages already drawn, per file and width. The file list and the wait
+ * scene both want the same picture; drawing it once means the scene can show
+ * it straight away. Kept only as long as the File itself is around.
+ */
+const drawn = new WeakMap<File, Map<number, Promise<DrawnPage>>>();
+
+function drawFirstPage(file: File, width: number): Promise<DrawnPage> {
+  let sizes = drawn.get(file);
+  if (!sizes) drawn.set(file, (sizes = new Map()));
+  const cached = sizes.get(width);
+  if (cached) return cached;
+  const made = previewSlot(() => previewPdf(file, width));
+  sizes.set(width, made);
+  // A file that could not be read this time may be readable next time.
+  made.catch(() => sizes.delete(width));
+  return made;
 }
 
 /** Draw the first page of a PDF about `width` CSS pixels wide. */
-async function previewPdf(file: File, width: number): Promise<FilePreview> {
+async function previewPdf(file: File, width: number): Promise<DrawnPage> {
   const { pdfjs, worker } = await loadPdfJs();
   const data = new Uint8Array(await file.arrayBuffer());
   const task = pdfjs.getDocument({ data, worker });
@@ -84,10 +106,10 @@ async function previewPdf(file: File, width: number): Promise<FilePreview> {
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
     const context = canvas.getContext('2d');
-    if (!context) return { url: null, pages: doc.numPages };
+    if (!context) return { blob: null, pages: doc.numPages };
     await page.render({ canvas, canvasContext: context, viewport }).promise;
     page.cleanup();
-    return { url: await canvasToUrl(canvas), pages: doc.numPages };
+    return { blob: await canvasToBlob(canvas), pages: doc.numPages };
   } finally {
     void task.destroy();
   }
@@ -98,7 +120,10 @@ async function previewPdf(file: File, width: number): Promise<FilePreview> {
  * and must revoke it with URL.revokeObjectURL when done.
  */
 export async function makePreview(file: File, width = 120): Promise<FilePreview> {
-  if (isPdf(file)) return previewSlot(() => previewPdf(file, width));
+  if (isPdf(file)) {
+    const { blob, pages } = await drawFirstPage(file, width);
+    return { url: blob ? URL.createObjectURL(blob) : null, pages };
+  }
   if (DRAWABLE.has(extensionOf(file.name)) || /^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
     return { url: URL.createObjectURL(file), pages: null };
   }
@@ -141,7 +166,9 @@ export async function openPdfPages(file: File): Promise<PdfPages> {
     if (!context || closed) return null;
     await page.render({ canvas, canvasContext: context, viewport }).promise;
     page.cleanup();
-    return closed ? null : canvasToUrl(canvas);
+    if (closed) return null;
+    const blob = await canvasToBlob(canvas);
+    return blob && !closed ? URL.createObjectURL(blob) : null;
   };
 
   return {

@@ -4,9 +4,10 @@ import { makePreview } from '../drop/preview';
 /**
  * Tiny first-page pictures of the user's own files, for the wait scenes to
  * carry around. Drawn on the device, at most `max` of them, and released when
- * the scene goes away. Files that cannot be drawn are simply left out.
+ * the scene goes away. Files that cannot be drawn are simply left out. The
+ * default width matches the file list, so pages it already drew show at once.
  */
-export function useThumbnails(files: readonly File[], max = 4, width = 48): string[] {
+export function useThumbnails(files: readonly File[], max = 4, width = 120): string[] {
   const [urls, setUrls] = useState<string[]>([]);
   const picked = files.slice(0, max);
   const key = picked.map((f) => `${f.name}:${f.size}:${f.lastModified}`).join('|');
