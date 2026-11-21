@@ -3,6 +3,8 @@ import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
+import { Helper } from './Helper';
+import { Sparkles } from './Sparkles';
 
 export interface ScrapbookSceneProps {
   /** Overall progress, 0 to 1. A photo gets pinned in as each share passes. */
@@ -43,6 +45,11 @@ const SHOTS = [
 ] as const;
 
 const INK = '#1b1633';
+
+/** The paper helper perches on the top corner of the right page. */
+const PERCH = { x: SPINE + BOOK.page - 9, y: BOOK.top - 2 - 15.6 };
+/** The ribbon runs down the closed cover, with a bow near the top. */
+const RIBBON_X = SPINE + BOOK.page - 14;
 
 /** A white-bordered print drawn around its own centre, with a pin on top. */
 function Photo({ i, pinned, href }: { i: number; pinned: boolean; href?: string }) {
@@ -93,9 +100,12 @@ function Photo({ i, pinned, href }: { i: number; pinned: boolean; href?: string 
 }
 
 /**
- * Images to PDF story: Pip pins photos into an open scrapbook one by one as
- * real progress moves, then the book claps shut. Only the waiting photo's
- * bob loops. With reduced motion everything stands still.
+ * Images to PDF story in three acts. Intro: a paper helper scoots in and
+ * perches on the corner of the open scrapbook. Action: Pip pins the user's
+ * photos in one by one as real progress moves, and the helper hops each time
+ * one lands. Finale: the book claps shut, a ribbon ties it up with a bow,
+ * sparkles pop and Pip cheers. Only the waiting photo's bob loops. With
+ * reduced motion everything stands still.
  */
 export function ScrapbookScene({
   progress,
@@ -123,6 +133,7 @@ export function ScrapbookScene({
       data-testid="scrapbook-scene"
       data-pinned={pinned}
       data-closed={closed}
+      data-act={closed ? 'finale' : 'pinning'}
     >
       <Pip
         pose={closed ? 'celebrate' : 'hold'}
@@ -233,6 +244,76 @@ export function ScrapbookScene({
               fill="var(--coral)"
             />
           </motion.g>
+        ) : null}
+
+        {/* Finale: a ribbon ties the shut book and a bow pops on. */}
+        {closed ? (
+          <g data-part="ribbon">
+            <motion.rect
+              x={RIBBON_X - 2}
+              y={BOOK.top - 2}
+              width={4}
+              height={BOOK.h + 5}
+              fill="var(--coral)"
+              style={{ originY: '0px' }}
+              initial={still ? false : { scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              transition={still ? { duration: 0 } : { delay: 0.55, duration: 0.25 }}
+            />
+            <g transform={`translate(${RIBBON_X} ${BOOK.top + 9})`}>
+              <motion.g
+                data-part="bow"
+                initial={still ? false : { scale: 0, rotate: -30 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={
+                  still
+                    ? { duration: 0 }
+                    : { delay: 0.8, type: 'spring', stiffness: 360, damping: 12 }
+                }
+              >
+                <path d="M0 0 C-4 -6 -10 -4 -8 0 C-10 4 -4 6 0 0Z" fill="var(--coral)" />
+                <path d="M0 0 C4 -6 10 -4 8 0 C10 4 4 6 0 0Z" fill="var(--coral)" />
+                <path d="M0 0 L-4 8 M0 0 L4 8" stroke="var(--coral)" strokeWidth={2} />
+                <circle r={2} fill={`color-mix(in srgb, var(--coral) 70%, ${INK})`} />
+              </motion.g>
+            </g>
+          </g>
+        ) : null}
+
+        {/* The helper scoots in, perches on the page and hops as photos land. */}
+        <motion.g
+          data-part="helper-wrap"
+          initial={still ? false : { x: 70, opacity: 0 }}
+          animate={{ x: closed ? -32 : 0, opacity: 1 }}
+          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 14 }}
+        >
+          <motion.g
+            key={`hop-${pinned}`}
+            data-part="helper-hop"
+            initial={false}
+            animate={!still && pinned > 0 && !closed ? { y: [0, -7, 0] } : { y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut', delay: 0.2 }}
+          >
+            <Helper
+              x={PERCH.x}
+              y={PERCH.y}
+              color={accent === 'sunshine' ? 'sky' : 'sunshine'}
+              sitting={!closed}
+              hopping={!still && closed}
+            />
+          </motion.g>
+        </motion.g>
+
+        {closed ? (
+          <Sparkles
+            still={still}
+            delay={0.9}
+            points={[
+              { x: SPINE - 8, y: BOOK.top + 6 },
+              { x: SPINE + BOOK.page - 6, y: BOOK.top - 12, s: 0.8 },
+              { x: SPINE + 8, y: BOOK.top + BOOK.h - 6, s: 0.6 },
+            ]}
+          />
         ) : null}
 
         {/* The next photo, held up and bobbing until it is its turn. */}

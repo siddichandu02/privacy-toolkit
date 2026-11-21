@@ -57,4 +57,17 @@ describe('ScrapbookScene', () => {
     const hrefs = [...container.querySelectorAll('image')].map((i) => i.getAttribute('href'));
     expect(hrefs).toEqual(['blob:cat', 'blob:dog', 'blob:cat']);
   });
+
+  it('has a helper on the page, then ties a ribbon with sparkles at the end', () => {
+    const { container, rerender } = render(<ScrapbookScene progress={0.5} />);
+    const scene = screen.getByTestId('scrapbook-scene');
+    expect(scene).toHaveAttribute('data-act', 'pinning');
+    expect(container.querySelector('[data-part="helper"]')).not.toBeNull();
+    expect(container.querySelector('[data-part="ribbon"]')).toBeNull();
+    expect(container.querySelector('[data-part="sparkle"]')).toBeNull();
+    rerender(<ScrapbookScene progress={1} />);
+    expect(scene).toHaveAttribute('data-act', 'finale');
+    expect(container.querySelector('[data-part="bow"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-part="sparkle"]')).toHaveLength(3);
+  });
 });
