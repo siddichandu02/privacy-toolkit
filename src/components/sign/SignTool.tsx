@@ -49,7 +49,7 @@ const START_SPOT: Spot = { page: 0, place: START, scope: 'one' };
 
 /** Sign PDF: make a signature, place it on a page, stamp it in a worker. */
 export function SignTool({ tool }: { tool: ToolInfo }) {
-  const queue = useFileQueue();
+  const queue = useFileQueue(tool.id);
   const { job: work, clock, start, reset } = useSignJob();
   const story = useStory(work, clock, STEPS);
   const job = story.job;

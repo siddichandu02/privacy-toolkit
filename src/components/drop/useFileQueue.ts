@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { clearHandoff, peekHandoff } from './handoff';
 
 export interface QueuedFile {
   id: string;
@@ -18,9 +19,19 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
   return next;
 }
 
-/** The ordered list of files a tool will work on. */
-export function useFileQueue() {
-  const [items, setItems] = useState<QueuedFile[]>([]);
+/**
+ * The ordered list of files a tool will work on. Pass the tool's id to start
+ * with any files handed over from the home page drop zone.
+ */
+export function useFileQueue(toolId?: string) {
+  const [items, setItems] = useState<QueuedFile[]>(() =>
+    toolId ? peekHandoff(toolId).map((file) => ({ id: nextId(), file })) : [],
+  );
+
+  // Taken once the page is up, so a second render (or a later visit) starts clean.
+  useEffect(() => {
+    if (toolId) clearHandoff(toolId);
+  }, [toolId]);
 
   const add = useCallback((files: readonly File[]) => {
     setItems((prev) => [...prev, ...files.map((file) => ({ id: nextId(), file }))]);

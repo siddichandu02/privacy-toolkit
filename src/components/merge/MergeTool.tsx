@@ -30,7 +30,7 @@ const STEPS: readonly WaitStep[] = [
 
 /** Merge PDF: gather files, join them in a worker, hand back one download. */
 export function MergeTool({ tool }: { tool: ToolInfo }) {
-  const queue = useFileQueue();
+  const queue = useFileQueue(tool.id);
   const { job: work, clock, start, reset } = useMergeJob();
   const story = useStory(work, clock, STEPS);
   const job = story.job;

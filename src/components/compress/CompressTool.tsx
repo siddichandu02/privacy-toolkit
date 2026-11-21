@@ -40,7 +40,7 @@ const LEVEL_HINTS: Record<CompressLevel, string> = {
 
 /** Compress PDF: pick a level, shrink it in a worker, show old vs new size. */
 export function CompressTool({ tool }: { tool: ToolInfo }) {
-  const queue = useFileQueue();
+  const queue = useFileQueue(tool.id);
   const { job: work, clock, start, reset } = useCompressJob();
   const story = useStory(work, clock, STEPS);
   const job = story.job;

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MotionConfig } from 'framer-motion';
 import { describe, expect, it, vi } from 'vitest';
 import { FileList } from './FileList';
+import { handOff } from './handoff';
 import { moveItem, useFileQueue } from './useFileQueue';
 
 vi.mock('./preview', () => ({
@@ -99,5 +100,14 @@ describe('useFileQueue', () => {
     expect(result.current.items).toHaveLength(1);
     act(() => result.current.clear());
     expect(result.current.items).toEqual([]);
+  });
+
+  it('starts with files handed over for its tool, once', () => {
+    handOff('merge', [pdf('a.pdf'), pdf('b.pdf')]);
+    expect(renderHook(() => useFileQueue('split')).result.current.items).toEqual([]);
+    const first = renderHook(() => useFileQueue('merge'));
+    expect(first.result.current.items.map((i) => i.file.name)).toEqual(['a.pdf', 'b.pdf']);
+    // Taken on mount, so coming back to the page starts empty.
+    expect(renderHook(() => useFileQueue('merge')).result.current.items).toEqual([]);
   });
 });
