@@ -50,6 +50,25 @@ describe('MergeTool', () => {
     expect(button).toHaveAccessibleDescription('Add at least one more PDF to merge.');
   });
 
+  it('gives a heads-up before a very big merge', async () => {
+    const { user } = setup();
+    const huge = (name: string) => {
+      const file = pdf(name);
+      Object.defineProperty(file, 'size', { value: 150 * 1024 * 1024 });
+      return file;
+    };
+    await user.upload(screen.getByTestId('file-input'), [
+      huge('a.pdf'),
+      huge('b.pdf'),
+      huge('c.pdf'),
+    ]);
+    const button = await screen.findByRole('button', { name: 'Merge 3 PDFs' });
+    expect(button).toBeEnabled();
+    expect(button).toHaveAccessibleDescription(
+      /450 MB in all\. If your browser runs out of memory/,
+    );
+  });
+
   it('merges the files in list order', async () => {
     const { user } = setup();
     const a = pdf('a.pdf');

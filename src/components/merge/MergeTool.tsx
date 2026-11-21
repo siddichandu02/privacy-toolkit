@@ -17,6 +17,9 @@ import { WaitStage } from '../wait/WaitStage';
 
 const pageCount = (n: number) => (n === 1 ? '1 page' : `${n} pages`);
 
+/** Past this, phones and older laptops can run out of memory mid merge. */
+export const BIG_BATCH_BYTES = 400 * 1024 * 1024;
+
 const STEPS: readonly WaitStep[] = [
   { id: 'reading', label: 'Reading your PDFs' },
   { id: 'working', label: 'Joining the pages' },
@@ -29,6 +32,7 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
   const { job, start, reset } = useMergeJob();
   const still = useStillMotion();
   const count = queue.items.length;
+  const totalBytes = queue.items.reduce((sum, item) => sum + item.file.size, 0);
   const name = mergedName(queue.items[0]?.file.name);
 
   const run = () => start(queue.items.map((item) => item.file));
@@ -53,7 +57,14 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
           <ToolWorkbench
             tool={tool}
             queue={queue}
-            footer={<MergeAction count={count} accent={tool.accent} onMerge={run} />}
+            footer={
+              <MergeAction
+                count={count}
+                totalBytes={totalBytes}
+                accent={tool.accent}
+                onMerge={run}
+              />
+            }
           />
         </motion.div>
       ) : (
@@ -108,22 +119,33 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
 
 function MergeAction({
   count,
+  totalBytes,
   accent,
   onMerge,
 }: {
   count: number;
+  totalBytes: number;
   accent: Accent;
   onMerge: () => void;
 }) {
   const hintId = useId();
   const ready = count >= 2;
+  const big = ready && totalBytes > BIG_BATCH_BYTES;
   return (
     <div className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-5 shadow-soft backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
-      <p id={hintId} className="text-muted">
-        {ready
-          ? `The pages of all ${count} files go into one PDF, top file first.`
-          : 'Add at least one more PDF to merge.'}
-      </p>
+      <div id={hintId} className="text-muted">
+        <p>
+          {ready
+            ? `The pages of all ${count} files go into one PDF, top file first.`
+            : 'Add at least one more PDF to merge.'}
+        </p>
+        {big && (
+          <p className="mt-1.5 text-sm">
+            That is {formatBytes(totalBytes)} in all. If your browser runs out of memory, merge them
+            in two or three smaller batches.
+          </p>
+        )}
+      </div>
       <Button
         variant="accent"
         accent={accent}
