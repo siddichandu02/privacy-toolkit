@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
+import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
+import { Helper } from './Helper';
+import { PageFace } from './PageFace';
 
 export interface BreadSceneProps {
   /** Overall progress, 0 to 1. Each slice falls off the loaf as it passes. */
@@ -9,6 +12,8 @@ export interface BreadSceneProps {
   accent?: Accent;
   /** How many slices the loaf has. */
   slices?: number;
+  /** The user's first page, baked into every slice. Plain paper when missing. */
+  thumb?: string;
   className?: string;
 }
 
@@ -32,7 +37,17 @@ const crust = (accent: Accent) => `color-mix(in srgb, var(--${accent}) 75%, #5a2
 const edge = (accent: Accent) => `color-mix(in srgb, var(--${accent}) 60%, #1b1033)`;
 
 /** One slice of the loaf: a stack of pages with a baked, domed top. */
-function Slice({ accent, i }: { accent: Accent; i: number }) {
+function Slice({
+  accent,
+  i,
+  thumb,
+  clip,
+}: {
+  accent: Accent;
+  i: number;
+  thumb?: string;
+  clip: string;
+}) {
   const { w } = SLICE;
   const top = BOARD_Y - SLICE.h;
   // A slice of bread: straight sides, a top that bulges a touch past them.
@@ -42,8 +57,19 @@ function Slice({ accent, i }: { accent: Accent; i: number }) {
     <>
       <path d={outline} fill={paper(accent, i)} stroke={edge(accent)} strokeWidth={0.8} />
       <path d={cap} fill={crust(accent)} />
+      {thumb ? (
+        <PageFace
+          x={1.6}
+          y={top + 11}
+          w={w - 3.2}
+          h={SLICE.h - 13}
+          href={thumb}
+          accent={accent}
+          clip={`${clip}-${i}`}
+        />
+      ) : null}
       {/* Page edges */}
-      {[4.5, 9.5].map((x) => (
+      {(thumb ? [] : [4.5, 9.5]).map((x) => (
         <line
           key={x}
           x1={x}
@@ -59,24 +85,41 @@ function Slice({ accent, i }: { accent: Accent; i: number }) {
   );
 }
 
+/** Where the helper hops down once the loaf is too short to ride. */
+const HOP_OFF_X = 262;
+/** The helper never rides closer to the knife than this. */
+const RIDE_MIN_X = 236;
+
 /**
- * Split story: Pip saws a loaf made of pages with a chef knife and the slices
- * tip over into a neat row. Slices follow real progress; only the sawing
- * loops. With reduced motion everything stands still.
+ * Split story in three acts. Intro: a paper helper rides the loaf in along
+ * the board. Action: Pip saws slices made of the user's own pages and they tip
+ * over into a neat row, one per stretch of real progress; the helper rides
+ * the shrinking loaf and hops off when it gets short. Finale: the knife lifts,
+ * the helper cheers and the row of slices sparkles. With reduced motion
+ * everything stands still.
  */
 export function BreadScene({
   progress,
   accent = 'coral',
   slices = 6,
+  thumb,
   className = '',
 }: BreadSceneProps) {
   const still = useStillMotion();
+  const clip = `bread-${useId().replace(/:/g, '')}`;
   const p = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
   const cut = Math.min(slices, Math.floor(p * slices + 1e-9));
   const finished = p >= 1;
   const sawing = !still && !finished;
   const pip = accent === 'coral' ? 'sunshine' : accent;
   const spring = still ? { duration: 0 } : { type: 'spring' as const, stiffness: 260, damping: 18 };
+  const left = slices - cut;
+  const rideX = CUT_X + (left - 0.5) * SLICE.w;
+  const riding = left > 0 && rideX >= RIDE_MIN_X;
+  const helper = riding
+    ? { x: rideX, y: BOARD_Y - SLICE.h - 20 }
+    : { x: HOP_OFF_X, y: BOARD_Y - 20 };
+  const rowLeft = REST_X - (cut - 1) * 6;
 
   return (
     <div
@@ -84,6 +127,8 @@ export function BreadScene({
       style={{ aspectRatio: `${W} / ${H}` }}
       data-testid="bread-scene"
       data-cut={cut}
+      data-act={finished ? 'finale' : 'action'}
+      data-helper={riding ? 'riding' : 'board'}
     >
       <Pip pose="hold" accent={pip} className="absolute top-0 left-0 h-full" />
       <svg
@@ -109,7 +154,7 @@ export function BreadScene({
               animate={{ x: REST_X - fromNewest * 6, rotate: -18 }}
               transition={spring}
             >
-              <Slice accent={accent} i={i} />
+              <Slice accent={accent} i={i} thumb={thumb} clip={clip} />
             </motion.g>
           );
         })}
@@ -121,14 +166,48 @@ export function BreadScene({
             <motion.g
               key={`loaf-${i}`}
               data-part="slice-loaf"
-              initial={false}
+              initial={still ? false : { x: CUT_X + j * SLICE.w + 120 }}
               animate={{ x: CUT_X + j * SLICE.w }}
               transition={spring}
             >
-              <Slice accent={accent} i={i} />
+              <Slice accent={accent} i={i} thumb={thumb} clip={clip} />
             </motion.g>
           );
         })}
+
+        {/* The helper rides in on the loaf, then hops down to watch. */}
+        <motion.g
+          initial={still ? false : { x: helper.x + 120, y: helper.y }}
+          animate={{ x: helper.x, y: helper.y }}
+          transition={spring}
+        >
+          <Helper
+            x={0}
+            y={0}
+            color={accent === 'mint' ? 'sky' : 'mint'}
+            sitting={riding && !finished}
+            hopping={!still && (finished || !riding)}
+          />
+        </motion.g>
+
+        {/* Finale: the row of slices sparkles. */}
+        {finished && cut > 0
+          ? [0, 1, 2].map((k) => (
+              <motion.path
+                key={k}
+                data-part="sparkle"
+                d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z"
+                fill="var(--sunshine)"
+                initial={still ? false : { scale: 0, opacity: 0 }}
+                animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+                transition={still ? { duration: 0 } : { duration: 0.5, delay: 0.15 * k }}
+                style={{
+                  x: rowLeft + 4 + k * Math.max(6, (cut - 1) * 3),
+                  y: BOARD_Y - SLICE.h - 6 - (k % 2) * 7,
+                }}
+              />
+            ))
+          : null}
 
         {/* Crumbs popping out of the cut */}
         {sawing

@@ -14,6 +14,7 @@ import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
+import { useThumbnails } from '../wait/useThumbnails';
 import { BreadScene } from '../wait/scenes/BreadScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePicker } from './PagePicker';
@@ -37,6 +38,7 @@ export function SplitTool({ tool }: { tool: ToolInfo }) {
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
+  const [thumb] = useThumbnails(job.status === 'running' && file ? [file] : [], 1);
   // Typed pages belong to one file; a new file starts with a clean slate.
   const [picks, setPicks] = useState({ id: '', text: '' });
   const text = item && picks.id === item.id ? picks.text : '';
@@ -115,7 +117,7 @@ export function SplitTool({ tool }: { tool: ToolInfo }) {
                 accent={tool.accent}
                 onSkip={story.skip}
                 canSkip={story.canSkip}
-                scene={<BreadScene accent={tool.accent} progress={story.progress} />}
+                scene={<BreadScene accent={tool.accent} progress={story.progress} thumb={thumb} />}
               />
             ) : job.status === 'done' ? (
               <DoneCard

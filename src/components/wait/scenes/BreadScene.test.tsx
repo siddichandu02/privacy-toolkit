@@ -48,4 +48,27 @@ describe('BreadScene', () => {
     expect(container.querySelector('[data-part="knife"]')).toHaveAttribute('data-sawing', 'false');
     expect(container.querySelector('[data-part="crumbs"]')).toBeNull();
   });
+
+  it('bakes the real first page into the slices', () => {
+    const { container, rerender } = render(<BreadScene progress={0.5} />);
+    expect(container.querySelector('[data-part="real-page"]')).toBeNull();
+    rerender(<BreadScene progress={0.5} thumb="blob:page-1" />);
+    const pages = container.querySelectorAll('[data-part="real-page"]');
+    expect(pages).toHaveLength(6);
+    expect(pages[0]).toHaveAttribute('href', 'blob:page-1');
+  });
+
+  it('lets the helper ride the loaf, hop off, then cheer at the finale', () => {
+    const { container, rerender } = render(<BreadScene progress={0} />);
+    const scene = screen.getByTestId('bread-scene');
+    expect(scene).toHaveAttribute('data-helper', 'riding');
+    expect(scene).toHaveAttribute('data-act', 'action');
+    expect(container.querySelector('[data-part="helper"]')).not.toBeNull();
+    rerender(<BreadScene progress={0.9} />);
+    expect(scene).toHaveAttribute('data-helper', 'board');
+    expect(container.querySelector('[data-part="sparkle"]')).toBeNull();
+    rerender(<BreadScene progress={1} />);
+    expect(scene).toHaveAttribute('data-act', 'finale');
+    expect(container.querySelectorAll('[data-part="sparkle"]')).toHaveLength(3);
+  });
 });
