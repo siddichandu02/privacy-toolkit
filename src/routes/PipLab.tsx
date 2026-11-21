@@ -17,6 +17,16 @@ const POSES: PipPose[] = ['sit', 'wave', 'puzzled', 'hold', 'celebrate', 'shrug'
 const LAB_BLOB = new Blob(['%PDF-1.7'], { type: 'application/pdf' });
 const ACCENTS: Accent[] = ['coral', 'violet', 'mint', 'sunshine', 'sky'];
 
+/** A made-up first page as a data URL, so the bench never fetches anything. */
+const samplePage = (band: string, photo = false) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    photo
+      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 30"><rect width="40" height="30" fill="${band}"/><circle cx="30" cy="8" r="4" fill="#fff6c2"/><path d="M0 30 L14 14 L24 24 L30 18 L40 30 Z" fill="#1b1033" opacity=".55"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40"><rect width="30" height="40" fill="#fff"/><rect width="30" height="9" fill="${band}"/><rect x="4" y="13" width="22" height="2" fill="#c9c3dc"/><rect x="4" y="18" width="18" height="2" fill="#c9c3dc"/><rect x="4" y="23" width="22" height="9" fill="${band}" opacity=".35"/></svg>`,
+  )}`;
+const SAMPLE_PAGES = ['#7c5cff', '#ff6b8b', '#3ddc97', '#4cc9f0'].map((c) => samplePage(c));
+const SAMPLE_PHOTOS = ['#4cc9f0', '#ffc857', '#ff6b8b', '#3ddc97'].map((c) => samplePage(c, true));
+
 /**
  * Not linked anywhere. A bench for checking Pip's poses and the wait screen
  * across accents and themes.
@@ -25,6 +35,9 @@ export default function PipLab() {
   useDocumentTitle('Pip lab');
   const [scrub, setScrub] = useState(0.4);
   const [replay, setReplay] = useState(0);
+  const [samples, setSamples] = useState(true);
+  const pages = samples ? SAMPLE_PAGES : [];
+  const photos = samples ? SAMPLE_PHOTOS : [];
   const slice = Math.min(DEFAULT_STEPS.length - 1, Math.floor(scrub * DEFAULT_STEPS.length));
   const within = scrub * DEFAULT_STEPS.length - slice;
 
@@ -68,13 +81,22 @@ export default function PipLab() {
           className="flex-1 accent-violet"
         />
       </label>
+      <label className="mt-3 flex items-center gap-2 text-sm font-semibold">
+        <input
+          type="checkbox"
+          checked={samples}
+          onChange={(e) => setSamples(e.target.checked)}
+          className="size-4 accent-violet"
+        />
+        Sample pages in the scenes
+      </label>
       <WaitStage
         className="mt-6"
         title="Merging 3 PDFs"
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="violet"
-        scene={<JarScene progress={scrub} accent="violet" />}
+        scene={<JarScene progress={scrub} accent="violet" thumbs={pages} />}
       />
       <WaitStage
         className="mt-6"
@@ -82,7 +104,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="coral"
-        scene={<BreadScene progress={scrub} accent="coral" />}
+        scene={<BreadScene progress={scrub} accent="coral" thumb={pages[1]} />}
       />
       <WaitStage
         className="mt-6"
@@ -90,7 +112,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="sunshine"
-        scene={<PizzaScene progress={scrub} accent="sunshine" />}
+        scene={<PizzaScene progress={scrub} accent="sunshine" thumb={pages[2]} />}
       />
       <WaitStage
         className="mt-6"
@@ -98,7 +120,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="mint"
-        scene={<ScrapbookScene progress={scrub} accent="mint" />}
+        scene={<ScrapbookScene progress={scrub} accent="mint" photos={photos} />}
       />
       <WaitStage
         className="mt-6"
@@ -114,7 +136,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="coral"
-        scene={<SuitcaseScene progress={scrub} accent="coral" />}
+        scene={<SuitcaseScene progress={scrub} accent="coral" thumb={pages[3]} />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
