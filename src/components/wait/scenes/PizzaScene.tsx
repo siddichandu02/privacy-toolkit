@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { Sparkles } from './Sparkles';
 import { PageFace } from './PageFace';
 
 export interface PizzaSceneProps {
@@ -190,20 +191,15 @@ export function PizzaScene({
           </motion.g>
         </motion.g>
 
-        {finished
-          ? SPARKLES.map(([dx, dy], k) => (
-              <motion.path
-                key={k}
-                data-part="sparkle"
-                d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z"
-                fill="var(--sunshine)"
-                initial={still ? false : { scale: 0, opacity: 0 }}
-                animate={{ scale: [0, 1.25, 1], opacity: 1 }}
-                transition={still ? { duration: 0 } : { duration: 0.5, delay: 0.12 * k }}
-                style={{ x: STACK_X + dx, y: COUNTER_Y - PAGE.w - pages * 4 + dy }}
-              />
-            ))
-          : null}
+        {finished ? (
+          <Sparkles
+            still={still}
+            points={SPARKLES.map(([dx, dy]) => ({
+              x: STACK_X + dx,
+              y: COUNTER_Y - PAGE.w - pages * 4 + dy,
+            }))}
+          />
+        ) : null}
 
         {/* The paw points up; flour puffs off it while the page spins. */}
         {finished ? null : (

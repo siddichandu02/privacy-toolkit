@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { Sparkles } from './Sparkles';
 import { PageFace } from './PageFace';
 
 export interface QuillSceneProps {
@@ -305,22 +306,14 @@ export function QuillScene({ progress, accent = 'sky', thumb, className = '' }: 
 
         {/* A couple of sparkles when the signature is finished. */}
         {phase === 'done' ? (
-          <g data-part="sparkles">
-            {[
-              { x: 250, y: 120, s: 1 },
-              { x: 240, y: 106, s: 0.6 },
-            ].map((s, i) => (
-              <motion.path
-                key={i}
-                d={`M${s.x} ${s.y - 5 * s.s} L${s.x + 1.4 * s.s} ${s.y - 1.4 * s.s} L${s.x + 5 * s.s} ${s.y} L${s.x + 1.4 * s.s} ${s.y + 1.4 * s.s} L${s.x} ${s.y + 5 * s.s} L${s.x - 1.4 * s.s} ${s.y + 1.4 * s.s} L${s.x - 5 * s.s} ${s.y} L${s.x - 1.4 * s.s} ${s.y - 1.4 * s.s}Z`}
-                fill="var(--sunshine)"
-                initial={still ? false : { scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                style={{ transformBox: 'fill-box', originX: '50%', originY: '50%' }}
-                transition={still ? { duration: 0 } : { delay: 0.1 + i * 0.12, ...spring }}
-              />
-            ))}
-          </g>
+          <Sparkles
+            still={still}
+            delay={0.1}
+            points={[
+              { x: 250, y: 120, s: 1.25 },
+              { x: 240, y: 106, s: 0.75 },
+            ]}
+          />
         ) : null}
       </svg>
     </div>

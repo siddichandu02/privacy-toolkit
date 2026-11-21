@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { Sparkles } from './Sparkles';
 import { PageFace } from './PageFace';
 
 export interface BreadSceneProps {
@@ -191,23 +192,15 @@ export function BreadScene({
         </motion.g>
 
         {/* Finale: the row of slices sparkles. */}
-        {finished && cut > 0
-          ? [0, 1, 2].map((k) => (
-              <motion.path
-                key={k}
-                data-part="sparkle"
-                d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z"
-                fill="var(--sunshine)"
-                initial={still ? false : { scale: 0, opacity: 0 }}
-                animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                transition={still ? { duration: 0 } : { duration: 0.5, delay: 0.15 * k }}
-                style={{
-                  x: rowLeft + 4 + k * Math.max(6, (cut - 1) * 3),
-                  y: BOARD_Y - SLICE.h - 6 - (k % 2) * 7,
-                }}
-              />
-            ))
-          : null}
+        {finished && cut > 0 ? (
+          <Sparkles
+            still={still}
+            points={[0, 1, 2].map((k) => ({
+              x: rowLeft + 4 + k * Math.max(6, (cut - 1) * 3),
+              y: BOARD_Y - SLICE.h - 6 - (k % 2) * 7,
+            }))}
+          />
+        ) : null}
 
         {/* Crumbs popping out of the cut */}
         {sawing
