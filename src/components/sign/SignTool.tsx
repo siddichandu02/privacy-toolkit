@@ -17,6 +17,7 @@ import { Segmented, type SegmentOption } from '../ui/Segmented';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
 import { QuillScene } from '../wait/scenes/QuillScene';
+import { useThumbnails } from '../wait/useThumbnails';
 import { WaitStage } from '../wait/WaitStage';
 import { EMPTY_DRAFT, type Signature, type SignatureDraft } from './ink';
 import { SignaturePad } from './SignaturePad';
@@ -55,6 +56,7 @@ export function SignTool({ tool }: { tool: ToolInfo }) {
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
+  const [thumb] = useThumbnails(job.status === 'running' && file ? [file] : [], 1);
   const [draft, setDraft] = useState<SignatureDraft>(EMPTY_DRAFT);
   const [signature, setSignature] = useState<Signature | null>(null);
   // Where the signature goes belongs to one file; a new file starts fresh.
@@ -122,7 +124,7 @@ export function SignTool({ tool }: { tool: ToolInfo }) {
               accent={tool.accent}
               onSkip={story.skip}
               canSkip={story.canSkip}
-              scene={<QuillScene accent={tool.accent} progress={story.progress} />}
+              scene={<QuillScene accent={tool.accent} progress={story.progress} thumb={thumb} />}
             />
           ) : job.status === 'done' ? (
             <DoneCard

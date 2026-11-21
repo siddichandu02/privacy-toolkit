@@ -43,4 +43,22 @@ describe('QuillScene', () => {
     );
     expect(part(container, 'quill')).toHaveAttribute('data-dipping', 'false');
   });
+
+  it('shows the real first page on the sheet', () => {
+    const { container, rerender } = render(<QuillScene progress={0.5} />);
+    expect(container.querySelector('[data-part="real-page"]')).toBeNull();
+    rerender(<QuillScene progress={0.5} thumb="blob:lease" />);
+    expect(container.querySelector('[data-part="real-page"]')).toHaveAttribute(
+      'href',
+      'blob:lease',
+    );
+  });
+
+  it('has a helper holding the sheet, then pressing a seal at the end', () => {
+    const { container, rerender } = render(<QuillScene progress={0.5} />);
+    expect(container.querySelector('[data-part="helper"]')).not.toBeNull();
+    expect(container.querySelector('[data-part="seal"]')).toBeNull();
+    rerender(<QuillScene progress={1} />);
+    expect(container.querySelector('[data-part="seal"]')).not.toBeNull();
+  });
 });

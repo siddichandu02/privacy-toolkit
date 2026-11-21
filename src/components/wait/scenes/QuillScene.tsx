@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion';
+import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
+import { Helper } from './Helper';
+import { PageFace } from './PageFace';
 
 export interface QuillSceneProps {
   /** Overall progress, 0 to 1. Drives the dip, the signature and the flourish. */
   progress: number;
   accent?: Accent;
+  /** The user's first page, shown on the sheet being signed. */
+  thumb?: string;
   className?: string;
 }
 
@@ -64,14 +69,23 @@ function Quill({ accent }: { accent: Accent }) {
   );
 }
 
+/** The little page preview in the sheet's top-left corner. */
+const PREVIEW = { x: SHEET.x + 8, y: SHEET.y + 5, w: 20, h: 26 };
+/** Where the wax seal lands once the signature is done. */
+const SEAL = { x: SHEET.x + SHEET.w - 14, y: BASE_Y + 6 };
+
 /**
- * Sign story: Pip dips a quill in the ink well while the PDF is read, writes
- * a signature along the line as pages are stamped, then underlines it with a
- * flourish while the file is saved. The ink follows real progress. Only the
- * dip bob loops; with reduced motion everything stands still.
+ * Sign story in three acts. Intro: a paper helper slides the user's own page
+ * onto the desk and sits on its corner to hold it flat. Action: Pip dips a
+ * quill in the ink well while the PDF is read, writes a signature along the
+ * line as pages are stamped, then underlines it with a flourish while the
+ * file is saved. The ink follows real progress. Finale: the helper hops and
+ * presses a wax seal on the page. Only the dip bob loops; with reduced motion
+ * everything stands still.
  */
-export function QuillScene({ progress, accent = 'sky', className = '' }: QuillSceneProps) {
+export function QuillScene({ progress, accent = 'sky', thumb, className = '' }: QuillSceneProps) {
   const still = useStillMotion();
+  const clip = `quill-${useId().replace(/:/g, '')}`;
   const p = Number.isFinite(progress) ? clamp01(progress) : 0;
   const phase = quillPhase(p);
   const sign = clamp01((p - DIP_END) / (SIGN_END - DIP_END));
@@ -116,71 +130,138 @@ export function QuillScene({ progress, accent = 'sky', className = '' }: QuillSc
         <rect x={150} y={DESK_Y} width={146} height={7} rx={3} fill="#4b4466" />
         <rect x={150} y={DESK_Y} width={146} height={2.4} rx={1.2} fill="#6c6590" />
 
-        {/* The sheet with a signing line and a little cross. */}
-        <g transform={`rotate(-3 ${SHEET.x + SHEET.w / 2} ${SHEET.y + SHEET.h})`}>
-          <rect
-            x={SHEET.x + 1}
-            y={SHEET.y + 1.5}
-            width={SHEET.w}
-            height={SHEET.h}
-            rx={2}
-            fill={INK}
-            opacity={0.18}
-          />
-          <rect x={SHEET.x} y={SHEET.y} width={SHEET.w} height={SHEET.h} rx={2} fill={sheet} />
-          {[108, 115, 122].map((y) => (
+        {/* The sheet with a signing line and a little cross, slid in by the helper. */}
+        <motion.g
+          initial={still ? false : { x: 90, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 17 }}
+        >
+          <g transform={`rotate(-3 ${SHEET.x + SHEET.w / 2} ${SHEET.y + SHEET.h})`}>
             <rect
-              key={y}
-              x={SHEET.x + 10}
-              y={y}
-              width={y === 122 ? 46 : 78}
-              height={2}
-              rx={1}
+              x={SHEET.x + 1}
+              y={SHEET.y + 1.5}
+              width={SHEET.w}
+              height={SHEET.h}
+              rx={2}
               fill={INK}
-              opacity={0.12}
+              opacity={0.18}
             />
-          ))}
-          <path
-            d={`M${SHEET.x + 6} ${BASE_Y} H${SHEET.x + SHEET.w - 8}`}
-            stroke={INK}
-            strokeWidth={0.8}
-            strokeDasharray="2 2"
-            opacity={0.45}
-          />
-          <path
-            d={`M${SHEET.x + 5} ${BASE_Y - 7} l4 4 m0 -4 l-4 4`}
-            stroke={INK}
-            strokeWidth={0.9}
-            strokeLinecap="round"
-            opacity={0.5}
-          />
+            <rect x={SHEET.x} y={SHEET.y} width={SHEET.w} height={SHEET.h} rx={2} fill={sheet} />
+            <rect
+              x={PREVIEW.x - 0.8}
+              y={PREVIEW.y - 0.8}
+              width={PREVIEW.w + 1.6}
+              height={PREVIEW.h + 1.6}
+              rx={1.2}
+              fill="#fbf9ff"
+              stroke={INK}
+              strokeWidth={0.5}
+              strokeOpacity={0.3}
+            />
+            <PageFace {...PREVIEW} href={thumb} accent={accent} clip={`${clip}-page`} />
+            {[108, 115, 122].map((y) => (
+              <rect
+                key={y}
+                x={PREVIEW.x + PREVIEW.w + 6}
+                y={y}
+                width={y === 122 ? 30 : 56}
+                height={2}
+                rx={1}
+                fill={INK}
+                opacity={0.12}
+              />
+            ))}
+            <path
+              d={`M${SHEET.x + 6} ${BASE_Y} H${SHEET.x + SHEET.w - 8}`}
+              stroke={INK}
+              strokeWidth={0.8}
+              strokeDasharray="2 2"
+              opacity={0.45}
+            />
+            <path
+              d={`M${SHEET.x + 5} ${BASE_Y - 7} l4 4 m0 -4 l-4 4`}
+              stroke={INK}
+              strokeWidth={0.9}
+              strokeLinecap="round"
+              opacity={0.5}
+            />
 
-          {/* Ink, drawn exactly as far as the work has got. */}
-          <motion.path
-            data-part="signature"
-            data-drawn={sign.toFixed(2)}
-            d={SIGNATURE}
-            fill="none"
-            stroke={ink}
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={false}
-            animate={{ pathLength: sign, opacity: sign > 0 ? 1 : 0 }}
-            transition={draw}
+            {/* Ink, drawn exactly as far as the work has got. */}
+            <motion.path
+              data-part="signature"
+              data-drawn={sign.toFixed(2)}
+              d={SIGNATURE}
+              fill="none"
+              stroke={ink}
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={false}
+              animate={{ pathLength: sign, opacity: sign > 0 ? 1 : 0 }}
+              transition={draw}
+            />
+            <motion.path
+              data-part="flourish"
+              d={FLOURISH}
+              fill="none"
+              stroke={ink}
+              strokeWidth={1.4}
+              strokeLinecap="round"
+              initial={false}
+              animate={{ pathLength: flourish, opacity: flourish > 0 ? 1 : 0 }}
+              transition={draw}
+            />
+
+            {/* Finale: a wax seal pressed onto the corner. */}
+            {phase === 'done' ? (
+              <motion.g
+                data-part="seal"
+                initial={still ? false : { scale: 1.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                style={{ transformBox: 'fill-box', originX: '50%', originY: '50%' }}
+                transition={
+                  still
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 380, damping: 14, delay: 0.25 }
+                }
+              >
+                <circle cx={SEAL.x} cy={SEAL.y} r={6.5} fill={`var(--${accent})`} />
+                <circle
+                  cx={SEAL.x}
+                  cy={SEAL.y}
+                  r={4.6}
+                  fill="none"
+                  stroke="#fbf9ff"
+                  strokeWidth={0.6}
+                  opacity={0.7}
+                />
+                <path
+                  d={`M${SEAL.x - 2.4} ${SEAL.y} l1.7 1.8 l3.2 -3.6`}
+                  fill="none"
+                  stroke="#fbf9ff"
+                  strokeWidth={1.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </motion.g>
+            ) : null}
+          </g>
+        </motion.g>
+
+        {/* The helper sits on the sheet's corner, then hops when it is signed. */}
+        <motion.g
+          initial={still ? false : { x: 90 }}
+          animate={{ x: phase === 'done' ? -32 : 0 }}
+          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 17 }}
+        >
+          <Helper
+            x={SHEET.x + SHEET.w - 10}
+            y={SHEET.y - 15}
+            color={accent === 'mint' ? 'sunshine' : 'mint'}
+            sitting={phase !== 'done'}
+            hopping={!still && phase === 'done'}
           />
-          <motion.path
-            data-part="flourish"
-            d={FLOURISH}
-            fill="none"
-            stroke={ink}
-            strokeWidth={1.4}
-            strokeLinecap="round"
-            initial={false}
-            animate={{ pathLength: flourish, opacity: flourish > 0 ? 1 : 0 }}
-            transition={draw}
-          />
-        </g>
+        </motion.g>
 
         {/* Ink well */}
         <ellipse cx={WELL.x} cy={DESK_Y} rx={11} ry={2} fill={INK} opacity={0.2} />

@@ -128,7 +128,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="sky"
-        scene={<QuillScene progress={scrub} accent="sky" />}
+        scene={<QuillScene progress={scrub} accent="sky" thumb={pages[0]} />}
       />
       <WaitStage
         className="mt-6"
