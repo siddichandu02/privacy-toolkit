@@ -12,7 +12,8 @@ import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { PizzaScene } from '../wait/scenes/PizzaScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PageTurner, TurnIcon, UndoIcon } from './PageTurner';
@@ -42,7 +43,9 @@ function tally(edits: Edits, count: number) {
 /** Rotate pages: turn and drop pages on a thumbnail grid, then save in a worker. */
 export function RotateTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useRotateJob();
+  const { job: work, clock, start, reset } = useRotateJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
@@ -116,12 +119,9 @@ export function RotateTool({ tool }: { tool: ToolInfo }) {
                 current={job.stage}
                 progress={job.progress}
                 accent={tool.accent}
-                scene={
-                  <PizzaScene
-                    accent={tool.accent}
-                    progress={overallProgress(STEPS, job.stage, job.progress)}
-                  />
-                }
+                onSkip={story.skip}
+                canSkip={story.canSkip}
+                scene={<PizzaScene accent={tool.accent} progress={story.progress} />}
               />
             ) : job.status === 'done' ? (
               <DoneCard

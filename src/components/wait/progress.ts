@@ -27,3 +27,17 @@ export function overallProgress(
   if (index < 0) return 0;
   return (index + clamp01(progress)) / steps.length;
 }
+
+/**
+ * The reverse of overallProgress: which step a 0 to 1 value falls in and how
+ * far through it. A finished value sits at the end of the last step.
+ */
+export function stepAt(
+  steps: readonly WaitStep[],
+  value: number,
+): { current: string; progress: number } {
+  if (steps.length === 0) return { current: '', progress: 0 };
+  const scaled = clamp01(value) * steps.length;
+  const index = Math.min(steps.length - 1, Math.floor(scaled));
+  return { current: steps[index]?.id ?? '', progress: scaled - index };
+}

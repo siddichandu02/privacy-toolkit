@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MotionConfig } from 'framer-motion';
 import { WaitStage } from './WaitStage';
@@ -57,5 +58,18 @@ describe('WaitStage', () => {
     expect(screen.queryByText('pancakes')).not.toBeInTheDocument();
     const pip = screen.getByTestId('scene').querySelector('svg[data-pose]');
     expect(pip).toHaveAttribute('data-animated', 'false');
+  });
+
+  it('shows a quiet skip link only once it is allowed', () => {
+    const onSkip = vi.fn();
+    const { rerender } = render(
+      <WaitStage title="Merging" current="working" progress={0.4} onSkip={onSkip} />,
+    );
+    expect(screen.queryByRole('button', { name: /skip/i })).not.toBeInTheDocument();
+    rerender(
+      <WaitStage title="Merging" current="working" progress={0.4} onSkip={onSkip} canSkip />,
+    );
+    screen.getByRole('button', { name: /skip/i }).click();
+    expect(onSkip).toHaveBeenCalledOnce();
   });
 });

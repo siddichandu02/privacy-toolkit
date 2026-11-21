@@ -26,7 +26,7 @@ const finish = ({ bytes, name, pages, rotated, removed }: RotateDone): RotateOut
 
 /** Turn and drop PDF pages in a Web Worker. */
 export function useRotateJob(createWorker: WorkerFactory = defaultFactory) {
-  const { job, start, reset } = useWorkerJob<
+  const { job, clock, start, reset } = useWorkerJob<
     RotateWorkerRequest,
     RotateStage,
     RotateDone,
@@ -38,5 +38,5 @@ export function useRotateJob(createWorker: WorkerFactory = defaultFactory) {
     crashMessage: 'Something went wrong while saving your pages. Try again.',
   });
   const rotate = useCallback((request: RotateWorkerRequest) => start(request), [start]);
-  return { job: job as RotateJob, start: rotate, reset };
+  return { job: job as RotateJob, clock, start: rotate, reset };
 }

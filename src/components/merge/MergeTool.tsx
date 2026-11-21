@@ -11,7 +11,8 @@ import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { PancakeScene } from '../wait/scenes/PancakeScene';
 import { WaitStage } from '../wait/WaitStage';
 
@@ -29,7 +30,9 @@ const STEPS: readonly WaitStep[] = [
 /** Merge PDF: gather files, join them in a worker, hand back one download. */
 export function MergeTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useMergeJob();
+  const { job: work, clock, start, reset } = useMergeJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const count = queue.items.length;
   const totalBytes = queue.items.reduce((sum, item) => sum + item.file.size, 0);
@@ -81,12 +84,9 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
               current={job.stage}
               progress={job.progress}
               accent={tool.accent}
-              scene={
-                <PancakeScene
-                  accent={tool.accent}
-                  progress={overallProgress(STEPS, job.stage, job.progress)}
-                />
-              }
+              onSkip={story.skip}
+              canSkip={story.canSkip}
+              scene={<PancakeScene accent={tool.accent} progress={story.progress} />}
             />
           ) : job.status === 'done' ? (
             <DoneCard

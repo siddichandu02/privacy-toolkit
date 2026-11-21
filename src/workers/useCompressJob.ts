@@ -28,7 +28,7 @@ const finish = ({ bytes, ...rest }: CompressDone): CompressOutput => ({
 
 /** Shrink a PDF in a Web Worker. */
 export function useCompressJob(createWorker: WorkerFactory = defaultFactory) {
-  const { job, start, reset } = useWorkerJob<
+  const { job, clock, start, reset } = useWorkerJob<
     CompressWorkerRequest,
     CompressStage,
     CompressDone,
@@ -40,5 +40,5 @@ export function useCompressJob(createWorker: WorkerFactory = defaultFactory) {
     crashMessage: 'Something went wrong while shrinking your PDF. Try again.',
   });
   const compress = useCallback((request: CompressWorkerRequest) => start(request), [start]);
-  return { job: job as CompressJob, start: compress, reset };
+  return { job: job as CompressJob, clock, start: compress, reset };
 }

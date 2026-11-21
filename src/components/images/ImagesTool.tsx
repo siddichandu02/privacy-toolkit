@@ -18,7 +18,8 @@ import { ErrorCard } from '../result/ErrorCard';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { ScrapbookScene } from '../wait/scenes/ScrapbookScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePreview } from './PagePreview';
@@ -53,7 +54,9 @@ const MARGINS: readonly SegmentOption<Margin>[] = [
 /** Images to PDF: order photos, pick a page layout, build the PDF in a worker. */
 export function ImagesTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useImagesJob();
+  const { job: work, clock, start, reset } = useImagesJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const [options, setOptions] = useState<ImagesOptions>(DEFAULT_OPTIONS);
   const count = queue.items.length;
@@ -107,12 +110,9 @@ export function ImagesTool({ tool }: { tool: ToolInfo }) {
               current={job.stage}
               progress={job.progress}
               accent={tool.accent}
-              scene={
-                <ScrapbookScene
-                  accent={tool.accent}
-                  progress={overallProgress(STEPS, job.stage, job.progress)}
-                />
-              }
+              onSkip={story.skip}
+              canSkip={story.canSkip}
+              scene={<ScrapbookScene accent={tool.accent} progress={story.progress} />}
             />
           ) : job.status === 'done' ? (
             <DoneCard

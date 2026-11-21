@@ -24,12 +24,17 @@ const finish = ({ bytes, name, pages, signed }: SignDone): SignOutput => ({
 
 /** Stamp a signature on PDF pages in a Web Worker. */
 export function useSignJob(createWorker: WorkerFactory = defaultFactory) {
-  const { job, start, reset } = useWorkerJob<SignWorkerRequest, SignStage, SignDone, SignOutput>({
+  const { job, clock, start, reset } = useWorkerJob<
+    SignWorkerRequest,
+    SignStage,
+    SignDone,
+    SignOutput
+  >({
     createWorker,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while signing your PDF. Try again.',
   });
   const sign = useCallback((request: SignWorkerRequest) => start(request), [start]);
-  return { job: job as SignJob, start: sign, reset };
+  return { job: job as SignJob, clock, start: sign, reset };
 }

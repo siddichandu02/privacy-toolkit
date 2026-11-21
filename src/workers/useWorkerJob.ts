@@ -19,6 +19,12 @@ export type FailReason = 'updated';
 
 export type WorkerFactory = () => Worker;
 
+/** When the current run started and finished, from performance.now(). */
+export interface JobClock {
+  startedAt: number;
+  doneAt: number | null;
+}
+
 export interface WorkerJobOptions<S extends string, D extends object, R extends object> {
   createWorker: WorkerFactory;
   /** The stage shown the moment a job starts. */
@@ -50,6 +56,7 @@ export function useWorkerJob<Req, S extends string, D extends object, R extends 
   crashMessage,
 }: WorkerJobOptions<S, D, R>) {
   const [job, setJob] = useState<WorkerJob<S, R>>({ status: 'idle' });
+  const [clock, setClock] = useState<JobClock | null>(null);
   const worker = useRef<Worker | null>(null);
   /** Bumped on every start, reset and unmount so late answers can tell they are stale. */
   const run = useRef(0);
@@ -69,6 +76,7 @@ export function useWorkerJob<Req, S extends string, D extends object, R extends 
       worker.current = w;
       let heard = false;
       setJob({ status: 'running', stage: firstStage, progress: 0 });
+      setClock({ startedAt: performance.now(), doneAt: null });
       w.onmessage = (event: MessageEvent<WorkerReply<S, D>>) => {
         if (worker.current !== w) return;
         heard = true;
@@ -77,6 +85,8 @@ export function useWorkerJob<Req, S extends string, D extends object, R extends 
           setJob({ status: 'running', stage: msg.stage, progress: msg.progress });
         } else if (msg.type === 'done') {
           setJob({ status: 'done', ...finish(msg as unknown as D) });
+          const doneAt = performance.now();
+          setClock((c) => c && { ...c, doneAt });
           stop();
         } else {
           setJob({ status: 'error', message: msg.message, fileName: msg.fileName });
@@ -110,7 +120,8 @@ export function useWorkerJob<Req, S extends string, D extends object, R extends 
   const reset = useCallback(() => {
     stop();
     setJob({ status: 'idle' });
+    setClock(null);
   }, [stop]);
 
-  return { job, start, reset };
+  return { job, clock, start, reset };
 }

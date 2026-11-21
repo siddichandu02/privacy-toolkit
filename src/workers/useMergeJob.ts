@@ -17,7 +17,7 @@ const finish = ({ bytes, pages }: { bytes: Uint8Array; pages: number }) => {
 
 /** Merge PDFs in a Web Worker. */
 export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
-  const { job, start, reset } = useWorkerJob<
+  const { job, clock, start, reset } = useWorkerJob<
     MergeRequest,
     MergeStage,
     Parameters<typeof finish>[0],
@@ -29,5 +29,5 @@ export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
     crashMessage: 'Something went wrong while merging. Try again.',
   });
   const merge = useCallback((files: File[]) => start({ files }), [start]);
-  return { job: job as MergeJob, start: merge, reset };
+  return { job: job as MergeJob, clock, start: merge, reset };
 }

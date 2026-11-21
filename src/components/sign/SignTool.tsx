@@ -14,7 +14,8 @@ import { useObjectUrl } from '../result/useObjectUrl';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { QuillScene } from '../wait/scenes/QuillScene';
 import { WaitStage } from '../wait/WaitStage';
 import { EMPTY_DRAFT, type Signature, type SignatureDraft } from './ink';
@@ -48,7 +49,9 @@ const START_SPOT: Spot = { page: 0, place: START, scope: 'one' };
 /** Sign PDF: make a signature, place it on a page, stamp it in a worker. */
 export function SignTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useSignJob();
+  const { job: work, clock, start, reset } = useSignJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
@@ -117,12 +120,9 @@ export function SignTool({ tool }: { tool: ToolInfo }) {
               current={job.stage}
               progress={job.progress}
               accent={tool.accent}
-              scene={
-                <QuillScene
-                  accent={tool.accent}
-                  progress={overallProgress(STEPS, job.stage, job.progress)}
-                />
-              }
+              onSkip={story.skip}
+              canSkip={story.canSkip}
+              scene={<QuillScene accent={tool.accent} progress={story.progress} />}
             />
           ) : job.status === 'done' ? (
             <DoneCard

@@ -12,7 +12,8 @@ import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { BreadScene } from '../wait/scenes/BreadScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePicker } from './PagePicker';
@@ -30,7 +31,9 @@ const STEPS: readonly WaitStep[] = [
 /** Split PDF: pick pages on a grid or by typing ranges, then cut them out in a worker. */
 export function SplitTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useSplitJob();
+  const { job: work, clock, start, reset } = useSplitJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
@@ -110,12 +113,9 @@ export function SplitTool({ tool }: { tool: ToolInfo }) {
                 current={job.stage}
                 progress={job.progress}
                 accent={tool.accent}
-                scene={
-                  <BreadScene
-                    accent={tool.accent}
-                    progress={overallProgress(STEPS, job.stage, job.progress)}
-                  />
-                }
+                onSkip={story.skip}
+                canSkip={story.canSkip}
+                scene={<BreadScene accent={tool.accent} progress={story.progress} />}
               />
             ) : job.status === 'done' ? (
               <DoneCard

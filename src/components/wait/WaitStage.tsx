@@ -16,6 +16,9 @@ export interface WaitStageProps {
   accent?: Accent;
   /** The story animation. Falls back to Pip sitting and watching. */
   scene?: ReactNode;
+  /** Shows a quiet "Skip" link that jumps to the result as soon as it is ready. */
+  onSkip?: () => void;
+  canSkip?: boolean;
   className?: string;
 }
 
@@ -31,6 +34,8 @@ export function WaitStage({
   progress,
   accent = 'violet',
   scene,
+  onSkip,
+  canSkip = false,
   className = '',
 }: WaitStageProps) {
   const reduced = useStillMotion();
@@ -47,6 +52,22 @@ export function WaitStage({
       aria-label={title}
       className={`relative mx-auto w-full max-w-xl overflow-hidden rounded-panel border border-line bg-surface px-5 pt-6 pb-6 shadow-lifted backdrop-blur-xl sm:px-8 sm:pt-8 ${className}`}
     >
+      <AnimatePresence>
+        {onSkip && canSkip && (
+          <motion.button
+            type="button"
+            onClick={onSkip}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute top-3 right-4 z-10 rounded-full px-3 py-1.5 text-sm text-muted underline-offset-4 transition-colors hover:text-fg hover:underline sm:top-4 sm:right-5"
+          >
+            Skip
+            <span className="sr-only"> the animation and show the result when it is ready</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
       <div
         className="relative mx-auto flex h-44 items-end justify-center sm:h-56"
         data-testid="scene"

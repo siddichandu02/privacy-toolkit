@@ -12,7 +12,8 @@ import { ErrorCard } from '../result/ErrorCard';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
-import { overallProgress, type WaitStep } from '../wait/progress';
+import { type WaitStep } from '../wait/progress';
+import { useStory } from '../wait/useStory';
 import { SuitcaseScene } from '../wait/scenes/SuitcaseScene';
 import { WaitStage } from '../wait/WaitStage';
 import { SizeCompare } from './SizeCompare';
@@ -39,7 +40,9 @@ const LEVEL_HINTS: Record<CompressLevel, string> = {
 /** Compress PDF: pick a level, shrink it in a worker, show old vs new size. */
 export function CompressTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue();
-  const { job, start, reset } = useCompressJob();
+  const { job: work, clock, start, reset } = useCompressJob();
+  const story = useStory(work, clock, STEPS);
+  const job = story.job;
   const still = useStillMotion();
   const file = queue.items[0]?.file;
   const [level, setLevel] = useState<CompressLevel>('balanced');
@@ -95,12 +98,9 @@ export function CompressTool({ tool }: { tool: ToolInfo }) {
               current={job.stage}
               progress={job.progress}
               accent={tool.accent}
-              scene={
-                <SuitcaseScene
-                  accent={tool.accent}
-                  progress={overallProgress(STEPS, job.stage, job.progress)}
-                />
-              }
+              onSkip={story.skip}
+              canSkip={story.canSkip}
+              scene={<SuitcaseScene accent={tool.accent} progress={story.progress} />}
             />
           ) : job.status === 'done' ? (
             job.smaller ? (
