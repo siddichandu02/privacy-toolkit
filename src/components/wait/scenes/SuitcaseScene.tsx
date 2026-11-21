@@ -3,6 +3,8 @@ import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
+import { Helper } from './Helper';
+import { Sparkles } from './Sparkles';
 
 export interface SuitcaseSceneProps {
   /** Overall progress, 0 to 1. The zip pull travels along the seam with it. */
@@ -37,11 +39,19 @@ const CLOTHES = [
   { x: CASE.x + 76, w: 34, fill: 'var(--mint)', stripe: '#fbf9ff' },
 ] as const;
 
+/** Where the paper helper stands, pushing on the left end of the case. */
+const HELPER = { x: CASE.x - 13, y: DESK_Y - 19.5 };
+/** The "smaller" sticker slapped on the front once the case is shut. */
+const STICKER = { x: CASE.x + CASE.w / 2, y: CASE.seam + 19, r: 10 };
+
 /**
- * Compress story: Pip bounces on an overstuffed suitcase while the zip pull
- * runs along the seam, tied to real progress. Clothes bulging out of the gap
- * are squeezed back in behind the pull, and Pip cheers once it is shut. With
- * reduced motion nothing bounces.
+ * Compress story in three acts. Intro: a paper helper trots in and braces
+ * itself against the overstuffed case. Action: Pip bounces on the lid and the
+ * helper shoves while the zip pull runs along the seam, tied to real
+ * progress; clothes bulging out of the gap are squeezed back in behind the
+ * pull. Finale: the case snaps shut, a round "smaller" sticker is slapped on
+ * its front, the tag swings, sparkles pop and Pip cheers. With reduced motion
+ * nothing bounces and the helper is already in place.
  */
 export function SuitcaseScene({
   progress,
@@ -71,6 +81,7 @@ export function SuitcaseScene({
       data-testid="suitcase-scene"
       data-zip={Math.round(p * 100)}
       data-zipped={zipped}
+      data-act={zipped ? 'finale' : 'packing'}
     >
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -185,6 +196,71 @@ export function SuitcaseScene({
           <rect x={-3.5} y={-3} width={7} height={6} rx={1.5} fill="#e8e4f5" stroke={INK} />
           <rect x={-2} y={2.5} width={4} height={9} rx={2} fill="#e8e4f5" stroke={INK} />
         </motion.g>
+
+        {/* Finale: a round sticker with a shrink arrow, slapped on the front. */}
+        {zipped ? (
+          <g transform={`translate(${STICKER.x} ${STICKER.y})`}>
+            <motion.g
+              data-part="sticker"
+              initial={still ? false : { scale: 2.2, rotate: -40, opacity: 0 }}
+              animate={{ scale: 1, rotate: -8, opacity: 1 }}
+              transition={
+                still
+                  ? { duration: 0 }
+                  : { type: 'spring', stiffness: 320, damping: 14, delay: 0.15 }
+              }
+            >
+              <circle r={STICKER.r} fill="#fbf9ff" stroke={INK} strokeWidth={1.2} />
+              <circle
+                r={STICKER.r - 2.4}
+                fill="none"
+                stroke="var(--mint)"
+                strokeWidth={1.4}
+                strokeDasharray="2 1.6"
+              />
+              <path
+                d="M0 -5 V3.5 M-3.6 0.4 L0 4.2 L3.6 0.4"
+                stroke={INK}
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </motion.g>
+          </g>
+        ) : null}
+
+        {/* The helper trots in, then shoves the case shut alongside Pip. */}
+        <motion.g
+          data-part="helper-wrap"
+          data-pushing={!zipped}
+          initial={still ? false : { x: -80 }}
+          animate={{ x: zipped ? -3 : 0 }}
+          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 90, damping: 15 }}
+        >
+          {/* Leans into the case, pivoting on its feet, while it shoves. */}
+          <g transform={zipped ? undefined : `rotate(9 ${HELPER.x} ${DESK_Y})`}>
+            <Helper
+              x={HELPER.x}
+              y={HELPER.y}
+              color={accent === 'mint' ? 'sky' : 'mint'}
+              hopping={!still}
+              delay={zipped ? 0.2 : 0.27}
+            />
+          </g>
+        </motion.g>
+
+        {zipped ? (
+          <Sparkles
+            still={still}
+            delay={0.3}
+            points={[
+              { x: CASE.x + 10, y: CASE.seam - LID_H - 10 },
+              { x: CASE.x + CASE.w - 8, y: CASE.seam - LID_H - 16, s: 0.7 },
+              { x: STICKER.x + 16, y: STICKER.y - 8, s: 0.8 },
+            ]}
+          />
+        ) : null}
 
         {/* Luggage tag, swinging once the case is shut. */}
         <motion.g

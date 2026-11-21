@@ -50,4 +50,21 @@ describe('SuitcaseScene', () => {
     const { container } = render(<SuitcaseScene progress={0.5} thumb="blob:page" />);
     expect(container.querySelector('[data-part="tag-page"]')).toHaveAttribute('href', 'blob:page');
   });
+
+  it('has a helper pushing while packing, then a sticker and sparkles at the end', () => {
+    const { container, rerender } = render(<SuitcaseScene progress={0.5} />);
+    const scene = screen.getByTestId('suitcase-scene');
+    expect(scene).toHaveAttribute('data-act', 'packing');
+    expect(container.querySelector('[data-part="helper"]')).not.toBeNull();
+    expect(container.querySelector('[data-part="helper-wrap"]')).toHaveAttribute(
+      'data-pushing',
+      'true',
+    );
+    expect(container.querySelector('[data-part="sticker"]')).toBeNull();
+    expect(container.querySelector('[data-part="sparkle"]')).toBeNull();
+    rerender(<SuitcaseScene progress={1} />);
+    expect(scene).toHaveAttribute('data-act', 'finale');
+    expect(container.querySelector('[data-part="sticker"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-part="sparkle"]')).toHaveLength(3);
+  });
 });
