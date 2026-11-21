@@ -18,6 +18,13 @@ test('the story plays for a few seconds before the result', async ({ page }) => 
   await expect(stage).toBeVisible();
   const done = page.getByRole('heading', { name: 'Your PDF is ready' });
 
+  // The user's own first pages are drawn into the scene.
+  await expect(page.locator('[data-testid="jar-scene"] image[href^="blob:"]').first()).toBeAttached(
+    {
+      timeout: 3000,
+    },
+  );
+
   // The merge itself takes well under a second; the story keeps going.
   await page.waitForTimeout(3000);
   await expect(stage).toBeVisible();

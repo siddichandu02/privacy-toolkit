@@ -7,7 +7,7 @@ import { DEFAULT_STEPS } from '../components/wait/progress';
 import { BreadScene } from '../components/wait/scenes/BreadScene';
 import { PizzaScene } from '../components/wait/scenes/PizzaScene';
 import { QuillScene } from '../components/wait/scenes/QuillScene';
-import { PancakeScene } from '../components/wait/scenes/PancakeScene';
+import { JarScene } from '../components/wait/scenes/JarScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { SuitcaseScene } from '../components/wait/scenes/SuitcaseScene';
 import { WaitStage } from '../components/wait/WaitStage';
@@ -74,7 +74,7 @@ export default function PipLab() {
         current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
         progress={within}
         accent="violet"
-        scene={<PancakeScene progress={scrub} accent="violet" />}
+        scene={<JarScene progress={scrub} accent="violet" />}
       />
       <WaitStage
         className="mt-6"

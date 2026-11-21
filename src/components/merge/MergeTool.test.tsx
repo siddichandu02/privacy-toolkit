@@ -78,7 +78,7 @@ describe('MergeTool', () => {
     expect(state.start).toHaveBeenCalledWith([a, b]);
   });
 
-  it('shows the pancake scene while running', async () => {
+  it('shows the wait story while running', async () => {
     const { user, rerender } = setup();
     await user.upload(screen.getByTestId('file-input'), [pdf('a.pdf'), pdf('b.pdf')]);
     state.job = { status: 'running', stage: 'working', progress: 0.5 };

@@ -13,7 +13,8 @@ import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
-import { PancakeScene } from '../wait/scenes/PancakeScene';
+import { useThumbnails } from '../wait/useThumbnails';
+import { JarScene } from '../wait/scenes/JarScene';
 import { WaitStage } from '../wait/WaitStage';
 
 const pageCount = (n: number) => (n === 1 ? '1 page' : `${n} pages`);
@@ -33,6 +34,7 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
   const { job: work, clock, start, reset } = useMergeJob();
   const story = useStory(work, clock, STEPS);
   const job = story.job;
+  const thumbs = useThumbnails(job.status === 'running' ? queue.items.map((i) => i.file) : []);
   const still = useStillMotion();
   const count = queue.items.length;
   const totalBytes = queue.items.reduce((sum, item) => sum + item.file.size, 0);
@@ -86,7 +88,7 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
               accent={tool.accent}
               onSkip={story.skip}
               canSkip={story.canSkip}
-              scene={<PancakeScene accent={tool.accent} progress={story.progress} />}
+              scene={<JarScene accent={tool.accent} progress={story.progress} thumbs={thumbs} />}
             />
           ) : job.status === 'done' ? (
             <DoneCard
