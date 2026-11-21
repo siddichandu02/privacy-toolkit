@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MotionConfig } from 'framer-motion';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -44,7 +44,9 @@ async function setup() {
   const view = render(ui());
   const file = new File([new Uint8Array(2048)], 'brochure.pdf', { type: 'application/pdf' });
   await user.upload(screen.getByTestId('file-input'), [file]);
-  await screen.findByRole('button', { name: 'Compress PDF' });
+  const button = await screen.findByRole('button', { name: 'Compress PDF' });
+  // The panel fades in; slow machines can catch it at opacity 0.
+  await waitFor(() => expect(button).toBeVisible());
   return { user, file, ...view };
 }
 
@@ -60,9 +62,9 @@ describe('CompressTool', () => {
   it('starts on balanced and explains each level', async () => {
     const { user } = await setup();
     expect(screen.getByRole('radio', { name: 'Balanced' })).toBeChecked();
-    expect(screen.getByText(/re-saves large photos/)).toBeVisible();
+    await waitFor(() => expect(screen.getByText(/re-saves large photos/)).toBeVisible());
     await user.click(screen.getByRole('radio', { name: 'Light' }));
-    expect(screen.getByText(/Photos stay exactly as they are/)).toBeVisible();
+    await waitFor(() => expect(screen.getByText(/Photos stay exactly as they are/)).toBeVisible());
     expect(screen.getByText('brochure.pdf is 2 KB. It stays as it is.')).toBeVisible();
   });
 
