@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
@@ -7,6 +8,8 @@ export interface ScrapbookSceneProps {
   /** Overall progress, 0 to 1. A photo gets pinned in as each share passes. */
   progress: number;
   accent?: Accent;
+  /** The user's own photos. Drawn little scenes stand in when empty. */
+  photos?: readonly string[];
   className?: string;
 }
 
@@ -42,7 +45,8 @@ const SHOTS = [
 const INK = '#1b1633';
 
 /** A white-bordered print drawn around its own centre, with a pin on top. */
-function Photo({ i, pinned }: { i: number; pinned: boolean }) {
+function Photo({ i, pinned, href }: { i: number; pinned: boolean; href?: string }) {
+  const clip = useId().replace(/:/g, '');
   const { w, h } = PHOTO;
   const shot = SHOTS[i % SHOTS.length] ?? SHOTS[0];
   const x = -w / 2;
@@ -53,12 +57,31 @@ function Photo({ i, pinned }: { i: number; pinned: boolean }) {
     <>
       <rect x={x + 0.8} y={y + 1.2} width={w} height={h} rx={1.5} fill={INK} opacity={0.18} />
       <rect x={x} y={y} width={w} height={h} rx={1.5} fill="#fbf9ff" />
-      <rect x={x + 2} y={y + 2} width={iw} height={ih} fill={shot.sky} opacity={0.85} />
-      <circle cx={x + iw - 2} cy={y + 6} r={2.4} fill={shot.sun} />
-      <path
-        d={`M${x + 2} ${y + 2 + ih} L${x + 2} ${y + 2 + ih * 0.6} Q${x + 8} ${y + ih * 0.3} ${x + 13} ${y + 2 + ih * 0.65} T${x + 2 + iw} ${y + ih * 0.55} V${y + 2 + ih} Z`}
-        fill={shot.hill}
-      />
+      {href ? (
+        <>
+          <clipPath id={clip}>
+            <rect x={x + 2} y={y + 2} width={iw} height={ih} />
+          </clipPath>
+          <image
+            href={href}
+            x={x + 2}
+            y={y + 2}
+            width={iw}
+            height={ih}
+            preserveAspectRatio="xMidYMid slice"
+            clipPath={`url(#${clip})`}
+          />
+        </>
+      ) : (
+        <>
+          <rect x={x + 2} y={y + 2} width={iw} height={ih} fill={shot.sky} opacity={0.85} />
+          <circle cx={x + iw - 2} cy={y + 6} r={2.4} fill={shot.sun} />
+          <path
+            d={`M${x + 2} ${y + 2 + ih} L${x + 2} ${y + 2 + ih * 0.6} Q${x + 8} ${y + ih * 0.3} ${x + 13} ${y + 2 + ih * 0.65} T${x + 2 + iw} ${y + ih * 0.55} V${y + 2 + ih} Z`}
+            fill={shot.hill}
+          />
+        </>
+      )}
       {pinned ? (
         <g data-part="pin">
           <circle cx={0} cy={y + 1} r={2.6} fill="var(--coral)" stroke={INK} strokeWidth={0.6} />
@@ -74,8 +97,14 @@ function Photo({ i, pinned }: { i: number; pinned: boolean }) {
  * real progress moves, then the book claps shut. Only the waiting photo's
  * bob loops. With reduced motion everything stands still.
  */
-export function ScrapbookScene({ progress, accent = 'mint', className = '' }: ScrapbookSceneProps) {
+export function ScrapbookScene({
+  progress,
+  accent = 'mint',
+  photos = [],
+  className = '',
+}: ScrapbookSceneProps) {
   const still = useStillMotion();
+  const photo = (i: number) => (photos.length ? photos[i % photos.length] : undefined);
   const total = SLOTS.length;
   const p = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
   const pinned = Math.min(total, Math.floor(p * total + 1e-9));
@@ -160,7 +189,7 @@ export function ScrapbookScene({ progress, accent = 'mint', className = '' }: Sc
               closed && !still ? { opacity: { duration: 0.15 }, default: spring } : spring
             }
           >
-            <Photo i={i} pinned />
+            <Photo i={i} pinned href={photo(i)} />
           </motion.g>
         ))}
 
@@ -229,7 +258,7 @@ export function ScrapbookScene({ progress, accent = 'mint', className = '' }: Sc
                   }
             }
           >
-            <Photo i={pinned} pinned={false} />
+            <Photo i={pinned} pinned={false} href={photo(pinned)} />
           </motion.g>
         ) : null}
       </svg>

@@ -20,6 +20,7 @@ import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
+import { useThumbnails } from '../wait/useThumbnails';
 import { ScrapbookScene } from '../wait/scenes/ScrapbookScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePreview } from './PagePreview';
@@ -57,6 +58,7 @@ export function ImagesTool({ tool }: { tool: ToolInfo }) {
   const { job: work, clock, start, reset } = useImagesJob();
   const story = useStory(work, clock, STEPS);
   const job = story.job;
+  const photos = useThumbnails(job.status === 'running' ? queue.items.map((i) => i.file) : []);
   const still = useStillMotion();
   const [options, setOptions] = useState<ImagesOptions>(DEFAULT_OPTIONS);
   const count = queue.items.length;
@@ -112,7 +114,9 @@ export function ImagesTool({ tool }: { tool: ToolInfo }) {
               accent={tool.accent}
               onSkip={story.skip}
               canSkip={story.canSkip}
-              scene={<ScrapbookScene accent={tool.accent} progress={story.progress} />}
+              scene={
+                <ScrapbookScene accent={tool.accent} progress={story.progress} photos={photos} />
+              }
             />
           ) : job.status === 'done' ? (
             <DoneCard

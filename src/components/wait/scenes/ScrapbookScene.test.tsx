@@ -49,4 +49,12 @@ describe('ScrapbookScene', () => {
     );
     expect(container.querySelector('[data-pose="hold"]')).not.toBeNull();
   });
+
+  it('pins the real photos when it has them', () => {
+    const { container } = render(
+      <ScrapbookScene progress={0.5} photos={['blob:cat', 'blob:dog']} />,
+    );
+    const hrefs = [...container.querySelectorAll('image')].map((i) => i.getAttribute('href'));
+    expect(hrefs).toEqual(['blob:cat', 'blob:dog', 'blob:cat']);
+  });
 });
