@@ -34,8 +34,34 @@ function loadPdfJs(): Promise<PdfKit> {
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl.default;
     return { pdfjs, worker: new pdfjs.PDFWorker() };
   });
+  // A failed load (offline for a moment, or files renamed by a deploy) must
+  // not stick for the whole visit: forget it so the next preview tries again.
+  pdfReady.catch(() => {
+    pdfReady = null;
+  });
   return pdfReady;
 }
+
+/**
+ * Run at most `limit` tasks at once. Dropping 25 PDFs would otherwise parse
+ * and draw all of them together, which is slow and can exhaust memory.
+ */
+export function limitConcurrency(limit: number) {
+  let active = 0;
+  const waiting: (() => void)[] = [];
+  return async function run<T>(task: () => Promise<T>): Promise<T> {
+    if (active >= limit) await new Promise<void>((resolve) => waiting.push(resolve));
+    active += 1;
+    try {
+      return await task();
+    } finally {
+      active -= 1;
+      waiting.shift()?.();
+    }
+  };
+}
+
+const previewSlot = limitConcurrency(3);
 
 function canvasToUrl(canvas: HTMLCanvasElement): Promise<string | null> {
   return new Promise((resolve) => {
@@ -48,8 +74,8 @@ async function previewPdf(file: File, width: number): Promise<FilePreview> {
   const { pdfjs, worker } = await loadPdfJs();
   const data = new Uint8Array(await file.arrayBuffer());
   const task = pdfjs.getDocument({ data, worker });
-  const doc = await task.promise;
   try {
+    const doc = await task.promise;
     const page = await doc.getPage(1);
     const base = page.getViewport({ scale: 1 });
     const scale = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
@@ -60,6 +86,7 @@ async function previewPdf(file: File, width: number): Promise<FilePreview> {
     const context = canvas.getContext('2d');
     if (!context) return { url: null, pages: doc.numPages };
     await page.render({ canvas, canvasContext: context, viewport }).promise;
+    page.cleanup();
     return { url: await canvasToUrl(canvas), pages: doc.numPages };
   } finally {
     void task.destroy();
@@ -71,7 +98,7 @@ async function previewPdf(file: File, width: number): Promise<FilePreview> {
  * and must revoke it with URL.revokeObjectURL when done.
  */
 export async function makePreview(file: File, width = 120): Promise<FilePreview> {
-  if (isPdf(file)) return previewPdf(file, width);
+  if (isPdf(file)) return previewSlot(() => previewPdf(file, width));
   if (DRAWABLE.has(extensionOf(file.name)) || /^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
     return { url: URL.createObjectURL(file), pages: null };
   }
@@ -94,7 +121,10 @@ export async function openPdfPages(file: File): Promise<PdfPages> {
   const { pdfjs, worker } = await loadPdfJs();
   const data = new Uint8Array(await file.arrayBuffer());
   const task = pdfjs.getDocument({ data, worker });
-  const doc = await task.promise;
+  const doc = await task.promise.catch((err: unknown) => {
+    void task.destroy();
+    throw err;
+  });
   let closed = false;
   let queue: Promise<unknown> = Promise.resolve();
 
