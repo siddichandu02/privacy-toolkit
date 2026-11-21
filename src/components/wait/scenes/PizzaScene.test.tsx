@@ -54,4 +54,27 @@ describe('PizzaScene', () => {
     expect(count(container, 'swirl')).toBe(0);
     expect(count(container, 'flour')).toBe(0);
   });
+
+  it('spins the real first page when there is one', () => {
+    const { container, rerender } = render(<PizzaScene progress={0.4} />);
+    expect(container.querySelector('[data-part="real-page"]')).toBeNull();
+    rerender(<PizzaScene progress={0.4} thumb="blob:first" />);
+    // Two landed plus the one spinning.
+    const pages = container.querySelectorAll('[data-part="real-page"]');
+    expect(pages).toHaveLength(3);
+    expect(pages[2]).toHaveAttribute('href', 'blob:first');
+  });
+
+  it('brings a helper along and ends with a cheer', () => {
+    const { container, rerender } = render(<PizzaScene progress={0.4} />);
+    const scene = screen.getByTestId('pizza-scene');
+    expect(scene).toHaveAttribute('data-act', 'action');
+    expect(container.querySelector('[data-part="helper"]')).not.toBeNull();
+    expect(container.querySelector('[data-pose="hold"]')).not.toBeNull();
+    expect(container.querySelector('[data-part="sparkle"]')).toBeNull();
+    rerender(<PizzaScene progress={1} />);
+    expect(scene).toHaveAttribute('data-act', 'finale');
+    expect(container.querySelector('[data-pose="celebrate"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-part="sparkle"]')).toHaveLength(3);
+  });
 });

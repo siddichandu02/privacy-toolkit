@@ -15,6 +15,7 @@ import type { Accent } from '../ui/accent';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
 import { PizzaScene } from '../wait/scenes/PizzaScene';
+import { useThumbnails } from '../wait/useThumbnails';
 import { WaitStage } from '../wait/WaitStage';
 import { PageTurner, TurnIcon, UndoIcon } from './PageTurner';
 
@@ -49,6 +50,7 @@ export function RotateTool({ tool }: { tool: ToolInfo }) {
   const still = useStillMotion();
   const item = queue.items[0];
   const file = item?.file;
+  const [thumb] = useThumbnails(job.status === 'running' && file ? [file] : [], 1);
   // Edits belong to one file; a new file starts fresh.
   const [held, setHeld] = useState<{ id: string; edits: Edits }>({ id: '', edits: [] });
   const edits = item && held.id === item.id ? held.edits : [];
@@ -121,7 +123,7 @@ export function RotateTool({ tool }: { tool: ToolInfo }) {
                 accent={tool.accent}
                 onSkip={story.skip}
                 canSkip={story.canSkip}
-                scene={<PizzaScene accent={tool.accent} progress={story.progress} />}
+                scene={<PizzaScene accent={tool.accent} progress={story.progress} thumb={thumb} />}
               />
             ) : job.status === 'done' ? (
               <DoneCard

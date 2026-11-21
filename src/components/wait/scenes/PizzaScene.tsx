@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
+import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
+import { Helper } from './Helper';
+import { PageFace } from './PageFace';
 
 export interface PizzaSceneProps {
   /** Overall progress, 0 to 1. A turned page lands on the counter as each share passes. */
@@ -9,6 +12,8 @@ export interface PizzaSceneProps {
   accent?: Accent;
   /** How many pages Pip spins in the story. */
   pages?: number;
+  /** The user's first page, shown on every page Pip spins. Ruled paper when missing. */
+  thumb?: string;
   className?: string;
 }
 
@@ -30,7 +35,17 @@ const paper = (accent: Accent, i: number) =>
 const edge = (accent: Accent) => `color-mix(in srgb, var(--${accent}) 60%, #1b1033)`;
 
 /** A portrait page drawn around its own centre, with a folded corner and text lines. */
-function Page({ accent, i }: { accent: Accent; i: number }) {
+function Page({
+  accent,
+  i,
+  thumb,
+  clip,
+}: {
+  accent: Accent;
+  i: number;
+  thumb?: string;
+  clip: string;
+}) {
   const { w, h } = PAGE;
   const x = -w / 2;
   const y = -h / 2;
@@ -51,7 +66,18 @@ function Page({ accent, i }: { accent: Accent; i: number }) {
         strokeWidth={0.9}
         strokeLinejoin="round"
       />
-      {[0, 1, 2, 3].map((r) => (
+      {thumb ? (
+        <PageFace
+          x={x + 3}
+          y={y + fold + 1}
+          w={w - 6}
+          h={h - fold - 4}
+          href={thumb}
+          accent={accent}
+          clip={`${clip}-${i}`}
+        />
+      ) : null}
+      {(thumb ? [] : [0, 1, 2, 3]).map((r) => (
         <line
           key={r}
           x1={x + 6}
@@ -68,18 +94,33 @@ function Page({ accent, i }: { accent: Accent; i: number }) {
   );
 }
 
+/** Finale sparkles, as offsets from the top of the stack. */
+const SPARKLES: readonly (readonly [number, number])[] = [
+  [-14, -8],
+  [12, -16],
+  [2, -26],
+];
+
+/** Where the paper helper waits on the counter, next to the stack. */
+const HELPER_X = 214;
+
 /**
- * Rotate story: Pip spins a page over one paw like pizza dough, and each
- * finished page lands on the counter turned on its side. Pages follow real
- * progress; only the spin loops. With reduced motion everything stands still.
+ * Rotate story in three acts. Intro: a paper helper strolls onto the counter
+ * and Pip flips the first of the user's pages up off one paw. Action: Pip
+ * spins each page like pizza dough and it lands on the counter turned on its
+ * side; the helper hops with every landing. Pages follow real progress; only
+ * the spin loops. Finale: Pip cheers, the helper bounces and the stack
+ * sparkles. With reduced motion everything stands still.
  */
 export function PizzaScene({
   progress,
   accent = 'sunshine',
   pages = 5,
+  thumb,
   className = '',
 }: PizzaSceneProps) {
   const still = useStillMotion();
+  const clip = `pizza-${useId().replace(/:/g, '')}`;
   const p = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
   const landed = Math.min(pages, Math.floor(p * pages + 1e-9));
   const finished = landed >= pages;
@@ -93,8 +134,13 @@ export function PizzaScene({
       style={{ aspectRatio: `${W} / ${H}` }}
       data-testid="pizza-scene"
       data-landed={landed}
+      data-act={finished ? 'finale' : 'action'}
     >
-      <Pip pose="hold" accent={pip} className="absolute top-0 left-0 h-full" />
+      <Pip
+        pose={finished ? 'celebrate' : 'hold'}
+        accent={pip}
+        className="absolute top-0 left-0 h-full"
+      />
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="absolute inset-0 h-full w-full"
@@ -119,18 +165,56 @@ export function PizzaScene({
             }}
             transition={spring}
           >
-            <Page accent={accent} i={i} />
+            <Page accent={accent} i={i} thumb={thumb} clip={clip} />
           </motion.g>
         ))}
 
+        {/* The helper strolls in, hops each time a page lands, cheers at the end. */}
+        <motion.g
+          initial={still ? false : { x: 70 }}
+          animate={{ x: 0 }}
+          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 90, damping: 16 }}
+        >
+          <motion.g
+            key={finished ? 'cheer' : `hop-${landed}`}
+            data-part="helper-hop"
+            animate={still || finished ? undefined : landed > 0 ? { y: [0, -7, 0] } : undefined}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            <Helper
+              x={HELPER_X}
+              y={COUNTER_Y - 20}
+              color={accent === 'sky' ? 'mint' : 'sky'}
+              hopping={!still && finished}
+            />
+          </motion.g>
+        </motion.g>
+
+        {finished
+          ? SPARKLES.map(([dx, dy], k) => (
+              <motion.path
+                key={k}
+                data-part="sparkle"
+                d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z"
+                fill="var(--sunshine)"
+                initial={still ? false : { scale: 0, opacity: 0 }}
+                animate={{ scale: [0, 1.25, 1], opacity: 1 }}
+                transition={still ? { duration: 0 } : { duration: 0.5, delay: 0.12 * k }}
+                style={{ x: STACK_X + dx, y: COUNTER_Y - PAGE.w - pages * 4 + dy }}
+              />
+            ))
+          : null}
+
         {/* The paw points up; flour puffs off it while the page spins. */}
-        <path
-          d={`M${PAW.x - 2} ${PAW.y - 3} Q${PAW.x + 2} ${PAW.y - 16} ${PAW.x + 6} ${PAW.y - 22}`}
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth={4.5}
-          strokeLinecap="round"
-        />
+        {finished ? null : (
+          <path
+            d={`M${PAW.x - 2} ${PAW.y - 3} Q${PAW.x + 2} ${PAW.y - 16} ${PAW.x + 6} ${PAW.y - 22}`}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth={4.5}
+            strokeLinecap="round"
+          />
+        )}
         {spinning
           ? [-6, 0, 7].map((dx, i) => (
               <motion.circle
@@ -192,7 +276,7 @@ export function PizzaScene({
                 : { duration: 0 }
             }
           >
-            <Page accent={accent} i={landed} />
+            <Page accent={accent} i={landed} thumb={thumb} clip={clip} />
           </motion.g>
         ) : null}
       </svg>
