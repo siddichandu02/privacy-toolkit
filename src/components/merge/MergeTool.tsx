@@ -92,6 +92,7 @@ export function MergeTool({ tool }: { tool: ToolInfo }) {
             />
           ) : (
             <ErrorCard
+              reason={job.reason}
               title="The merge did not finish"
               message={job.message}
               fileName={job.fileName}

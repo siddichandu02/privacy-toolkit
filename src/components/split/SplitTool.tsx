@@ -136,6 +136,7 @@ export function SplitTool({ tool }: { tool: ToolInfo }) {
               />
             ) : (
               <ErrorCard
+                reason={job.reason}
                 title="The split did not finish"
                 message={job.message}
                 fileName={job.fileName}

@@ -47,3 +47,25 @@ describe('ErrorCard', () => {
     expect(onBack).toHaveBeenCalledOnce();
   });
 });
+
+describe('ErrorCard after an update', () => {
+  it('offers a reload instead of a retry that would fail again', async () => {
+    const onReload = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <ErrorCard
+        title="The merge did not finish"
+        message="Privacy Toolkit was updated while this page was open."
+        reason="updated"
+        fileName="a.pdf"
+        onRetry={vi.fn()}
+        onBack={vi.fn()}
+        onReload={onReload}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'A newer version is ready' })).toBeInTheDocument();
+    expect(buttons()).toEqual(['Reload page', 'Back to your files']);
+    await user.click(screen.getByRole('button', { name: 'Reload page' }));
+    expect(onReload).toHaveBeenCalledOnce();
+  });
+});

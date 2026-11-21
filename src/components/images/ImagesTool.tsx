@@ -129,6 +129,7 @@ export function ImagesTool({ tool }: { tool: ToolInfo }) {
             />
           ) : (
             <ErrorCard
+              reason={job.reason}
               title="The PDF was not made"
               message={job.message}
               fileName={job.fileName}

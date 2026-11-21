@@ -146,6 +146,7 @@ export function RotateTool({ tool }: { tool: ToolInfo }) {
               />
             ) : (
               <ErrorCard
+                reason={job.reason}
                 title="Your pages were not saved"
                 message={job.message}
                 fileName={job.fileName}

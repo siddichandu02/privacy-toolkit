@@ -137,6 +137,7 @@ export function CompressTool({ tool }: { tool: ToolInfo }) {
             )
           ) : (
             <ErrorCard
+              reason={job.reason}
               title="Your PDF was not compressed"
               message={job.message}
               fileName={job.fileName}

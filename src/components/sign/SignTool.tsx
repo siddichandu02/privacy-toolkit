@@ -145,6 +145,7 @@ export function SignTool({ tool }: { tool: ToolInfo }) {
             />
           ) : (
             <ErrorCard
+              reason={job.reason}
               title="Your PDF was not signed"
               message={job.message}
               fileName={job.fileName}
