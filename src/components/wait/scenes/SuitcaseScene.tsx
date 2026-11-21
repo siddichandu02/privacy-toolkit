@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useId } from 'react';
 import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
@@ -7,6 +8,8 @@ export interface SuitcaseSceneProps {
   /** Overall progress, 0 to 1. The zip pull travels along the seam with it. */
   progress: number;
   accent?: Accent;
+  /** The first page of the user's PDF, shown on the luggage tag. */
+  thumb?: string;
   className?: string;
 }
 
@@ -40,8 +43,15 @@ const CLOTHES = [
  * are squeezed back in behind the pull, and Pip cheers once it is shut. With
  * reduced motion nothing bounces.
  */
-export function SuitcaseScene({ progress, accent = 'coral', className = '' }: SuitcaseSceneProps) {
+export function SuitcaseScene({
+  progress,
+  accent = 'coral',
+  thumb,
+  className = '',
+}: SuitcaseSceneProps) {
   const still = useStillMotion();
+  const clip = useId().replace(/:/g, '');
+  const tag = { x: CASE.x + CASE.w - 2, y: CASE.seam + 13 };
   const p = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
   const zipped = p >= 1;
   const gap = GAPE * (1 - p);
@@ -190,17 +200,36 @@ export function SuitcaseScene({ progress, accent = 'coral', className = '' }: Su
             strokeWidth={1}
             fill="none"
           />
-          <rect
-            x={CASE.x + CASE.w - 2}
-            y={CASE.seam + 13}
-            width={13}
-            height={18}
-            rx={2}
-            fill="var(--sunshine)"
-            stroke={INK}
-            strokeWidth={0.8}
-            transform={`rotate(-12 ${CASE.x + CASE.w + 4} ${CASE.seam + 22})`}
-          />
+          <g transform={`rotate(-12 ${CASE.x + CASE.w + 4} ${CASE.seam + 22})`}>
+            <rect
+              x={tag.x}
+              y={tag.y}
+              width={13}
+              height={18}
+              rx={2}
+              fill="var(--sunshine)"
+              stroke={INK}
+              strokeWidth={0.8}
+            />
+            {thumb ? (
+              <>
+                <clipPath id={clip}>
+                  <rect x={tag.x + 2} y={tag.y + 3} width={9} height={12} rx={0.8} />
+                </clipPath>
+                <rect x={tag.x + 2} y={tag.y + 3} width={9} height={12} rx={0.8} fill="#fbf9ff" />
+                <image
+                  data-part="tag-page"
+                  href={thumb}
+                  x={tag.x + 2}
+                  y={tag.y + 3}
+                  width={9}
+                  height={12}
+                  preserveAspectRatio="xMidYMin slice"
+                  clipPath={`url(#${clip})`}
+                />
+              </>
+            ) : null}
+          </g>
         </motion.g>
       </svg>
 

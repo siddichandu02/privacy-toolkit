@@ -45,4 +45,9 @@ describe('SuitcaseScene', () => {
     );
     expect(still.container.querySelector('[data-pose="sit"]')).not.toBeNull();
   });
+
+  it('puts the real first page on the luggage tag', () => {
+    const { container } = render(<SuitcaseScene progress={0.5} thumb="blob:page" />);
+    expect(container.querySelector('[data-part="tag-page"]')).toHaveAttribute('href', 'blob:page');
+  });
 });

@@ -14,6 +14,7 @@ import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
+import { useThumbnails } from '../wait/useThumbnails';
 import { SuitcaseScene } from '../wait/scenes/SuitcaseScene';
 import { WaitStage } from '../wait/WaitStage';
 import { SizeCompare } from './SizeCompare';
@@ -45,6 +46,7 @@ export function CompressTool({ tool }: { tool: ToolInfo }) {
   const job = story.job;
   const still = useStillMotion();
   const file = queue.items[0]?.file;
+  const [thumb] = useThumbnails(job.status === 'running' && file ? [file] : [], 1);
   const [level, setLevel] = useState<CompressLevel>('balanced');
 
   const run = () => {
@@ -100,7 +102,7 @@ export function CompressTool({ tool }: { tool: ToolInfo }) {
               accent={tool.accent}
               onSkip={story.skip}
               canSkip={story.canSkip}
-              scene={<SuitcaseScene accent={tool.accent} progress={story.progress} />}
+              scene={<SuitcaseScene accent={tool.accent} progress={story.progress} thumb={thumb} />}
             />
           ) : job.status === 'done' ? (
             job.smaller ? (
