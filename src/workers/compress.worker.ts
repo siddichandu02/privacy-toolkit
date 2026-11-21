@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { CompressError, compressPdf, type ImageRecoder } from '../lib/pdf/compress';
 import type { CompressReply, CompressWorkerRequest } from './compress-protocol';
+import { unexpectedMessage } from './fail';
 
 const post = (msg: CompressReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -53,7 +54,7 @@ self.onmessage = async (event: MessageEvent<CompressWorkerRequest>) => {
       message:
         err instanceof CompressError
           ? err.message
-          : 'Something went wrong while shrinking your PDF. Try again.',
+          : unexpectedMessage(err, 'Something went wrong while shrinking your PDF. Try again.'),
       fileName: file.name,
     });
   }

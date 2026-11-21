@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { ImagesError, imagesToPdf, type ImageDecoder } from '../lib/pdf/images';
 import type { ImagesReply, ImagesWorkerRequest } from './images-protocol';
+import { unexpectedMessage } from './fail';
 
 const post = (msg: ImagesReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -50,7 +51,9 @@ self.onmessage = async (event: MessageEvent<ImagesWorkerRequest>) => {
     const known = err instanceof ImagesError;
     post({
       type: 'error',
-      message: known ? err.message : 'Something went wrong while making your PDF. Try again.',
+      message: known
+        ? err.message
+        : unexpectedMessage(err, 'Something went wrong while making your PDF. Try again.'),
       fileName: known ? err.fileName : undefined,
     });
   }

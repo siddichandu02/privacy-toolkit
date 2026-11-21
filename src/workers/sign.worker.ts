@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { SignError, signPdf } from '../lib/pdf/sign';
 import type { SignReply, SignWorkerRequest } from './sign-protocol';
+import { unexpectedMessage } from './fail';
 
 const post = (msg: SignReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -26,7 +27,7 @@ self.onmessage = async (event: MessageEvent<SignWorkerRequest>) => {
       message:
         err instanceof SignError
           ? err.message
-          : 'Something went wrong while signing your PDF. Try again.',
+          : unexpectedMessage(err, 'Something went wrong while signing your PDF. Try again.'),
       fileName: file.name,
     });
   }

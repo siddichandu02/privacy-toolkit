@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { MergeError, mergePdfs, type MergeSource } from '../lib/pdf/merge';
 import type { MergeReply, MergeRequest } from './merge-protocol';
+import { unexpectedMessage } from './fail';
 
 const post = (msg: MergeReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -16,7 +17,9 @@ self.onmessage = async (event: MessageEvent<MergeRequest>) => {
     post({
       type: 'error',
       message:
-        err instanceof MergeError ? err.message : 'Something went wrong while merging. Try again.',
+        err instanceof MergeError
+          ? err.message
+          : unexpectedMessage(err, 'Something went wrong while merging. Try again.'),
       fileName: err instanceof MergeError ? err.fileName : undefined,
     });
   }

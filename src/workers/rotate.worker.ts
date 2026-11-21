@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { RotateError, rotatePdf } from '../lib/pdf/rotate';
 import type { RotateReply, RotateWorkerRequest } from './rotate-protocol';
+import { unexpectedMessage } from './fail';
 
 const post = (msg: RotateReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -19,7 +20,7 @@ self.onmessage = async (event: MessageEvent<RotateWorkerRequest>) => {
       message:
         err instanceof RotateError
           ? err.message
-          : 'Something went wrong while saving your pages. Try again.',
+          : unexpectedMessage(err, 'Something went wrong while saving your pages. Try again.'),
       fileName: file.name,
     });
   }
