@@ -4,10 +4,13 @@ import { renderApp } from './test/renderApp';
 import { TOOLS } from './tools';
 
 describe('home route', () => {
-  it('states the privacy promise in the main heading', () => {
+  it('says what the site does in the main heading', () => {
     renderApp('/');
     expect(
-      screen.getByRole('heading', { level: 1, name: /your files stay on your device/i }),
+      screen.getByRole('heading', {
+        level: 1,
+        name: /edit pdfs and images without uploading them/i,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -23,7 +26,7 @@ describe('home route', () => {
 
   it('explains how to verify nothing is uploaded', async () => {
     renderApp('/');
-    await userEvent.click(screen.getByRole('button', { name: /how can i check that/i }));
+    await userEvent.click(screen.getByRole('button', { name: /how can i check/i }));
     expect(await screen.findByRole('status')).toHaveTextContent(/zero uploads/i);
   });
 });
@@ -39,10 +42,22 @@ describe('home hero', () => {
     ).toEqual(['Works in this tab', 'No sign-up', 'Nothing kept']);
   });
 
-  it('jumps to the tool list from the main button', async () => {
+  it('suggests tools for a picked file and opens one with it', async () => {
     renderApp('/');
-    await userEvent.click(screen.getByRole('button', { name: /browse the tools/i }));
-    expect(screen.getByRole('region', { name: /pick a tool/i })).toHaveFocus();
+    const file = new File(['%PDF-1.4'], 'report.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByTestId('hero-file-input'), file);
+    const group = screen.getByRole('group', { name: /what should we do with it/i });
+    expect(within(group).getByText(/report\.pdf/)).toBeInTheDocument();
+    await userEvent.click(within(group).getByRole('button', { name: /split pdf/i }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Split PDF' })).toBeInTheDocument();
+    expect(await screen.findByText('1 PDF')).toBeInTheDocument();
+  });
+
+  it('says when a file type cannot be opened', async () => {
+    renderApp('/');
+    const file = new File(['x'], 'notes.docx');
+    await userEvent.upload(screen.getByTestId('hero-file-input'), file, { applyAccept: false });
+    expect(screen.getByRole('alert')).toHaveTextContent(/docx files can't be opened yet/i);
   });
 });
 

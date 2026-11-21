@@ -57,7 +57,10 @@ describe('navigation', () => {
     renderApp('/tools/sign');
     await user.click(screen.getByRole('link', { name: /privacy toolkit, home/i }));
     expect(
-      await screen.findByRole('heading', { level: 1, name: /your files stay on your device/i }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: /edit pdfs and images without uploading/i,
+      }),
     ).toBeInTheDocument();
   });
 });

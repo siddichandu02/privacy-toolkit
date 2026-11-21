@@ -1,9 +1,9 @@
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { Fragment, useRef } from 'react';
-import { Pip } from '../components/pip/Pip';
+import { Fragment } from 'react';
+import { HeroDrop } from '../components/home/HeroDrop';
 import { PromiseStrip } from '../components/PromiseStrip';
 import { ToolBrowser } from '../components/tools/ToolBrowser';
-import { Badge, Button, useToast } from '../components/ui';
+import { useToast } from '../components/ui';
 import { TOOLS } from '../tools';
 import { useDocumentTitle } from '../useDocumentTitle';
 
@@ -17,7 +17,7 @@ const line: Variants = {
   }),
 };
 
-/** Pip hops in once the headline has landed. */
+/** The drop zone (and Pip on it) hops in once the headline has landed. */
 const hop = (reduced: boolean | null) =>
   reduced
     ? {}
@@ -30,7 +30,6 @@ const hop = (reduced: boolean | null) =>
 export default function Home() {
   const { toast } = useToast();
   const reduced = useReducedMotion();
-  const toolsRef = useRef<HTMLElement>(null);
   useDocumentTitle();
 
   const explainPrivacy = () =>
@@ -41,29 +40,15 @@ export default function Home() {
         "Open your browser's network panel while using any tool. You won't see your files go anywhere.",
     });
 
-  const showTools = () => {
-    const section = toolsRef.current;
-    if (!section) return;
-    section.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-    section.focus({ preventScroll: true });
-  };
-
   return (
-    <div className="mx-auto flex max-w-6xl flex-col px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <Badge accent="mint" dot className="w-fit px-3.5 py-1 text-sm">
-          Opening soon
-        </Badge>
-        <motion.div {...hop(reduced)} className="-mb-2 lg:hidden">
-          <Pip pose="wave" className="h-20 sm:h-24" />
-        </motion.div>
-      </div>
-      <h1 className="font-display text-[clamp(2.75rem,10vw,7.5rem)] leading-[0.92] font-extrabold tracking-[-0.035em] text-balance">
-        {['Your files stay', 'on your device.'].map((text, i) => (
+    <div className="mx-auto flex max-w-6xl flex-col px-4 pt-6 pb-8 sm:px-8 sm:pt-12">
+      <h1 className="font-display text-[clamp(2.15rem,6.6vw,4.75rem)] leading-[0.95] font-extrabold tracking-[-0.035em]">
+        {['Edit PDFs and images', 'without uploading them.'].map((text, i) => (
           <Fragment key={text}>
             {i > 0 ? ' ' : null}
             <motion.span
-              className="block origin-bottom-left"
+              // Inline on phones so the words wrap naturally; the rise only shows from sm up.
+              className="origin-bottom-left sm:block"
               custom={i}
               variants={reduced ? undefined : line}
               initial="hidden"
@@ -74,42 +59,34 @@ export default function Home() {
           </Fragment>
         ))}
       </h1>
-      <div className="flex items-end justify-between gap-10">
-        <div>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:mt-8 sm:text-xl">
-            Free PDF and image tools that do all the work inside your browser. Nothing is uploaded,
-            tracked or stored on a server.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" onClick={showTools}>
-              Browse the tools
-            </Button>
-            <Button size="lg" variant="ghost" onClick={explainPrivacy}>
-              How can I check that?
-            </Button>
-          </div>
-        </div>
-        <motion.div {...hop(reduced)} className="mr-4 -mb-6 hidden shrink-0 lg:block xl:mr-10">
-          <Pip pose="wave" className="h-64" />
+      <div className="mt-5 grid items-center gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
+          Merge, split, compress, sign and convert, right in your browser. Your files never leave
+          your device.{' '}
+          <button
+            type="button"
+            onClick={explainPrivacy}
+            className="rounded font-semibold whitespace-nowrap text-fg underline decoration-mint/70 decoration-2 underline-offset-4 hover:decoration-mint"
+          >
+            How can I check?
+          </button>
+        </p>
+        <motion.div {...hop(reduced)}>
+          <HeroDrop />
         </motion.div>
       </div>
 
-      <PromiseStrip className="mt-14 sm:mt-20" />
-
-      <section
-        ref={toolsRef}
-        tabIndex={-1}
-        aria-labelledby="tools-heading"
-        className="mt-16 scroll-mt-28 sm:mt-24"
-      >
+      <section aria-labelledby="tools-heading" className="mt-8 sm:mt-12">
         <h2
           id="tools-heading"
-          className="font-display text-3xl font-bold tracking-tight sm:text-4xl"
+          className="font-display text-2xl font-bold tracking-tight sm:text-3xl"
         >
-          Pick a tool
+          Or pick a tool
         </h2>
         <ToolBrowser tools={TOOLS} />
       </section>
+
+      <PromiseStrip className="mt-16 sm:mt-24" />
     </div>
   );
 }
