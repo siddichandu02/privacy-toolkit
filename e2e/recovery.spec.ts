@@ -125,8 +125,11 @@ for (const tool of TOOLS) {
       await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
 
       await page.unrouteAll();
-      await page.getByRole('button', { name: 'Reload page' }).click();
-      await page.waitForLoadState('load');
+      // Wait for the new page itself; the old one is already "loaded".
+      await Promise.all([
+        page.waitForEvent('load'),
+        page.getByRole('button', { name: 'Reload page' }).click(),
+      ]);
       await (await tool.prepare(page)).click();
       await expect(finished(page)).toBeVisible({ timeout: 15_000 });
     });
