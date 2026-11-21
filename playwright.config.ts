@@ -12,7 +12,20 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
-  use: { baseURL: BASE, trace: 'on-first-retry' },
+  use: {
+    baseURL: BASE,
+    trace: 'on-first-retry',
+    // Tool flows skip the six second wait story; story.spec.ts covers it.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://localhost:${PORT}`,
+          localStorage: [{ name: 'ptk-story-ms', value: '0' }],
+        },
+      ],
+    },
+  },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
