@@ -1,5 +1,5 @@
 import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
-import { forwardRef, type ReactNode } from 'react';
+import { forwardRef, useState, type ReactNode } from 'react';
 import { accentButtonGlow, accentFill, type Accent } from './accent';
 
 type Variant = 'primary' | 'ghost' | 'accent';
@@ -19,6 +19,11 @@ const sizes: Record<Size, string> = {
   md: 'h-11 gap-2 px-5 text-[0.95rem] rounded-control',
   lg: 'h-14 gap-2.5 px-7 text-lg rounded-[1.125rem]',
 };
+
+// The hover lift moves the button up 2px. While hovered, a thin strip under it
+// keeps the pointer "on" the button, so a cursor resting on its bottom edge
+// doesn't flip hover on and off every frame.
+const hoverCatch = "after:absolute after:inset-x-0 after:top-full after:h-1 after:content-['']";
 
 const base =
   'relative inline-flex cursor-pointer items-center justify-center font-semibold whitespace-nowrap select-none transition-[box-shadow,background-color,border-color,color] duration-200 disabled:cursor-not-allowed disabled:opacity-50';
@@ -45,12 +50,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     type = 'button',
     children,
     disabled,
+    onHoverStart,
+    onHoverEnd,
     ...rest
   },
   ref,
 ) {
   const reduced = useReducedMotion();
   const animated = !reduced && !disabled;
+  const [hovered, setHovered] = useState(false);
 
   return (
     <motion.button
@@ -58,9 +66,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled}
       whileHover={animated ? { y: -2 } : undefined}
+      onHoverStart={(e, info) => {
+        setHovered(true);
+        onHoverStart?.(e, info);
+      }}
+      onHoverEnd={(e, info) => {
+        setHovered(false);
+        onHoverEnd?.(e, info);
+      }}
       whileTap={animated ? { scale: 0.94, y: 0 } : undefined}
       transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-      className={`${base} ${sizes[size]} ${variantClass(variant, accent)} ${className}`}
+      className={`${base} ${animated && hovered ? hoverCatch : ''} ${sizes[size]} ${variantClass(variant, accent)} ${className}`}
       {...rest}
     >
       {icon ? (
