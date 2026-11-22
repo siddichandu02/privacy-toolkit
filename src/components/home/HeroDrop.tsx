@@ -52,6 +52,8 @@ export function HeroDrop({ className = '', id }: { className?: string; id?: stri
   // On the home page the whole page takes drops, so the files live there.
   const page = usePageDrop();
   const hovered = useHoveredTool();
+  // Pip stands a little taller to show off what it is wearing or holding.
+  const showing = over ? null : accessoryFor(hovered);
   const sorted = page ? page.sorted : ownSorted;
   const setSorted = page ? page.setSorted : setOwnSorted;
   const headingId = useId();
@@ -128,13 +130,22 @@ export function HeroDrop({ className = '', id }: { className?: string; id?: stri
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute right-6 bottom-full -mb-2 h-16 sm:right-10 sm:h-24"
-        animate={still ? undefined : { y: over ? -8 : 0, rotate: over ? -6 : 0 }}
+        style={{ originX: 0.5, originY: 1 }}
+        animate={
+          still
+            ? undefined
+            : over
+              ? { y: -8, rotate: -6, scale: 1 }
+              : showing
+                ? { y: -2, rotate: 0, scale: 1.18 }
+                : { y: 0, rotate: 0, scale: 1 }
+        }
         transition={{ type: 'spring', stiffness: 380, damping: 18 }}
       >
         <Pip
           pose={over ? 'celebrate' : tools.length ? 'hold' : 'wave'}
           watch
-          accessory={over ? null : accessoryFor(hovered)}
+          accessory={showing}
           className="h-full"
         />
       </motion.div>

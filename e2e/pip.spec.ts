@@ -36,3 +36,15 @@ test('lab page has no horizontal scroll', async ({ page }) => {
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('pip dresses up for the tool card under the mouse', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'needs a mouse');
+  await page.goto('./');
+  const hero = page.getByTestId('hero-drop').locator('..');
+  await page.getByRole('link', { name: 'Merge PDF' }).hover();
+  await expect(hero.locator('[data-accessory="chef-hat"]')).toBeVisible();
+  await page.getByRole('link', { name: 'Split PDF' }).hover();
+  await expect(hero.locator('[data-accessory="knife"]')).toBeVisible();
+  await page.mouse.move(5, 5);
+  await expect(hero.locator('[data-accessory]')).toHaveCount(0);
+});
