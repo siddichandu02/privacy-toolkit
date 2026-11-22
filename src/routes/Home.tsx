@@ -1,10 +1,10 @@
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { Fragment } from 'react';
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
+import { Fragment, useId, useState } from 'react';
 import { HeroDrop } from '../components/home/HeroDrop';
 import { PageDrop } from '../components/home/PageDrop';
+import { PrivacyProof } from '../components/privacy/PrivacyProof';
 import { PromiseStrip } from '../components/PromiseStrip';
 import { ToolBrowser } from '../components/tools/ToolBrowser';
-import { useToast } from '../components/ui';
 import { TOOLS } from '../tools';
 import { useDocumentTitle } from '../useDocumentTitle';
 
@@ -29,17 +29,10 @@ const hop = (reduced: boolean | null) =>
       };
 
 export default function Home() {
-  const { toast } = useToast();
   const reduced = useReducedMotion();
+  const [proofOpen, setProofOpen] = useState(false);
+  const proofId = useId();
   useDocumentTitle();
-
-  const explainPrivacy = () =>
-    toast({
-      tone: 'success',
-      title: 'Nothing sent anywhere',
-      description:
-        "Open your browser's network panel while using any tool. You won't see your files go anywhere.",
-    });
 
   // A file dropped on the open page lands in the hero; bring it into view.
   const showHero = () =>
@@ -68,17 +61,36 @@ export default function Home() {
           ))}
         </h1>
         <div className="mt-5 grid items-center gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-            Merge, split, compress, sign and convert. Your files are processed on your device and
-            never sent to a server.{' '}
-            <button
-              type="button"
-              onClick={explainPrivacy}
-              className="rounded font-semibold whitespace-nowrap text-fg underline decoration-mint/70 decoration-2 underline-offset-4 hover:decoration-mint"
-            >
-              How can I check?
-            </button>
-          </p>
+          <div className="max-w-xl">
+            <p className="text-lg leading-relaxed text-muted sm:text-xl">
+              Merge, split, compress, sign and convert. Your files are processed on your device and
+              never sent to a server.{' '}
+              <button
+                type="button"
+                aria-expanded={proofOpen}
+                aria-controls={proofId}
+                onClick={() => setProofOpen((o) => !o)}
+                className="rounded font-semibold whitespace-nowrap text-fg underline decoration-mint/70 decoration-2 underline-offset-4 hover:decoration-mint"
+              >
+                {proofOpen ? 'Hide the check' : 'How can I check?'}
+              </button>
+            </p>
+            <div id={proofId}>
+              <AnimatePresence initial={false}>
+                {proofOpen ? (
+                  <motion.div
+                    initial={reduced ? { opacity: 0 } : { opacity: 0, height: 0, y: -8 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0, y: -8 }}
+                    transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+                    className="overflow-hidden"
+                  >
+                    <PrivacyProof className="mt-5" />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          </div>
           <motion.div {...hop(reduced)}>
             <HeroDrop id="start" />
           </motion.div>

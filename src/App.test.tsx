@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from './test/renderApp';
 import { TOOLS } from './tools';
@@ -24,10 +24,17 @@ describe('home route', () => {
     );
   });
 
-  it('explains how to verify nothing is sent', async () => {
+  it('opens a live check that nothing is sent', async () => {
     renderApp('/');
-    await userEvent.click(screen.getByRole('button', { name: /how can i check/i }));
-    expect(await screen.findByRole('status')).toHaveTextContent(/nothing sent anywhere/i);
+    const toggle = screen.getByRole('button', { name: /how can i check/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const proof = await screen.findByRole('region', { name: 'Privacy check' });
+    expect(within(proof).getByTestId('bytes-sent')).toHaveTextContent('0');
+    expect(proof).toHaveTextContent(/sent to other sites/);
+    await userEvent.click(screen.getByRole('button', { name: /hide the check/i }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Privacy check' })).toBeNull());
   });
 });
 
