@@ -43,6 +43,7 @@ npm run build        # type-check and production build
 ## Stack
 
 React 18, Vite, TypeScript (strict), Tailwind CSS, Framer Motion, React Router, pdf-lib, pdfjs-dist,
+three.js (the 3D paper helpers in the wait animations, loaded only when a tool has files),
 Vitest, Testing Library and Playwright. Deployed to GitHub Pages by GitHub Actions on every push to
 `main`.
 
