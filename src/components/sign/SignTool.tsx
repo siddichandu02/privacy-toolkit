@@ -7,6 +7,7 @@ import { useSignJob } from '../../workers/useSignJob';
 import { ToolWorkbench } from '../drop/ToolWorkbench';
 import { useFileQueue } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
+import { PdfOpenProblem } from '../pages/PdfOpenProblem';
 import { usePdfPages } from '../pages/usePdfPages';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
@@ -189,11 +190,7 @@ function SignPanel({
   const page = Math.min(spot.page, Math.max(0, count - 1));
 
   if (doc.status === 'error') {
-    return (
-      <p role="alert" className="rounded-panel border border-coral/30 bg-coral/10 p-5 text-fg">
-        {file.name} could not be opened. It may be damaged or password protected.
-      </p>
-    );
+    return <PdfOpenProblem name={file.name} locked={doc.locked} accent={accent} />;
   }
 
   const go = (to: number) => onSpotChange({ ...spot, page: Math.min(count - 1, Math.max(0, to)) });

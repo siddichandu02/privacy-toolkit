@@ -2,7 +2,7 @@
  * Build a tiny valid PDF with `pages` blank pages and a line of text on each,
  * so tests do not need binary fixtures.
  */
-export function makePdf(pages = 1, label = 'Test'): Buffer {
+export function makePdf(pages = 1, label = 'Test', { locked = false } = {}): Buffer {
   const objects: string[] = [];
   const kids = Array.from({ length: pages }, (_, i) => `${4 + i * 2} 0 R`).join(' ');
   objects.push('<< /Type /Catalog /Pages 2 0 R >>');
@@ -15,6 +15,15 @@ export function makePdf(pages = 1, label = 'Test'): Buffer {
     );
     objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
   }
+  // A locked file: an /Encrypt entry whose password check never passes, so
+  // readers ask for a password.
+  const hex = (c: string, n: number) => `<${c.repeat(n * 2)}>`;
+  if (locked) {
+    objects.push(`<< /Filter /Standard /V 1 /R 2 /O ${hex('a', 32)} /U ${hex('b', 32)} /P -4 >>`);
+  }
+  const lock = locked
+    ? ` /Encrypt ${objects.length} 0 R /ID [${hex('c', 16)} ${hex('c', 16)}]`
+    : '';
 
   let body = '%PDF-1.4\n';
   const offsets: number[] = [];
@@ -25,6 +34,6 @@ export function makePdf(pages = 1, label = 'Test'): Buffer {
   const xref = body.length;
   body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
   for (const off of offsets) body += `${String(off).padStart(10, '0')} 00000 n \n`;
-  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R${lock} >>\nstartxref\n${xref}\n%%EOF\n`;
   return Buffer.from(body, 'latin1');
 }

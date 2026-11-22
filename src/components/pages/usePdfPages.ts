@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { openPdfPages, type PdfPages } from '../drop/preview';
 
 export type PdfPagesState =
-  { status: 'loading' } | { status: 'ready'; pages: PdfPages } | { status: 'error' };
+  | { status: 'loading' }
+  | { status: 'ready'; pages: PdfPages }
+  | { status: 'error'; locked: boolean };
 
 /** Open a PDF for drawing its pages, and close it when the file changes. */
 export function usePdfPages(file: File | undefined): PdfPagesState {
@@ -18,8 +20,10 @@ export function usePdfPages(file: File | undefined): PdfPagesState {
         if (alive) setHeld({ file, state: { status: 'ready', pages } });
         else pages.close();
       },
-      () => {
-        if (alive) setHeld({ file, state: { status: 'error' } });
+      (err: unknown) => {
+        // pdf.js names the error it throws for files that need a password.
+        const locked = err instanceof Error && err.name === 'PasswordException';
+        if (alive) setHeld({ file, state: { status: 'error', locked } });
       },
     );
     return () => {

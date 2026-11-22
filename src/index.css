@@ -406,3 +406,14 @@ body {
     animation: none;
   }
 }
+
+/* The padlock tag on Pip for locked PDFs sways a little. */
+@keyframes lock-sway {
+  0%,
+  100% {
+    rotate: -12deg;
+  }
+  50% {
+    rotate: -4deg;
+  }
+}

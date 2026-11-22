@@ -18,6 +18,7 @@ import { useThumbnails } from '../wait/useThumbnails';
 import { BreadScene } from '../wait/scenes/BreadScene';
 import { WaitStage } from '../wait/WaitStage';
 import { PagePicker } from './PagePicker';
+import { PdfOpenProblem } from '../pages/PdfOpenProblem';
 import { usePdfPages } from '../pages/usePdfPages';
 
 const pagesWord = (n: number) => (n === 1 ? '1 page' : `${n} pages`);
@@ -197,11 +198,7 @@ function SplitPanel({
   const all = Array.from({ length: count }, (_, i) => i + 1);
 
   if (doc.status === 'error') {
-    return (
-      <p role="alert" className="rounded-panel border border-coral/30 bg-coral/10 p-5 text-fg">
-        {file.name} could not be opened. It may be damaged or password protected.
-      </p>
-    );
+    return <PdfOpenProblem name={file.name} locked={doc.locked} accent={accent} />;
   }
 
   return (
