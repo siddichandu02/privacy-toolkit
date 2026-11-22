@@ -1,18 +1,12 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CompressTool } from '../components/compress/CompressTool';
-import { ToolWorkbench } from '../components/drop/ToolWorkbench';
 import { PrivacyPill } from '../components/privacy/PrivacyPill';
-import { ImagesTool } from '../components/images/ImagesTool';
-import { MergeTool } from '../components/merge/MergeTool';
-import { RotateTool } from '../components/rotate/RotateTool';
-import { SignTool } from '../components/sign/SignTool';
-import { SplitTool } from '../components/split/SplitTool';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
 import { getTool, type ToolInfo } from '../tools';
 import { useDocumentTitle } from '../useDocumentTitle';
 import NotFound from './NotFound';
+import { ToolPanel } from './toolPanels';
 
 export default function ToolPage() {
   const { id } = useParams();
@@ -57,21 +51,7 @@ function ToolView({ tool }: { tool: ToolInfo }) {
         </Badge>
       )}
       <div className="max-w-3xl">
-        {tool.id === 'merge' ? (
-          <MergeTool tool={tool} />
-        ) : tool.id === 'split' ? (
-          <SplitTool tool={tool} />
-        ) : tool.id === 'rotate' ? (
-          <RotateTool tool={tool} />
-        ) : tool.id === 'images-to-pdf' ? (
-          <ImagesTool tool={tool} />
-        ) : tool.id === 'sign' ? (
-          <SignTool tool={tool} />
-        ) : tool.id === 'compress-pdf' ? (
-          <CompressTool tool={tool} />
-        ) : (
-          <ToolWorkbench tool={tool} />
-        )}
+        <ToolPanel tool={tool} />
       </div>
     </div>
   );
