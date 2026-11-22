@@ -326,3 +326,24 @@ body {
     background: var(--card-accent);
   }
 }
+
+/* Hero story card: the current step's bar fills; a new round fades in. */
+.story-fill {
+  animation: story-fill linear forwards;
+}
+@keyframes story-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.story-round {
+  animation: story-round 400ms ease-out;
+}
+@keyframes story-round {
+  from {
+    opacity: 0;
+  }
+}

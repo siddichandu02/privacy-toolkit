@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer
 import { Fragment, useId, useState } from 'react';
 import { CompressDemo } from '../components/home/CompressDemo';
 import { HeroDrop } from '../components/home/HeroDrop';
-import { HowItWorks } from '../components/home/HowItWorks';
+import { HeroStory } from '../components/home/HeroStory';
 import { PageDrop } from '../components/home/PageDrop';
 import { PrivacyProof } from '../components/privacy/PrivacyProof';
 import { PromiseStrip } from '../components/PromiseStrip';
@@ -62,7 +62,7 @@ export default function Home() {
             </Fragment>
           ))}
         </h1>
-        <div className="mt-5 grid items-center gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <div className="mt-5 grid items-start gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <div className="max-w-xl min-w-0">
             <p className="text-lg leading-relaxed text-muted sm:text-xl">
               Merge, split, compress, sign and convert. Your files are processed on your device and
@@ -98,6 +98,8 @@ export default function Home() {
           </motion.div>
         </div>
 
+        <HeroStory className="mt-8 sm:mt-10" />
+
         <section aria-labelledby="tools-heading" className="mt-8 sm:mt-12">
           <h2
             id="tools-heading"
@@ -107,8 +109,6 @@ export default function Home() {
           </h2>
           <ToolBrowser tools={TOOLS} />
         </section>
-
-        <HowItWorks className="mt-20 sm:mt-28" />
 
         <CompressDemo className="mt-20 sm:mt-28" />
 
