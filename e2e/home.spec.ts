@@ -13,7 +13,9 @@ test('makes no requests to third-party hosts', async ({ page, baseURL }) => {
   const external: string[] = [];
   page.on('request', (req) => {
     const url = req.url();
-    if (!url.startsWith(origin) && !url.startsWith('data:')) external.push(url);
+    // blob: and data: URLs are made in the page itself and never touch the network.
+    const local = url.startsWith('data:') || url.startsWith('blob:');
+    if (!url.startsWith(origin) && !local) external.push(url);
   });
   await page.goto('./');
   await page.waitForLoadState('networkidle');
