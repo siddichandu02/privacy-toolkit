@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useId } from 'react';
-import { mergedName } from '../../lib/pdf/merge';
+import { mergedName } from '../../lib/pdf/file-names';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useMergeJob } from '../../workers/useMergeJob';

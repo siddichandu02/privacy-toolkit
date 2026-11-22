@@ -1,5 +1,7 @@
 import { PDFDocument } from 'pdf-lib';
 
+export { mergedName } from './file-names';
+
 export type MergeStage = 'reading' | 'working' | 'packing';
 
 export interface MergeProgress {
@@ -78,10 +80,4 @@ export async function mergePdfs(
   const bytes = await out.save();
   onProgress({ stage: 'packing', progress: 1 });
   return { bytes, pages: out.getPageCount() };
-}
-
-/** "report.pdf" -> "report-merged.pdf". Falls back to "merged.pdf". */
-export function mergedName(first?: string): string {
-  const base = first?.replace(/\.pdf$/i, '').trim();
-  return base ? `${base}-merged.pdf` : 'merged.pdf';
 }

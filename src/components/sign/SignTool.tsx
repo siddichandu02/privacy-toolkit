@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import type { Placement } from '../../lib/pdf/sign';
+import type { Placement } from '../../lib/pdf/signature-place';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useSignJob } from '../../workers/useSignJob';

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { MARGINS, placeImage, type ImagesOptions } from '../../lib/pdf/images';
+import { MARGINS, placeImage, type ImagesOptions } from '../../lib/pdf/page-layout';
 import { useStillMotion } from '../../useStillMotion';
 import { useObjectUrl } from '../result/useObjectUrl';
 import type { Accent } from '../ui/accent';

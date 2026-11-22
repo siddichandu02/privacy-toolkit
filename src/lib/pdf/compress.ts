@@ -10,6 +10,9 @@ import {
   decodePDFRawStream,
   type PDFObject,
 } from 'pdf-lib';
+import { compressName } from './file-names';
+
+export { compressName, savedPercent } from './file-names';
 
 export type CompressStage = 'reading' | 'working' | 'packing';
 
@@ -78,14 +81,6 @@ export class CompressError extends Error {
     this.name = 'CompressError';
   }
 }
-
-/** "report.pdf" -> "report-compressed.pdf". */
-export const compressName = (name: string) =>
-  `${name.replace(/\.pdf$/i, '').trim() || 'document'}-compressed.pdf`;
-
-/** Share of the original size that was saved, as a whole percent (0 to 100). */
-export const savedPercent = (before: number, after: number) =>
-  before <= 0 ? 0 : Math.max(0, Math.round((1 - after / before) * 100));
 
 const N = (name: string) => PDFName.of(name);
 /** Images smaller than this are not worth the round trip. */

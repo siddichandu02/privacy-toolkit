@@ -6,7 +6,7 @@ import {
   type Margin,
   type Orientation,
   type PageSize,
-} from '../../lib/pdf/images';
+} from '../../lib/pdf/page-layout';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useImagesJob } from '../../workers/useImagesJob';

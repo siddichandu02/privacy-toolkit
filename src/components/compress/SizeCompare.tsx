@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { savedPercent } from '../../lib/pdf/compress';
+import { savedPercent } from '../../lib/pdf/file-names';
 import { useStillMotion } from '../../useStillMotion';
 import { formatBytes } from '../drop/validate';
 import { accentDot, accentText, type Accent } from '../ui/accent';

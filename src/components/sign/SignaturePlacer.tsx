@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
-import { clampPlacement, type Placement } from '../../lib/pdf/sign';
+import { clampPlacement, type Placement } from '../../lib/pdf/signature-place';
 import { useStillMotion } from '../../useStillMotion';
 import type { PdfPages } from '../drop/preview';
 import type { Accent } from '../ui/accent';

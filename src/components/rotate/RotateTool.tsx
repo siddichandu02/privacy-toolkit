@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { NO_EDIT, toDegrees, type PageEdit } from '../../lib/pdf/rotate';
+import { NO_EDIT, toDegrees, type PageEdit } from '../../lib/pdf/page-edits';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useRotateJob } from '../../workers/useRotateJob';

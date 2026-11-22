@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
-import { NO_EDIT, toDegrees, type PageEdit } from '../../lib/pdf/rotate';
+import { NO_EDIT, toDegrees, type PageEdit } from '../../lib/pdf/page-edits';
 import { useStillMotion } from '../../useStillMotion';
 import type { PdfPages } from '../drop/preview';
 import { PageThumb } from '../pages/PageThumb';
