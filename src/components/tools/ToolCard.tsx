@@ -8,6 +8,7 @@ import {
 } from 'framer-motion';
 import { useState, type CSSProperties, type DragEvent, type PointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { prefetchTool } from '../../routes/toolLoaders';
 import { toolPath, type ToolInfo } from '../../tools';
 import { handOff } from '../drop/handoff';
 import { rulesFor } from '../drop/validate';
@@ -60,7 +61,10 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
   // A file dragged over the home page: light up if this tool can open it.
   const navigate = useNavigate();
   const setHovered = useSetHoveredTool();
-  const hoverOn = () => setHovered?.(tool.id);
+  const hoverOn = () => {
+    setHovered?.(tool.id);
+    if (tool.ready) prefetchTool(tool.id);
+  };
   const hoverOff = () => setHovered?.((id) => (id === tool.id ? null : id));
   const peek = usePageDrop()?.peek ?? null;
   const takes = peek ? canTake(tool, peek) : false;
