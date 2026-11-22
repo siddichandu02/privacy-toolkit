@@ -63,7 +63,7 @@ export function Segmented<T extends string>({
           return (
             <label
               key={o.id}
-              className={`relative rounded-xl px-2 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] sm:px-3 ${
+              className={`relative rounded-xl px-2 py-2.5 text-sm font-semibold whitespace-nowrap transition-[color,scale] duration-150 active:scale-[0.97] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] motion-reduce:active:scale-100 sm:px-3 ${
                 disabled ? 'cursor-not-allowed' : 'cursor-pointer'
               } ${on ? 'text-fg' : 'text-muted hover:text-fg'}`}
               style={{ '--pick': `var(--${accent})` } as CSSProperties}
@@ -72,7 +72,7 @@ export function Segmented<T extends string>({
                 <motion.span
                   layoutId={still ? undefined : `${name}-chip`}
                   className="absolute inset-0 rounded-xl border border-line-strong bg-surface shadow-soft"
-                  transition={{ type: 'spring', stiffness: 500, damping: 34 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.8 }}
                 />
               ) : null}
               <input
@@ -83,10 +83,27 @@ export function Segmented<T extends string>({
                 onChange={() => onChange(o.id)}
                 className="sr-only"
               />
-              <span className="relative flex items-center justify-center gap-1.5">
-                {o.icon}
+              {/* The picked option gives a small springy hop as the chip arrives. */}
+              <motion.span
+                className="relative flex items-center justify-center gap-1.5"
+                initial={false}
+                animate={
+                  on && !still ? { scale: [0.9, 1.07, 1], y: [1, -1.5, 0] } : { scale: 1, y: 0 }
+                }
+                transition={{ duration: 0.34, ease: 'easeOut' }}
+              >
+                {o.icon ? (
+                  <motion.span
+                    className="flex"
+                    initial={false}
+                    animate={on && !still ? { rotate: [0, -14, 10, 0] } : { rotate: 0 }}
+                    transition={{ duration: 0.42, ease: 'easeOut' }}
+                  >
+                    {o.icon}
+                  </motion.span>
+                ) : null}
                 {o.label}
-              </span>
+              </motion.span>
             </label>
           );
         })}
