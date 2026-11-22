@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CompressTool } from '../components/compress/CompressTool';
 import { ToolWorkbench } from '../components/drop/ToolWorkbench';
+import { PrivacyPill } from '../components/privacy/PrivacyPill';
 import { ImagesTool } from '../components/images/ImagesTool';
 import { MergeTool } from '../components/merge/MergeTool';
 import { RotateTool } from '../components/rotate/RotateTool';
@@ -21,6 +23,8 @@ export default function ToolPage() {
 
 function ToolView({ tool }: { tool: ToolInfo }) {
   useDocumentTitle(tool.name);
+  // The privacy check counts from the moment this tool opened.
+  const [openedAt] = useState(() => performance.now());
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
@@ -46,6 +50,7 @@ function ToolView({ tool }: { tool: ToolInfo }) {
         {tool.name}
       </h1>
       <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">{tool.blurb}</p>
+      {tool.ready ? <PrivacyPill since={openedAt} className="mt-6" /> : null}
       {tool.ready ? null : (
         <Badge accent={tool.accent} dot className="mt-8 px-3.5 py-1 text-sm">
           Being built right now
