@@ -15,3 +15,17 @@ window.scrollTo = () => {};
 // jsdom's timer-based frames, and a busy CI machine can catch an element
 // still at opacity 0.
 MotionGlobalConfig.skipAnimations = true;
+
+// jsdom has no IntersectionObserver. Scroll-driven parts just never see anything
+// come into view; tests that need it stub their own.
+if (!('IntersectionObserver' in globalThis)) {
+  class NoopObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  }
+  Object.assign(globalThis, { IntersectionObserver: NoopObserver });
+}

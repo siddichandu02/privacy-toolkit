@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Fragment, useId, useState } from 'react';
 import { HeroDrop } from '../components/home/HeroDrop';
+import { HowItWorks } from '../components/home/HowItWorks';
 import { PageDrop } from '../components/home/PageDrop';
 import { PrivacyProof } from '../components/privacy/PrivacyProof';
 import { PromiseStrip } from '../components/PromiseStrip';
@@ -105,6 +106,8 @@ export default function Home() {
           </h2>
           <ToolBrowser tools={TOOLS} />
         </section>
+
+        <HowItWorks className="mt-20 sm:mt-28" />
 
         <PromiseStrip className="mt-16 sm:mt-24" />
       </div>
