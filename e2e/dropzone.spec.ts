@@ -98,3 +98,25 @@ test('loading pdf.js makes no third-party requests', async ({ page, baseURL }) =
   await expect(page.getByTestId('file-row').locator('img')).toHaveCount(1, { timeout: 15_000 });
   expect(external).toEqual([]);
 });
+
+test('a removed file comes back with Undo, and all of them with Ctrl+Z', async ({ page }) => {
+  await page.goto('./#/tools/merge');
+  await page
+    .getByTestId('file-input')
+    .setInputFiles([pdf('one.pdf'), pdf('two.pdf'), pdf('three.pdf')]);
+  await expect(page.getByTestId('file-row')).toHaveCount(3);
+
+  await page.getByRole('button', { name: 'Remove two.pdf' }).click();
+  const slip = page.getByTestId('undo-bar');
+  await expect(slip).toContainText('Removed two.pdf');
+  await expect.poll(() => rowNames(page)).toEqual(['one.pdf', 'three.pdf']);
+  await slip.getByRole('button', { name: 'Undo' }).click();
+  await expect.poll(() => rowNames(page)).toEqual(['one.pdf', 'two.pdf', 'three.pdf']);
+  await expect(slip).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Remove all' }).click();
+  await expect(page.getByRole('button', { name: 'Choose PDFs' })).toBeVisible();
+  await expect(slip).toContainText('Removed 3 files');
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect.poll(() => rowNames(page)).toEqual(['one.pdf', 'two.pdf', 'three.pdf']);
+});
