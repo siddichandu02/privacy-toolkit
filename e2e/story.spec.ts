@@ -54,3 +54,27 @@ test('reduced motion gets a short calm version', async ({ page }) => {
   // 1.5 s of calm story plus a little slack for a busy machine.
   expect(Date.now() - clicked).toBeLessThan(4500);
 });
+
+test('the helpers stand up in 3D while the story plays', async ({ page }) => {
+  await page.goto('./');
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+  });
+  test.skip(!webgl, 'this browser has no WebGL; the flat helpers are covered elsewhere');
+
+  await startMerge(page);
+  const scene = page.getByTestId('jar-scene');
+  await expect(scene.getByTestId('helpers-3d').locator('canvas')).toBeAttached({ timeout: 5000 });
+  // Three helpers in the merge scene, each followed by a 3D figure; the flat drawings step aside.
+  await expect(scene.locator('[data-helper-anchor]')).toHaveCount(3);
+  await expect(scene.locator('[data-part="helper"] > g > g[opacity="0"]').first()).toBeAttached();
+  // No extra downloads from other sites for the 3D layer.
+  const outside = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((e) => e.name)
+      .filter((n) => !n.startsWith(location.origin) && !/^(blob|data):/.test(n)),
+  );
+  expect(outside).toEqual([]);
+});
