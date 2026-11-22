@@ -1,7 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStillMotion } from '../../useStillMotion';
-import { PageDropContext, isFileDrag, peekItems, type DragPeek } from './pageDrag';
+import {
+  HoveredToolContext,
+  PageDropContext,
+  SetHoveredToolContext,
+  isFileDrag,
+  peekItems,
+  type DragPeek,
+} from './pageDrag';
 import { sortFiles, type Sorted } from './suggest';
 
 /**
@@ -13,6 +20,7 @@ export function PageDrop({ children, onLanded }: { children: ReactNode; onLanded
   const still = useStillMotion();
   const [peek, setPeek] = useState<DragPeek | null>(null);
   const [sorted, setSortedState] = useState<Sorted | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
   const depth = useRef(0);
   const watchdog = useRef<number | undefined>(undefined);
   const landed = useRef(onLanded);
@@ -82,7 +90,9 @@ export function PageDrop({ children, onLanded }: { children: ReactNode; onLanded
 
   return (
     <PageDropContext.Provider value={value}>
-      {children}
+      <SetHoveredToolContext.Provider value={setHovered}>
+        <HoveredToolContext.Provider value={hovered}>{children}</HoveredToolContext.Provider>
+      </SetHoveredToolContext.Provider>
       <AnimatePresence>
         {peek ? (
           <motion.div

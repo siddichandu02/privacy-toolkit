@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type Dispatch, type SetStateAction } from 'react';
 import type { ToolInfo } from '../../tools';
 import type { Sorted } from './suggest';
 
@@ -46,3 +46,12 @@ export interface PageDropValue {
 export const PageDropContext = createContext<PageDropValue | null>(null);
 
 export const usePageDrop = () => useContext(PageDropContext);
+
+/** The tool card the pointer or keyboard focus is on, so Pip can react to it. */
+export const HoveredToolContext = createContext<string | null>(null);
+export const SetHoveredToolContext = createContext<Dispatch<SetStateAction<string | null>> | null>(
+  null,
+);
+
+export const useHoveredTool = () => useContext(HoveredToolContext);
+export const useSetHoveredTool = () => useContext(SetHoveredToolContext);

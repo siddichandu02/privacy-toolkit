@@ -11,7 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toolPath, type ToolInfo } from '../../tools';
 import { handOff } from '../drop/handoff';
 import { rulesFor } from '../drop/validate';
-import { canTake, usePageDrop } from '../home/pageDrag';
+import { canTake, usePageDrop, useSetHoveredTool } from '../home/pageDrag';
 import { sortFiles } from '../home/suggest';
 import { accentFill, accentGlow, accentReady, accentSoft, type Accent } from '../ui/accent';
 import { ToolIcon } from './ToolIcon';
@@ -59,6 +59,9 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
 
   // A file dragged over the home page: light up if this tool can open it.
   const navigate = useNavigate();
+  const setHovered = useSetHoveredTool();
+  const hoverOn = () => setHovered?.(tool.id);
+  const hoverOff = () => setHovered?.((id) => (id === tool.id ? null : id));
   const peek = usePageDrop()?.peek ?? null;
   const takes = peek ? canTake(tool, peek) : false;
   const [hot, setHot] = useState(false);
@@ -113,7 +116,13 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
         aria-labelledby={`tool-${tool.id}-name`}
         aria-describedby={`tool-${tool.id}-blurb`}
         onPointerMove={track}
-        onPointerLeave={reset}
+        onPointerEnter={hoverOn}
+        onPointerLeave={() => {
+          reset();
+          hoverOff();
+        }}
+        onFocus={hoverOn}
+        onBlur={hoverOff}
         className={`card-pull group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale,translate] duration-300 focus-visible:rounded-card ${takes ? accentReady[tool.accent] : 'hover:border-line-strong'} active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
       >
         <span aria-hidden="true" className="card-spot" />

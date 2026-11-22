@@ -15,7 +15,8 @@ import { IMAGE_RULES, PDF_RULES, extensionOf, formatBytes, rulesFor } from '../d
 import { Pip } from '../pip/Pip';
 import { ToolIcon } from '../tools/ToolIcon';
 import { accentSoft, accentText } from '../ui/accent';
-import { usePageDrop } from './pageDrag';
+import { accessoryFor } from '../pip/accessories';
+import { useHoveredTool, usePageDrop } from './pageDrag';
 import { sortFiles, suggestTools, type Sorted } from './suggest';
 
 function describe(sorted: Sorted): string {
@@ -50,6 +51,7 @@ export function HeroDrop({ className = '', id }: { className?: string; id?: stri
   const [ownSorted, setOwnSorted] = useState<Sorted | null>(null);
   // On the home page the whole page takes drops, so the files live there.
   const page = usePageDrop();
+  const hovered = useHoveredTool();
   const sorted = page ? page.sorted : ownSorted;
   const setSorted = page ? page.setSorted : setOwnSorted;
   const headingId = useId();
@@ -129,7 +131,12 @@ export function HeroDrop({ className = '', id }: { className?: string; id?: stri
         animate={still ? undefined : { y: over ? -8 : 0, rotate: over ? -6 : 0 }}
         transition={{ type: 'spring', stiffness: 380, damping: 18 }}
       >
-        <Pip pose={over ? 'celebrate' : tools.length ? 'hold' : 'wave'} className="h-full" />
+        <Pip
+          pose={over ? 'celebrate' : tools.length ? 'hold' : 'wave'}
+          watch
+          accessory={over ? null : accessoryFor(hovered)}
+          className="h-full"
+        />
       </motion.div>
 
       <motion.div
