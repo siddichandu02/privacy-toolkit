@@ -45,3 +45,14 @@ test('back button returns to the previous page', async ({ page }) => {
     page.getByRole('heading', { level: 1, name: /every pdf and image tool you need/i }),
   ).toBeVisible();
 });
+
+test('a mistyped tool link offers the right tool', async ({ page }) => {
+  await page.goto('./#/tools/spilt');
+  await page.getByRole('button', { name: 'Unfold the crumpled page' }).click();
+  await expect(page.getByText('Found the way back.')).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Did you mean' })
+    .getByRole('link', { name: 'Split PDF' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Split PDF' })).toBeVisible();
+});

@@ -84,6 +84,32 @@ describe('tool routes', () => {
 });
 
 describe('not found route', () => {
+  it('suggests the tool a mistyped link was reaching for', async () => {
+    renderApp('/tools/merg');
+    const near = await screen.findByRole('navigation', { name: 'Did you mean' });
+    expect(within(near).getByRole('link', { name: 'Merge PDF' })).toHaveAttribute(
+      'href',
+      '/tools/merge',
+    );
+  });
+
+  it('suggests nothing when no tool is close', async () => {
+    renderApp('/tools/teleport');
+    await screen.findByRole('heading', { level: 1, name: /folded itself away/i });
+    expect(screen.queryByRole('navigation', { name: 'Did you mean' })).not.toBeInTheDocument();
+  });
+
+  it('unfolds the crumpled page and folds it back', async () => {
+    renderApp('/nowhere');
+    const ball = await screen.findByRole('button', { name: 'Unfold the crumpled page' });
+    fireEvent.click(ball);
+    expect(ball).toHaveAttribute('aria-pressed', 'true');
+    expect(ball).toHaveAccessibleName('Crumple the page back up');
+    expect(screen.getByText('Found the way back.')).toBeInTheDocument();
+    fireEvent.click(ball);
+    expect(ball).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('offers a way back home', async () => {
     renderApp('/this/does/not/exist');
     expect(await screen.findByRole('link', { name: /back to all tools/i })).toHaveAttribute(
