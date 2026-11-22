@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { With3DHelpers } from './With3DHelpers';
 import { Sparkles } from './Sparkles';
 
 export interface ScrapbookSceneProps {
@@ -135,88 +136,42 @@ export function ScrapbookScene({
       data-closed={closed}
       data-act={closed ? 'finale' : 'pinning'}
     >
-      <Pip
-        pose={closed ? 'celebrate' : 'hold'}
-        accent={pip}
-        className="absolute top-0 left-0 h-full"
-      />
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-        overflow="visible"
-      >
-        {/* Desk */}
-        <rect x={168} y={DESK_Y} width={128} height={7} rx={3} fill="#4b4466" />
-        <rect x={168} y={DESK_Y} width={128} height={2.4} rx={1.2} fill="#6c6590" />
-
-        {/* Back cover peeking out under the right page. */}
-        <rect
-          x={SPINE}
-          y={BOOK.top - 2}
-          width={BOOK.page + 3}
-          height={BOOK.h + 5}
-          rx={3}
-          fill={cover}
+      <With3DHelpers width={W} height={H}>
+        <Pip
+          pose={closed ? 'celebrate' : 'hold'}
+          accent={pip}
+          className="absolute top-0 left-0 h-full"
         />
-
-        {/* Left page, with its half of the cover, folds over onto the right when done. */}
-        <motion.g
-          data-part="left-page"
-          style={fold}
-          initial={false}
-          animate={{ scaleX: closed ? 0 : 1 }}
-          transition={still ? { duration: 0 } : { duration: 0.32, ease: 'easeIn' }}
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="absolute inset-0 h-full w-full"
+          aria-hidden="true"
+          overflow="visible"
         >
+          {/* Desk */}
+          <rect x={168} y={DESK_Y} width={128} height={7} rx={3} fill="#4b4466" />
+          <rect x={168} y={DESK_Y} width={128} height={2.4} rx={1.2} fill="#6c6590" />
+
+          {/* Back cover peeking out under the right page. */}
           <rect
-            x={SPINE - BOOK.page - 3}
+            x={SPINE}
             y={BOOK.top - 2}
             width={BOOK.page + 3}
             height={BOOK.h + 5}
             rx={3}
             fill={cover}
           />
-          <rect
-            x={SPINE - BOOK.page}
-            y={BOOK.top}
-            width={BOOK.page}
-            height={BOOK.h}
-            rx={2}
-            fill={leaf}
-          />
-          <rect x={SPINE - 5} y={BOOK.top} width={5} height={BOOK.h} fill={INK} opacity={0.08} />
-        </motion.g>
-        <rect x={SPINE} y={BOOK.top} width={BOOK.page} height={BOOK.h} rx={2} fill={leaf} />
-        <rect x={SPINE} y={BOOK.top} width={5} height={BOOK.h} fill={INK} opacity={0.08} />
 
-        {/* Photos already pinned. They fly from Pip's paw to their slot. */}
-        {SLOTS.slice(0, pinned).map((slot, i) => (
+          {/* Left page, with its half of the cover, folds over onto the right when done. */}
           <motion.g
-            key={i}
-            data-part="photo-pinned"
-            initial={still ? false : { x: HELD.x, y: HELD.y, rotate: -14, scale: 1.1 }}
-            animate={{ x: slot.x, y: slot.y, rotate: slot.r, scale: 1, opacity: closed ? 0 : 1 }}
-            transition={
-              closed && !still ? { opacity: { duration: 0.15 }, default: spring } : spring
-            }
-          >
-            <Photo i={i} pinned href={photo(i)} />
-          </motion.g>
-        ))}
-
-        {/* Front cover swings over from the spine and shuts the book. */}
-        {closed ? (
-          <motion.g
-            data-part="cover"
+            data-part="left-page"
             style={fold}
-            initial={still ? false : { scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={
-              still ? { duration: 0 } : { delay: 0.3, type: 'spring', stiffness: 260, damping: 18 }
-            }
+            initial={false}
+            animate={{ scaleX: closed ? 0 : 1 }}
+            transition={still ? { duration: 0 } : { duration: 0.32, ease: 'easeIn' }}
           >
             <rect
-              x={SPINE}
+              x={SPINE - BOOK.page - 3}
               y={BOOK.top - 2}
               width={BOOK.page + 3}
               height={BOOK.h + 5}
@@ -224,125 +179,175 @@ export function ScrapbookScene({
               fill={cover}
             />
             <rect
-              x={SPINE}
-              y={BOOK.top - 2}
-              width={4}
-              height={BOOK.h + 5}
-              fill={INK}
-              opacity={0.25}
-            />
-            <rect
-              x={SPINE + 14}
-              y={BOOK.top + 12}
-              width={32}
-              height={22}
+              x={SPINE - BOOK.page}
+              y={BOOK.top}
+              width={BOOK.page}
+              height={BOOK.h}
               rx={2}
-              fill={coverLight}
+              fill={leaf}
             />
-            <path
-              d={`M${SPINE + 30} ${BOOK.top + 28} c-6 -4 -7 -9 -3 -10 c2 -0.6 3 1 3 2 c0 -1 1 -2.6 3 -2 c4 1 3 6 -3 10z`}
-              fill="var(--coral)"
-            />
+            <rect x={SPINE - 5} y={BOOK.top} width={5} height={BOOK.h} fill={INK} opacity={0.08} />
           </motion.g>
-        ) : null}
+          <rect x={SPINE} y={BOOK.top} width={BOOK.page} height={BOOK.h} rx={2} fill={leaf} />
+          <rect x={SPINE} y={BOOK.top} width={5} height={BOOK.h} fill={INK} opacity={0.08} />
 
-        {/* Finale: a ribbon ties the shut book and a bow pops on. */}
-        {closed ? (
-          <g data-part="ribbon">
-            <motion.rect
-              x={RIBBON_X - 2}
-              y={BOOK.top - 2}
-              width={4}
-              height={BOOK.h + 5}
-              fill="var(--coral)"
-              style={{ originY: '0px' }}
-              initial={still ? false : { scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={still ? { duration: 0 } : { delay: 0.55, duration: 0.25 }}
-            />
-            <g transform={`translate(${RIBBON_X} ${BOOK.top + 9})`}>
-              <motion.g
-                data-part="bow"
-                initial={still ? false : { scale: 0, rotate: -30 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={
-                  still
-                    ? { duration: 0 }
-                    : { delay: 0.8, type: 'spring', stiffness: 360, damping: 12 }
-                }
-              >
-                <path d="M0 0 C-4 -6 -10 -4 -8 0 C-10 4 -4 6 0 0Z" fill="var(--coral)" />
-                <path d="M0 0 C4 -6 10 -4 8 0 C10 4 4 6 0 0Z" fill="var(--coral)" />
-                <path d="M0 0 L-4 8 M0 0 L4 8" stroke="var(--coral)" strokeWidth={2} />
-                <circle r={2} fill={`color-mix(in srgb, var(--coral) 70%, ${INK})`} />
-              </motion.g>
-            </g>
-          </g>
-        ) : null}
+          {/* Photos already pinned. They fly from Pip's paw to their slot. */}
+          {SLOTS.slice(0, pinned).map((slot, i) => (
+            <motion.g
+              key={i}
+              data-part="photo-pinned"
+              initial={still ? false : { x: HELD.x, y: HELD.y, rotate: -14, scale: 1.1 }}
+              animate={{ x: slot.x, y: slot.y, rotate: slot.r, scale: 1, opacity: closed ? 0 : 1 }}
+              transition={
+                closed && !still ? { opacity: { duration: 0.15 }, default: spring } : spring
+              }
+            >
+              <Photo i={i} pinned href={photo(i)} />
+            </motion.g>
+          ))}
 
-        {/* The helper scoots in, perches on the page and hops as photos land. */}
-        <motion.g
-          data-part="helper-wrap"
-          initial={still ? false : { x: 70, opacity: 0 }}
-          animate={{ x: closed ? -32 : 0, opacity: 1 }}
-          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 14 }}
-        >
-          <motion.g
-            key={`hop-${pinned}`}
-            data-part="helper-hop"
-            initial={false}
-            animate={!still && pinned > 0 && !closed ? { y: [0, -7, 0] } : { y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut', delay: 0.2 }}
-          >
-            <Helper
-              x={PERCH.x}
-              y={PERCH.y}
-              color={accent === 'sunshine' ? 'sky' : 'sunshine'}
-              sitting={!closed}
-              hopping={!still && closed}
-            />
-          </motion.g>
-        </motion.g>
+          {/* Front cover swings over from the spine and shuts the book. */}
+          {closed ? (
+            <motion.g
+              data-part="cover"
+              style={fold}
+              initial={still ? false : { scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={
+                still
+                  ? { duration: 0 }
+                  : { delay: 0.3, type: 'spring', stiffness: 260, damping: 18 }
+              }
+            >
+              <rect
+                x={SPINE}
+                y={BOOK.top - 2}
+                width={BOOK.page + 3}
+                height={BOOK.h + 5}
+                rx={3}
+                fill={cover}
+              />
+              <rect
+                x={SPINE}
+                y={BOOK.top - 2}
+                width={4}
+                height={BOOK.h + 5}
+                fill={INK}
+                opacity={0.25}
+              />
+              <rect
+                x={SPINE + 14}
+                y={BOOK.top + 12}
+                width={32}
+                height={22}
+                rx={2}
+                fill={coverLight}
+              />
+              <path
+                d={`M${SPINE + 30} ${BOOK.top + 28} c-6 -4 -7 -9 -3 -10 c2 -0.6 3 1 3 2 c0 -1 1 -2.6 3 -2 c4 1 3 6 -3 10z`}
+                fill="var(--coral)"
+              />
+            </motion.g>
+          ) : null}
 
-        {closed ? (
-          <Sparkles
-            still={still}
-            delay={0.9}
-            points={[
-              { x: SPINE - 8, y: BOOK.top + 6 },
-              { x: SPINE + BOOK.page - 6, y: BOOK.top - 12, s: 0.8 },
-              { x: SPINE + 8, y: BOOK.top + BOOK.h - 6, s: 0.6 },
-            ]}
-          />
-        ) : null}
-
-        {/* The next photo, held up and bobbing until it is its turn. */}
-        {!closed ? (
-          <motion.g
-            key={`held-${pinned}`}
-            data-part="photo-held"
-            data-bobbing={!still}
-            initial={still ? false : { x: PAW.x, y: PAW.y, scale: 0.3, rotate: 0 }}
-            animate={
-              still
-                ? { x: HELD.x, y: HELD.y, scale: 1, rotate: -14 }
-                : { x: HELD.x, y: [HELD.y, HELD.y - 4, HELD.y], scale: 1, rotate: [-14, -8, -14] }
-            }
-            transition={
-              still
-                ? { duration: 0 }
-                : {
-                    x: spring,
-                    scale: spring,
-                    y: { duration: 1.2, ease: 'easeInOut', repeat: Infinity },
-                    rotate: { duration: 1.2, ease: 'easeInOut', repeat: Infinity },
+          {/* Finale: a ribbon ties the shut book and a bow pops on. */}
+          {closed ? (
+            <g data-part="ribbon">
+              <motion.rect
+                x={RIBBON_X - 2}
+                y={BOOK.top - 2}
+                width={4}
+                height={BOOK.h + 5}
+                fill="var(--coral)"
+                style={{ originY: '0px' }}
+                initial={still ? false : { scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={still ? { duration: 0 } : { delay: 0.55, duration: 0.25 }}
+              />
+              <g transform={`translate(${RIBBON_X} ${BOOK.top + 9})`}>
+                <motion.g
+                  data-part="bow"
+                  initial={still ? false : { scale: 0, rotate: -30 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={
+                    still
+                      ? { duration: 0 }
+                      : { delay: 0.8, type: 'spring', stiffness: 360, damping: 12 }
                   }
-            }
+                >
+                  <path d="M0 0 C-4 -6 -10 -4 -8 0 C-10 4 -4 6 0 0Z" fill="var(--coral)" />
+                  <path d="M0 0 C4 -6 10 -4 8 0 C10 4 4 6 0 0Z" fill="var(--coral)" />
+                  <path d="M0 0 L-4 8 M0 0 L4 8" stroke="var(--coral)" strokeWidth={2} />
+                  <circle r={2} fill={`color-mix(in srgb, var(--coral) 70%, ${INK})`} />
+                </motion.g>
+              </g>
+            </g>
+          ) : null}
+
+          {/* The helper scoots in, perches on the page and hops as photos land. */}
+          <motion.g
+            data-part="helper-wrap"
+            initial={still ? false : { x: 70, opacity: 0 }}
+            animate={{ x: closed ? -32 : 0, opacity: 1 }}
+            transition={still ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 14 }}
           >
-            <Photo i={pinned} pinned={false} href={photo(pinned)} />
+            <motion.g
+              key={`hop-${pinned}`}
+              data-part="helper-hop"
+              initial={false}
+              animate={!still && pinned > 0 && !closed ? { y: [0, -7, 0] } : { y: 0 }}
+              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.2 }}
+            >
+              <Helper
+                x={PERCH.x}
+                y={PERCH.y}
+                color={accent === 'sunshine' ? 'sky' : 'sunshine'}
+                sitting={!closed}
+                hopping={!still && closed}
+              />
+            </motion.g>
           </motion.g>
-        ) : null}
-      </svg>
+
+          {closed ? (
+            <Sparkles
+              still={still}
+              delay={0.9}
+              points={[
+                { x: SPINE - 8, y: BOOK.top + 6 },
+                { x: SPINE + BOOK.page - 6, y: BOOK.top - 12, s: 0.8 },
+                { x: SPINE + 8, y: BOOK.top + BOOK.h - 6, s: 0.6 },
+              ]}
+            />
+          ) : null}
+
+          {/* The next photo, held up and bobbing until it is its turn. */}
+          {!closed ? (
+            <motion.g
+              key={`held-${pinned}`}
+              data-part="photo-held"
+              data-bobbing={!still}
+              initial={still ? false : { x: PAW.x, y: PAW.y, scale: 0.3, rotate: 0 }}
+              animate={
+                still
+                  ? { x: HELD.x, y: HELD.y, scale: 1, rotate: -14 }
+                  : { x: HELD.x, y: [HELD.y, HELD.y - 4, HELD.y], scale: 1, rotate: [-14, -8, -14] }
+              }
+              transition={
+                still
+                  ? { duration: 0 }
+                  : {
+                      x: spring,
+                      scale: spring,
+                      y: { duration: 1.2, ease: 'easeInOut', repeat: Infinity },
+                      rotate: { duration: 1.2, ease: 'easeInOut', repeat: Infinity },
+                    }
+              }
+            >
+              <Photo i={pinned} pinned={false} href={photo(pinned)} />
+            </motion.g>
+          ) : null}
+        </svg>
+      </With3DHelpers>
     </div>
   );
 }

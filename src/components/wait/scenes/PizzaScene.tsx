@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { With3DHelpers } from './With3DHelpers';
 import { Sparkles } from './Sparkles';
 import { PageFace } from './PageFace';
 
@@ -137,145 +138,147 @@ export function PizzaScene({
       data-landed={landed}
       data-act={finished ? 'finale' : 'action'}
     >
-      <Pip
-        pose={finished ? 'celebrate' : 'hold'}
-        accent={pip}
-        className="absolute top-0 left-0 h-full"
-      />
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-        overflow="visible"
-      >
-        {/* Counter */}
-        <rect x={198} y={COUNTER_Y} width={94} height={8} rx={3} fill="#4b4466" />
-        <rect x={198} y={COUNTER_Y} width={94} height={2.5} rx={1.2} fill="#6c6590" />
-
-        {/* Pages already turned, stacked on their sides. */}
-        {Array.from({ length: landed }, (_, i) => (
-          <motion.g
-            key={i}
-            data-part="page-landed"
-            initial={still ? false : { x: SPIN.x, y: SPIN.y, rotate: 0, scale: 1 }}
-            animate={{
-              x: STACK_X + (i % 2 ? 1.5 : -1.5),
-              y: COUNTER_Y - PAGE.w / 2 - 1 - i * 4,
-              rotate: 90 + (i % 2 ? 3 : -2),
-              scale: 1,
-            }}
-            transition={spring}
-          >
-            <Page accent={accent} i={i} thumb={thumb} clip={clip} />
-          </motion.g>
-        ))}
-
-        {/* The helper strolls in, hops each time a page lands, cheers at the end. */}
-        <motion.g
-          initial={still ? false : { x: 70 }}
-          animate={{ x: 0 }}
-          transition={still ? { duration: 0 } : { type: 'spring', stiffness: 90, damping: 16 }}
+      <With3DHelpers width={W} height={H}>
+        <Pip
+          pose={finished ? 'celebrate' : 'hold'}
+          accent={pip}
+          className="absolute top-0 left-0 h-full"
+        />
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="absolute inset-0 h-full w-full"
+          aria-hidden="true"
+          overflow="visible"
         >
+          {/* Counter */}
+          <rect x={198} y={COUNTER_Y} width={94} height={8} rx={3} fill="#4b4466" />
+          <rect x={198} y={COUNTER_Y} width={94} height={2.5} rx={1.2} fill="#6c6590" />
+
+          {/* Pages already turned, stacked on their sides. */}
+          {Array.from({ length: landed }, (_, i) => (
+            <motion.g
+              key={i}
+              data-part="page-landed"
+              initial={still ? false : { x: SPIN.x, y: SPIN.y, rotate: 0, scale: 1 }}
+              animate={{
+                x: STACK_X + (i % 2 ? 1.5 : -1.5),
+                y: COUNTER_Y - PAGE.w / 2 - 1 - i * 4,
+                rotate: 90 + (i % 2 ? 3 : -2),
+                scale: 1,
+              }}
+              transition={spring}
+            >
+              <Page accent={accent} i={i} thumb={thumb} clip={clip} />
+            </motion.g>
+          ))}
+
+          {/* The helper strolls in, hops each time a page lands, cheers at the end. */}
           <motion.g
-            key={finished ? 'cheer' : `hop-${landed}`}
-            data-part="helper-hop"
-            animate={still || finished ? undefined : landed > 0 ? { y: [0, -7, 0] } : undefined}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            initial={still ? false : { x: 70 }}
+            animate={{ x: 0 }}
+            transition={still ? { duration: 0 } : { type: 'spring', stiffness: 90, damping: 16 }}
           >
-            <Helper
-              x={HELPER_X}
-              y={COUNTER_Y - 20}
-              color={accent === 'sky' ? 'mint' : 'sky'}
-              hopping={!still && finished}
+            <motion.g
+              key={finished ? 'cheer' : `hop-${landed}`}
+              data-part="helper-hop"
+              animate={still || finished ? undefined : landed > 0 ? { y: [0, -7, 0] } : undefined}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
+              <Helper
+                x={HELPER_X}
+                y={COUNTER_Y - 20}
+                color={accent === 'sky' ? 'mint' : 'sky'}
+                hopping={!still && finished}
+              />
+            </motion.g>
+          </motion.g>
+
+          {finished ? (
+            <Sparkles
+              still={still}
+              points={SPARKLES.map(([dx, dy]) => ({
+                x: STACK_X + dx,
+                y: COUNTER_Y - PAGE.w - pages * 4 + dy,
+              }))}
             />
-          </motion.g>
-        </motion.g>
+          ) : null}
 
-        {finished ? (
-          <Sparkles
-            still={still}
-            points={SPARKLES.map(([dx, dy]) => ({
-              x: STACK_X + dx,
-              y: COUNTER_Y - PAGE.w - pages * 4 + dy,
-            }))}
-          />
-        ) : null}
+          {/* The paw points up; flour puffs off it while the page spins. */}
+          {finished ? null : (
+            <path
+              d={`M${PAW.x - 2} ${PAW.y - 3} Q${PAW.x + 2} ${PAW.y - 16} ${PAW.x + 6} ${PAW.y - 22}`}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth={4.5}
+              strokeLinecap="round"
+            />
+          )}
+          {spinning
+            ? [-6, 0, 7].map((dx, i) => (
+                <motion.circle
+                  key={dx}
+                  data-part="flour"
+                  cx={PAW.x + 6 + dx}
+                  cy={PAW.y - 26}
+                  r={1.6}
+                  fill="#ffffff"
+                  animate={{ y: [0, -10, -16], x: [0, dx * 0.8, dx * 1.6], opacity: [0, 0.9, 0] }}
+                  transition={{ duration: 1, delay: i * 0.3, repeat: Infinity, ease: 'easeOut' }}
+                />
+              ))
+            : null}
 
-        {/* The paw points up; flour puffs off it while the page spins. */}
-        {finished ? null : (
-          <path
-            d={`M${PAW.x - 2} ${PAW.y - 3} Q${PAW.x + 2} ${PAW.y - 16} ${PAW.x + 6} ${PAW.y - 22}`}
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth={4.5}
-            strokeLinecap="round"
-          />
-        )}
-        {spinning
-          ? [-6, 0, 7].map((dx, i) => (
-              <motion.circle
-                key={dx}
-                data-part="flour"
-                cx={PAW.x + 6 + dx}
-                cy={PAW.y - 26}
-                r={1.6}
-                fill="#ffffff"
-                animate={{ y: [0, -10, -16], x: [0, dx * 0.8, dx * 1.6], opacity: [0, 0.9, 0] }}
-                transition={{ duration: 1, delay: i * 0.3, repeat: Infinity, ease: 'easeOut' }}
-              />
-            ))
-          : null}
+          {/* Swirl lines that show the spin. */}
+          {spinning ? (
+            <motion.g
+              data-part="swirl"
+              style={{ originX: `${SPIN.x}px`, originY: `${SPIN.y}px`, transformBox: 'view-box' }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.4, ease: 'linear', repeat: Infinity }}
+            >
+              {[0, 120, 240].map((a) => (
+                <path
+                  key={a}
+                  d={`M${SPIN.x + 32} ${SPIN.y} A32 32 0 0 1 ${SPIN.x + 32 * Math.cos(0.9)} ${SPIN.y + 32 * Math.sin(0.9)}`}
+                  transform={`rotate(${a} ${SPIN.x} ${SPIN.y})`}
+                  fill="none"
+                  stroke={`var(--${accent})`}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  opacity={0.55}
+                />
+              ))}
+            </motion.g>
+          ) : null}
 
-        {/* Swirl lines that show the spin. */}
-        {spinning ? (
-          <motion.g
-            data-part="swirl"
-            style={{ originX: `${SPIN.x}px`, originY: `${SPIN.y}px`, transformBox: 'view-box' }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.4, ease: 'linear', repeat: Infinity }}
-          >
-            {[0, 120, 240].map((a) => (
-              <path
-                key={a}
-                d={`M${SPIN.x + 32} ${SPIN.y} A32 32 0 0 1 ${SPIN.x + 32 * Math.cos(0.9)} ${SPIN.y + 32 * Math.sin(0.9)}`}
-                transform={`rotate(${a} ${SPIN.x} ${SPIN.y})`}
-                fill="none"
-                stroke={`var(--${accent})`}
-                strokeWidth={2}
-                strokeLinecap="round"
-                opacity={0.55}
-              />
-            ))}
-          </motion.g>
-        ) : null}
-
-        {/* The page on the go. It bobs up and down and spins around. */}
-        {!finished ? (
-          <motion.g
-            key={`spin-${landed}`}
-            data-part="page-spinning"
-            data-spinning={spinning}
-            initial={still ? false : { x: PAW.x + 6, y: PAW.y - 24, scale: 0.4, rotate: 0 }}
-            animate={
-              spinning
-                ? { x: SPIN.x, y: [SPIN.y, SPIN.y - 7, SPIN.y], scale: 1, rotate: [0, 360] }
-                : { x: SPIN.x, y: SPIN.y, scale: 1, rotate: -12 }
-            }
-            transition={
-              spinning
-                ? {
-                    x: { type: 'spring', stiffness: 200, damping: 18 },
-                    scale: { type: 'spring', stiffness: 200, damping: 18 },
-                    y: { duration: 1.1, ease: 'easeInOut', repeat: Infinity },
-                    rotate: { duration: 0.9, ease: 'linear', repeat: Infinity },
-                  }
-                : { duration: 0 }
-            }
-          >
-            <Page accent={accent} i={landed} thumb={thumb} clip={clip} />
-          </motion.g>
-        ) : null}
-      </svg>
+          {/* The page on the go. It bobs up and down and spins around. */}
+          {!finished ? (
+            <motion.g
+              key={`spin-${landed}`}
+              data-part="page-spinning"
+              data-spinning={spinning}
+              initial={still ? false : { x: PAW.x + 6, y: PAW.y - 24, scale: 0.4, rotate: 0 }}
+              animate={
+                spinning
+                  ? { x: SPIN.x, y: [SPIN.y, SPIN.y - 7, SPIN.y], scale: 1, rotate: [0, 360] }
+                  : { x: SPIN.x, y: SPIN.y, scale: 1, rotate: -12 }
+              }
+              transition={
+                spinning
+                  ? {
+                      x: { type: 'spring', stiffness: 200, damping: 18 },
+                      scale: { type: 'spring', stiffness: 200, damping: 18 },
+                      y: { duration: 1.1, ease: 'easeInOut', repeat: Infinity },
+                      rotate: { duration: 0.9, ease: 'linear', repeat: Infinity },
+                    }
+                  : { duration: 0 }
+              }
+            >
+              <Page accent={accent} i={landed} thumb={thumb} clip={clip} />
+            </motion.g>
+          ) : null}
+        </svg>
+      </With3DHelpers>
     </div>
   );
 }

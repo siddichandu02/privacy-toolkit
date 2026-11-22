@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
+import { prefetchHelpers3D } from '../wait/scenes/three';
 import { DropZone, RejectionNotice } from './DropZone';
 import { FileList } from './FileList';
 import { UndoBar } from './UndoBar';
@@ -33,6 +34,11 @@ export function ToolWorkbench({
   // Undo only makes sense while the list is on screen.
   useEffect(() => forget, [forget]);
   const hasFiles = items.length > 0;
+  // Fetch the 3D helpers for the wait story once there are files, so they are
+  // ready (even offline) by the time the tool runs.
+  useEffect(() => {
+    if (hasFiles && !still) prefetchHelpers3D();
+  }, [hasFiles, still]);
   const room = rules.maxFiles === undefined || items.length < rules.maxFiles;
   const total = items.reduce((sum, item) => sum + item.file.size, 0);
   const swap = still

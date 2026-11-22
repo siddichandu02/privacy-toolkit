@@ -4,6 +4,7 @@ import { useStillMotion } from '../../../useStillMotion';
 import { Pip } from '../../pip/Pip';
 import type { Accent } from '../../ui/accent';
 import { Helper } from './Helper';
+import { With3DHelpers } from './With3DHelpers';
 
 export interface JarSceneProps {
   /** Story progress, 0 to 1. Fills the jar; 1 plays the finale. */
@@ -32,6 +33,9 @@ const jarPath = `M${JAR.cx - 22} ${JAR.mouth} L${JAR.cx - 22} ${JAR.mouth + 8}
   L${JAR.right - 14} ${JAR.bottom} Q${JAR.right} ${JAR.bottom} ${JAR.right} ${JAR.bottom - 14}
   L${JAR.right} ${JAR.mouth + 32} Q${JAR.right} ${JAR.mouth + 12} ${JAR.cx + 22} ${JAR.mouth + 8}
   L${JAR.cx + 22} ${JAR.mouth} Z`;
+
+/** Page tosses from the helpers: the 2D page and the 3D throw share this timing. */
+const TOSS = { throwAt: 1, duration: 2.1, repeatDelay: 0.3, release: 0.2 };
 
 const HELPERS: { color: Accent; x: number; delay: number }[] = [
   { color: 'mint', x: 278, delay: 0 },
@@ -69,299 +73,326 @@ export function JarScene({
       data-in-jar={inJar}
       data-act={finished ? 'finale' : 'action'}
     >
-      <Pip
-        pose={finished ? 'celebrate' : 'hold'}
-        accent={pip}
-        className="absolute bottom-[4.4%] left-[0.6%] h-[66.7%]"
-      />
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-        overflow="visible"
-      >
-        <defs>
-          <clipPath id={`${id}-glass`}>
-            <path d={jarPath} />
-          </clipPath>
-          <linearGradient id={`${id}-shine`} x1="0" x2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
-            <stop offset="0.35" stopColor="#fff" stopOpacity="0.06" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.14" />
-          </linearGradient>
-        </defs>
-
-        {/* Ground shadow under the jar */}
-        <ellipse cx={JAR.cx} cy={GROUND} rx={54} ry={4} fill="rgb(27 16 51 / 0.18)" />
-
-        <motion.g
-          initial={still ? false : { y: -30, opacity: 0 }}
-          animate={
-            finished && !still
-              ? {
-                  y: 0,
-                  opacity: 1,
-                  x: [0, -3, 3, -2.5, 2.5, -1, 0],
-                  rotate: [0, -2, 2, -1.5, 1.5, 0, 0],
-                }
-              : { y: 0, opacity: 1 }
-          }
-          transition={
-            finished
-              ? { duration: 0.6, ease: 'easeInOut' }
-              : { type: 'spring', stiffness: 260, damping: 16 }
-          }
-          style={{ originX: `${JAR.cx}px`, originY: `${JAR.bottom}px`, transformBox: 'view-box' }}
+      <With3DHelpers width={W} height={H}>
+        <Pip
+          pose={finished ? 'celebrate' : 'hold'}
+          accent={pip}
+          className="absolute bottom-[4.4%] left-[0.6%] h-[66.7%]"
+        />
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="absolute inset-0 h-full w-full"
+          aria-hidden="true"
+          overflow="visible"
         >
-          {/* Inside the glass: liquid, swirl, bubbles and the pages */}
-          <g clipPath={`url(#${id}-glass)`}>
-            <path d={jarPath} fill={tint} opacity={0.07} />
-            <motion.rect
-              x={JAR.left}
-              width={JAR.right - JAR.left}
-              initial={false}
-              animate={{
-                y: JAR.bottom - level * (JAR.bottom - JAR.mouth),
-                height: level * (JAR.bottom - JAR.mouth) + 4,
-              }}
-              transition={{ type: 'spring', stiffness: 60, damping: 18 }}
-              fill={tint}
-              opacity={0.26}
-            />
-            {moving ? (
-              <motion.path
-                d={`M${JAR.cx} ${JAR.bottom - 46} m-30 0 a30 18 0 1 0 60 0 a22 13 0 1 0 -44 0 a14 8 0 1 0 28 0`}
-                fill="none"
-                stroke={tint}
-                strokeWidth={2}
-                strokeLinecap="round"
-                opacity={0.5}
+          <defs>
+            <clipPath id={`${id}-glass`}>
+              <path d={jarPath} />
+            </clipPath>
+            <linearGradient id={`${id}-shine`} x1="0" x2="1">
+              <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
+              <stop offset="0.35" stopColor="#fff" stopOpacity="0.06" />
+              <stop offset="1" stopColor="#fff" stopOpacity="0.14" />
+            </linearGradient>
+          </defs>
+
+          {/* Ground shadow under the jar */}
+          <ellipse cx={JAR.cx} cy={GROUND} rx={54} ry={4} fill="rgb(27 16 51 / 0.18)" />
+
+          <motion.g
+            initial={still ? false : { y: -30, opacity: 0 }}
+            animate={
+              finished && !still
+                ? {
+                    y: 0,
+                    opacity: 1,
+                    x: [0, -3, 3, -2.5, 2.5, -1, 0],
+                    rotate: [0, -2, 2, -1.5, 1.5, 0, 0],
+                  }
+                : { y: 0, opacity: 1 }
+            }
+            transition={
+              finished
+                ? { duration: 0.6, ease: 'easeInOut' }
+                : { type: 'spring', stiffness: 260, damping: 16 }
+            }
+            style={{ originX: `${JAR.cx}px`, originY: `${JAR.bottom}px`, transformBox: 'view-box' }}
+          >
+            {/* Inside the glass: liquid, swirl, bubbles and the pages */}
+            <g clipPath={`url(#${id}-glass)`}>
+              <path d={jarPath} fill={tint} opacity={0.07} />
+              <motion.rect
+                x={JAR.left}
+                width={JAR.right - JAR.left}
+                initial={false}
+                animate={{
+                  y: JAR.bottom - level * (JAR.bottom - JAR.mouth),
+                  height: level * (JAR.bottom - JAR.mouth) + 4,
+                }}
+                transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+                fill={tint}
+                opacity={0.26}
+              />
+              {moving ? (
+                <motion.path
+                  d={`M${JAR.cx} ${JAR.bottom - 46} m-30 0 a30 18 0 1 0 60 0 a22 13 0 1 0 -44 0 a14 8 0 1 0 28 0`}
+                  fill="none"
+                  stroke={tint}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  opacity={0.5}
+                  style={{
+                    originX: `${JAR.cx}px`,
+                    originY: `${JAR.bottom - 46}px`,
+                    transformBox: 'view-box',
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
+                />
+              ) : null}
+              {/* Pages already in, swirling round the spoon */}
+              <motion.g
                 style={{
                   originX: `${JAR.cx}px`,
-                  originY: `${JAR.bottom - 46}px`,
+                  originY: `${JAR.bottom - 44}px`,
                   transformBox: 'view-box',
                 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-              />
-            ) : null}
-            {/* Pages already in, swirling round the spoon */}
+                animate={moving ? { rotate: 360 } : { rotate: 0 }}
+                transition={
+                  moving ? { duration: 5, repeat: Infinity, ease: 'linear' } : { duration: 0 }
+                }
+              >
+                {Array.from({ length: inJar }, (_, i) => {
+                  const a = (i / SLOTS) * Math.PI * 2;
+                  const r = 16 + (i % 2) * 12;
+                  return (
+                    <motion.g
+                      key={i}
+                      initial={still ? false : { y: -60, opacity: 0 }}
+                      animate={{ y: 0, opacity: finished ? 0 : 1 }}
+                      transition={{ type: 'spring', stiffness: 160, damping: 14 }}
+                    >
+                      <Page
+                        x={JAR.cx + Math.cos(a) * r - PAGE.w / 2}
+                        y={JAR.bottom - 44 + Math.sin(a) * r * 0.5 - PAGE.h / 2}
+                        rotate={i * 47}
+                        href={thumb(i)}
+                        accent={accent}
+                        clip={`${id}-p${i}`}
+                      />
+                    </motion.g>
+                  );
+                })}
+              </motion.g>
+              {moving
+                ? [0, 1, 2, 3, 4].map((i) => (
+                    <motion.circle
+                      key={i}
+                      cx={JAR.left + 18 + i * 17}
+                      r={1.6 + (i % 3) * 0.8}
+                      fill="none"
+                      stroke="#fff"
+                      strokeOpacity={0.7}
+                      strokeWidth={0.9}
+                      animate={{ cy: [JAR.bottom - 4, JAR.mouth + 30], opacity: [0, 1, 0] }}
+                      transition={{
+                        duration: 1.6 + (i % 2) * 0.5,
+                        delay: i * 0.35,
+                        repeat: Infinity,
+                        ease: 'easeIn',
+                      }}
+                    />
+                  ))
+                : null}
+            </g>
+
+            {/* The giant spoon, ridden by a helper who stirs */}
             <motion.g
               style={{
                 originX: `${JAR.cx}px`,
-                originY: `${JAR.bottom - 44}px`,
+                originY: `${JAR.mouth + 4}px`,
                 transformBox: 'view-box',
               }}
-              animate={moving ? { rotate: 360 } : { rotate: 0 }}
+              animate={moving ? { rotate: [-9, 9, -9] } : { rotate: 0, opacity: finished ? 0 : 1 }}
               transition={
-                moving ? { duration: 5, repeat: Infinity, ease: 'linear' } : { duration: 0 }
+                moving ? { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }
               }
             >
-              {Array.from({ length: inJar }, (_, i) => {
-                const a = (i / SLOTS) * Math.PI * 2;
-                const r = 16 + (i % 2) * 12;
-                return (
-                  <motion.g
-                    key={i}
-                    initial={still ? false : { y: -60, opacity: 0 }}
-                    animate={{ y: 0, opacity: finished ? 0 : 1 }}
-                    transition={{ type: 'spring', stiffness: 160, damping: 14 }}
-                  >
-                    <Page
-                      x={JAR.cx + Math.cos(a) * r - PAGE.w / 2}
-                      y={JAR.bottom - 44 + Math.sin(a) * r * 0.5 - PAGE.h / 2}
-                      rotate={i * 47}
-                      href={thumb(i)}
-                      accent={accent}
-                      clip={`${id}-p${i}`}
-                    />
-                  </motion.g>
-                );
-              })}
+              <ellipse cx={JAR.cx - 6} cy={JAR.bottom - 26} rx={11} ry={6} fill="#c79a6b" />
+              <path
+                d={`M${JAR.cx - 6} ${JAR.bottom - 30} L${JAR.cx + 11} ${JAR.mouth - 20}`}
+                stroke="#b4855a"
+                strokeWidth={5}
+                strokeLinecap="round"
+              />
+              <Helper x={JAR.cx + 12} y={JAR.mouth - 23} color="sky" sitting />
             </motion.g>
-            {moving
-              ? [0, 1, 2, 3, 4].map((i) => (
-                  <motion.circle
-                    key={i}
-                    cx={JAR.left + 18 + i * 17}
-                    r={1.6 + (i % 3) * 0.8}
-                    fill="none"
-                    stroke="#fff"
-                    strokeOpacity={0.7}
-                    strokeWidth={0.9}
-                    animate={{ cy: [JAR.bottom - 4, JAR.mouth + 30], opacity: [0, 1, 0] }}
-                    transition={{
-                      duration: 1.6 + (i % 2) * 0.5,
-                      delay: i * 0.35,
-                      repeat: Infinity,
-                      ease: 'easeIn',
-                    }}
-                  />
-                ))
-              : null}
-          </g>
 
-          {/* The giant spoon, ridden by a helper who stirs */}
-          <motion.g
-            style={{
-              originX: `${JAR.cx}px`,
-              originY: `${JAR.mouth + 4}px`,
-              transformBox: 'view-box',
-            }}
-            animate={moving ? { rotate: [-9, 9, -9] } : { rotate: 0, opacity: finished ? 0 : 1 }}
-            transition={
-              moving ? { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }
-            }
-          >
-            <ellipse cx={JAR.cx - 6} cy={JAR.bottom - 26} rx={11} ry={6} fill="#c79a6b" />
+            {/* Glass on top: outline, lip and shine */}
+            <path d={jarPath} fill={`url(#${id}-shine)`} />
+            <path d={jarPath} fill="none" stroke="var(--line-strong)" strokeWidth={1.6} />
+            <rect
+              x={JAR.cx - 26}
+              y={JAR.mouth - 6}
+              width={52}
+              height={8}
+              rx={3}
+              fill="rgb(255 255 255 / 0.12)"
+              stroke="var(--line-strong)"
+              strokeWidth={1.4}
+            />
             <path
-              d={`M${JAR.cx - 6} ${JAR.bottom - 30} L${JAR.cx + 11} ${JAR.mouth - 20}`}
-              stroke="#b4855a"
-              strokeWidth={5}
+              d={`M${JAR.left + 9} ${JAR.mouth + 36} L${JAR.left + 9} ${JAR.bottom - 22}`}
+              stroke="#fff"
+              strokeOpacity={0.45}
+              strokeWidth={3}
               strokeLinecap="round"
             />
-            <Helper x={JAR.cx + 12} y={JAR.mouth - 23} color="sky" sitting />
           </motion.g>
 
-          {/* Glass on top: outline, lip and shine */}
-          <path d={jarPath} fill={`url(#${id}-shine)`} />
-          <path d={jarPath} fill="none" stroke="var(--line-strong)" strokeWidth={1.6} />
-          <rect
-            x={JAR.cx - 26}
-            y={JAR.mouth - 6}
-            width={52}
-            height={8}
-            rx={3}
-            fill="rgb(255 255 255 / 0.12)"
-            stroke="var(--line-strong)"
-            strokeWidth={1.4}
-          />
-          <path
-            d={`M${JAR.left + 9} ${JAR.mouth + 36} L${JAR.left + 9} ${JAR.bottom - 22}`}
-            stroke="#fff"
-            strokeOpacity={0.45}
-            strokeWidth={3}
-            strokeLinecap="round"
-          />
-        </motion.g>
-
-        {/* Pip tosses a page from its paw into the jar, over and over */}
-        {moving ? (
-          <Toss
-            from={PAW}
-            delay={0.4}
-            href={thumb(0)}
-            accent={accent}
-            clip={`${id}-tp`}
-            duration={1.8}
-          />
-        ) : null}
-
-        {/* Helpers march in with a page each, then throw it in */}
-        {HELPERS.map((h, i) => (
-          <motion.g
-            key={h.color}
-            initial={still ? false : { x: 70, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 90, damping: 15, delay: 0.2 + h.delay * 0.4 }}
-          >
-            <Helper x={h.x} y={GROUND - 18} color={h.color} hopping={!still} delay={h.delay} />
-            {moving ? (
-              <Toss
-                from={{ x: h.x, y: GROUND - 26 }}
-                delay={1 + h.delay}
-                href={thumb(i + 1)}
-                accent={accent}
-                clip={`${id}-th${i}`}
-                duration={2.1}
-              />
-            ) : null}
-          </motion.g>
-        ))}
-
-        {/* Finale: one bound document pops out of the jar */}
-        {finished ? (
-          <motion.g
-            data-part="bound-document"
-            initial={still ? false : { y: 40, scale: 0.4, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 11, delay: still ? 0 : 0.45 }}
-            style={{ originX: `${JAR.cx}px`, originY: `${JAR.mouth}px`, transformBox: 'view-box' }}
-          >
-            <rect
-              x={JAR.cx - 17}
-              y={JAR.mouth - 52}
-              width={34}
-              height={44}
-              rx={3}
-              fill="#fbf9ff"
-              stroke="var(--line-strong)"
+          {/* Pip tosses a page from its paw into the jar, over and over */}
+          {moving ? (
+            <Toss
+              from={PAW}
+              delay={0.4}
+              href={thumb(0)}
+              accent={accent}
+              clip={`${id}-tp`}
+              duration={1.8}
             />
-            {thumb(0) ? (
-              <>
-                <clipPath id={`${id}-cover`}>
-                  <rect x={JAR.cx - 13} y={JAR.mouth - 48} width={28} height={36} rx={1.5} />
-                </clipPath>
-                <image
-                  href={thumb(0)}
-                  x={JAR.cx - 13}
-                  y={JAR.mouth - 48}
-                  width={28}
-                  height={36}
-                  preserveAspectRatio="xMidYMin slice"
-                  clipPath={`url(#${id}-cover)`}
+          ) : null}
+
+          {/* Helpers march in with a page each, then throw it in */}
+          {HELPERS.map((h, i) => (
+            <motion.g
+              key={h.color}
+              initial={still ? false : { x: 70, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                type: 'spring',
+                stiffness: 90,
+                damping: 15,
+                delay: 0.2 + h.delay * 0.4,
+              }}
+            >
+              <Helper
+                x={h.x}
+                y={GROUND - 18}
+                color={h.color}
+                hopping={!still}
+                delay={h.delay}
+                throwing={
+                  moving
+                    ? {
+                        delay: TOSS.throwAt + h.delay,
+                        cycle: TOSS.duration + TOSS.repeatDelay,
+                        hold: TOSS.release * TOSS.duration,
+                      }
+                    : undefined
+                }
+              />
+              {moving ? (
+                <Toss
+                  from={{ x: h.x, y: GROUND - 30 }}
+                  delay={TOSS.throwAt + h.delay}
+                  href={thumb(i + 1)}
+                  accent={accent}
+                  clip={`${id}-th${i}`}
+                  duration={TOSS.duration}
+                  repeatDelay={TOSS.repeatDelay}
                 />
-              </>
-            ) : (
-              [0, 1, 2, 3].map((l) => (
-                <rect
-                  key={l}
-                  x={JAR.cx - 10}
-                  y={JAR.mouth - 44 + l * 7}
-                  width={l === 3 ? 14 : 22}
-                  height={2.5}
-                  rx={1}
-                  fill="#d6cfe8"
+              ) : null}
+            </motion.g>
+          ))}
+
+          {/* Finale: one bound document pops out of the jar */}
+          {finished ? (
+            <motion.g
+              data-part="bound-document"
+              initial={still ? false : { y: 40, scale: 0.4, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 11, delay: still ? 0 : 0.45 }}
+              style={{
+                originX: `${JAR.cx}px`,
+                originY: `${JAR.mouth}px`,
+                transformBox: 'view-box',
+              }}
+            >
+              <rect
+                x={JAR.cx - 17}
+                y={JAR.mouth - 52}
+                width={34}
+                height={44}
+                rx={3}
+                fill="#fbf9ff"
+                stroke="var(--line-strong)"
+              />
+              {thumb(0) ? (
+                <>
+                  <clipPath id={`${id}-cover`}>
+                    <rect x={JAR.cx - 13} y={JAR.mouth - 48} width={28} height={36} rx={1.5} />
+                  </clipPath>
+                  <image
+                    href={thumb(0)}
+                    x={JAR.cx - 13}
+                    y={JAR.mouth - 48}
+                    width={28}
+                    height={36}
+                    preserveAspectRatio="xMidYMin slice"
+                    clipPath={`url(#${id}-cover)`}
+                  />
+                </>
+              ) : (
+                [0, 1, 2, 3].map((l) => (
+                  <rect
+                    key={l}
+                    x={JAR.cx - 10}
+                    y={JAR.mouth - 44 + l * 7}
+                    width={l === 3 ? 14 : 22}
+                    height={2.5}
+                    rx={1}
+                    fill="#d6cfe8"
+                  />
+                ))
+              )}
+              <rect x={JAR.cx - 17} y={JAR.mouth - 52} width={5} height={44} rx={2} fill={tint} />
+              {[0, 1, 2, 3].map((s) => (
+                <circle
+                  key={s}
+                  cx={JAR.cx - 14.5}
+                  cy={JAR.mouth - 46 + s * 11}
+                  r={1.1}
+                  fill="#fbf9ff"
+                />
+              ))}
+            </motion.g>
+          ) : null}
+          {finished && !still
+            ? [
+                [-34, -60],
+                [32, -66],
+                [-26, -24],
+                [38, -30],
+                [0, -82],
+              ].map(([dx, dy], i) => (
+                <motion.path
+                  key={i}
+                  d="M0 -5 L1.3 -1.3 L5 0 L1.3 1.3 L0 5 L-1.3 1.3 L-5 0 L-1.3 -1.3 Z"
+                  fill={i % 2 ? 'var(--sunshine)' : tint}
+                  initial={{ x: JAR.cx, y: JAR.mouth - 24, scale: 0, opacity: 0 }}
+                  animate={{
+                    x: JAR.cx + (dx ?? 0),
+                    y: JAR.mouth + (dy ?? 0),
+                    scale: [0, 1.3, 0.9],
+                    opacity: [0, 1, 0.9],
+                    rotate: 90,
+                  }}
+                  transition={{ duration: 0.7, delay: 0.55 + i * 0.05, ease: 'easeOut' }}
                 />
               ))
-            )}
-            <rect x={JAR.cx - 17} y={JAR.mouth - 52} width={5} height={44} rx={2} fill={tint} />
-            {[0, 1, 2, 3].map((s) => (
-              <circle
-                key={s}
-                cx={JAR.cx - 14.5}
-                cy={JAR.mouth - 46 + s * 11}
-                r={1.1}
-                fill="#fbf9ff"
-              />
-            ))}
-          </motion.g>
-        ) : null}
-        {finished && !still
-          ? [
-              [-34, -60],
-              [32, -66],
-              [-26, -24],
-              [38, -30],
-              [0, -82],
-            ].map(([dx, dy], i) => (
-              <motion.path
-                key={i}
-                d="M0 -5 L1.3 -1.3 L5 0 L1.3 1.3 L0 5 L-1.3 1.3 L-5 0 L-1.3 -1.3 Z"
-                fill={i % 2 ? 'var(--sunshine)' : tint}
-                initial={{ x: JAR.cx, y: JAR.mouth - 24, scale: 0, opacity: 0 }}
-                animate={{
-                  x: JAR.cx + (dx ?? 0),
-                  y: JAR.mouth + (dy ?? 0),
-                  scale: [0, 1.3, 0.9],
-                  opacity: [0, 1, 0.9],
-                  rotate: 90,
-                }}
-                transition={{ duration: 0.7, delay: 0.55 + i * 0.05, ease: 'easeOut' }}
-              />
-            ))
-          : null}
-      </svg>
+            : null}
+        </svg>
+      </With3DHelpers>
     </div>
   );
 }
@@ -436,10 +467,12 @@ function Toss({
   href,
   accent,
   clip,
+  repeatDelay = 0.3,
 }: {
   from: { x: number; y: number };
   delay: number;
   duration: number;
+  repeatDelay?: number;
   href?: string;
   accent: Accent;
   clip: string;
@@ -463,7 +496,7 @@ function Toss({
         times: [0, 0.2, 0.55, 0.85, 1],
         ease: ['linear', 'easeOut', 'easeIn', 'linear'],
         repeat: Infinity,
-        repeatDelay: 0.3,
+        repeatDelay,
       }}
     >
       <Page x={0} y={0} href={href} accent={accent} clip={clip} />
