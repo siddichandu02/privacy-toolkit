@@ -66,7 +66,7 @@ export function PrivacyProof({
           >
             {clean ? '0' : formatBytes(sentBytes)}
           </motion.span>
-          <span className="max-w-[9rem] text-sm leading-snug font-semibold text-fg">
+          <span className="max-w-[6.5rem] text-sm leading-snug font-semibold text-fg">
             {clean ? 'bytes' : ''} sent to other sites
           </span>
         </div>

@@ -61,7 +61,7 @@ export default function Home() {
           ))}
         </h1>
         <div className="mt-5 grid items-center gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <div className="max-w-xl">
+          <div className="max-w-xl min-w-0">
             <p className="text-lg leading-relaxed text-muted sm:text-xl">
               Merge, split, compress, sign and convert. Your files are processed on your device and
               never sent to a server.{' '}
@@ -85,7 +85,7 @@ export default function Home() {
                     transition={{ type: 'spring', stiffness: 320, damping: 30 }}
                     className="overflow-hidden"
                   >
-                    <PrivacyProof className="mt-5" />
+                    <PrivacyProof className="mt-5 mb-3" />
                   </motion.div>
                 ) : null}
               </AnimatePresence>

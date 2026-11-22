@@ -67,7 +67,7 @@ export function PrivacyPill({ since, className = '' }: { since: number; classNam
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
               className="max-w-2xl overflow-hidden"
             >
-              <PrivacyProof since={since} scope="tool" className="mt-4" />
+              <PrivacyProof since={since} scope="tool" className="mt-4 mb-3" />
             </motion.div>
           ) : null}
         </AnimatePresence>
