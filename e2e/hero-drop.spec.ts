@@ -45,13 +45,14 @@ test('single-file tools take just the first file', async ({ page }) => {
   await expect(page.getByText('a.pdf')).toBeVisible();
 });
 
-test('the tool cards start above the fold on a laptop screen', async ({ page }, info) => {
+test('the hero story and the tool grid heading fit on a laptop screen', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'desktop layout only');
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('./');
-  const card = page.getByRole('link', { name: 'Merge PDF' });
-  const box = await card.boundingBox();
-  expect(box?.y ?? 9999).toBeLessThan(800 - 120);
+  const story = await page.getByTestId('hero-story').boundingBox();
+  expect((story?.y ?? 9999) + (story?.height ?? 0)).toBeLessThan(800);
+  const heading = await page.getByRole('heading', { name: 'Or pick a tool' }).boundingBox();
+  expect(heading?.y ?? 9999).toBeLessThan(800 - 40);
 });
 
 /** A DataTransfer holding real PDFs, built inside the page. */

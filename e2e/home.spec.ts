@@ -48,18 +48,20 @@ test('follows a light system preference on first visit', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
 
-test('the file story follows the scroll and reads zero bytes sent', async ({ page }) => {
+test('the file story plays on its own in the hero and reads zero bytes sent', async ({ page }) => {
   await page.goto('./');
-  const steps = page.getByRole('list', { name: 'Three steps' }).getByRole('listitem');
+  const story = page.getByTestId('hero-story');
+  await expect(story).toBeInViewport();
+  const steps = story.getByRole('list', { name: 'Three steps' }).getByRole('listitem');
   await expect(steps).toHaveCount(3);
-  await steps.nth(1).evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await expect(steps.nth(1)).toHaveAttribute('aria-current', 'step');
-  await expect(page.getByTestId('story-sent')).toHaveText('0 B');
-  await steps.nth(2).evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await expect(steps.nth(2)).toHaveAttribute('aria-current', 'step');
-  // Desktop pins one scene beside the steps; phones give each step its own. The last one showing is step 3's.
-  await expect(page.locator('svg[data-step]').filter({ visible: true }).last()).toHaveAttribute(
-    'data-step',
-    '2',
-  );
+  await expect(steps.nth(0)).toHaveAttribute('aria-current', 'step');
+  // Nobody scrolls or clicks: it moves on by itself and comes back round.
+  await expect(steps.nth(1)).toHaveAttribute('aria-current', 'step', { timeout: 6000 });
+  await expect(steps.nth(2)).toHaveAttribute('aria-current', 'step', { timeout: 6000 });
+  await expect(steps.nth(0)).toHaveAttribute('aria-current', 'step', { timeout: 6000 });
+  await expect(story.getByTestId('story-sent').filter({ visible: true })).toHaveText('0 B sent');
+
+  await story.getByRole('button', { name: 'Pause the story' }).click();
+  await story.getByRole('button', { name: /Save the result/ }).click();
+  await expect(story.locator('svg[data-step]')).toHaveAttribute('data-step', '2');
 });
