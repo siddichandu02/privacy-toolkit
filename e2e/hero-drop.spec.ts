@@ -80,6 +80,10 @@ test('dragging a PDF anywhere lights up the tools that can open it', async ({ pa
     page.locator('[data-drag]').filter({ has: page.getByRole('link', { name }) });
   await expect(card('Merge PDF')).toHaveAttribute('data-drag', 'takes');
   await expect(card('Images to PDF')).toHaveAttribute('data-drag', 'skips');
+  // Real drags send dragover all the time; without them the page lets go after 600 ms.
+  await page.locator('body').dispatchEvent('dragover', { dataTransfer: data });
+  await expect(card('Merge PDF').getByTestId('ready-halo')).toHaveCount(1);
+  await expect(card('Images to PDF').getByTestId('ready-halo')).toHaveCount(0);
 
   // Let go on the Split card: it opens with the file.
   const split = page.getByRole('link', { name: 'Split PDF' });

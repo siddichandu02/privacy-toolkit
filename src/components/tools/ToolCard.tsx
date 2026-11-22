@@ -101,7 +101,7 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
 
   return (
     <motion.div
-      className={`h-full transition-[filter] duration-300 ${dragState === 'skips' ? 'saturate-[0.3]' : ''}`}
+      className={`relative h-full transition-[filter] duration-300 ${dragState === 'skips' ? 'saturate-[0.3]' : ''}`}
       data-drag={dragState}
       style={reduced ? undefined : { rotateX, rotateY, transformPerspective: 900 }}
       animate={lift}
@@ -109,6 +109,15 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
       transition={{ type: 'spring', stiffness: 400, damping: 24 }}
       {...drag}
     >
+      {/* Can open the dragged file: a soft halo breathes behind the card. */}
+      {takes ? (
+        <span
+          aria-hidden="true"
+          data-testid="ready-halo"
+          className="ready-halo"
+          style={{ '--card-accent': `var(--${tool.accent})` } as CSSProperties}
+        />
+      ) : null}
       <Link
         to={toolPath(tool.id)}
         data-card
@@ -127,6 +136,10 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
       >
         <span aria-hidden="true" className="card-spot" />
         <span aria-hidden="true" className="card-rim" />
+        {/* ...and a bright arc runs around its edge. */}
+        {takes ? (
+          <span aria-hidden="true" className={`ready-rim ${isHot ? 'is-hot' : ''}`} />
+        ) : null}
         <span
           aria-hidden="true"
           className={`absolute top-0 right-0 size-8 rounded-bl-xl bg-linear-to-bl from-canvas from-50% to-50% transition-[width,height] duration-300 ease-spring group-hover:size-12 group-focus-visible:size-12 motion-reduce:transition-none sm:size-9 ${fold[tool.accent]}`}
