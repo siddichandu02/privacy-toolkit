@@ -15,6 +15,7 @@ import { IMAGE_RULES, PDF_RULES, extensionOf, formatBytes, rulesFor } from '../d
 import { Pip } from '../pip/Pip';
 import { ToolIcon } from '../tools/ToolIcon';
 import { accentSoft, accentText } from '../ui/accent';
+import { usePageDrop } from './pageDrag';
 import { sortFiles, suggestTools, type Sorted } from './suggest';
 
 function describe(sorted: Sorted): string {
@@ -40,13 +41,17 @@ const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).inclu
  * The home page's first step: drop or pick any file, then choose from the
  * tools that can open it. The files are handed straight to that tool's page.
  */
-export function HeroDrop({ className = '' }: { className?: string }) {
+export function HeroDrop({ className = '', id }: { className?: string; id?: string }) {
   const still = useStillMotion();
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
   const [over, setOver] = useState(false);
-  const [sorted, setSorted] = useState<Sorted | null>(null);
+  const [ownSorted, setOwnSorted] = useState<Sorted | null>(null);
+  // On the home page the whole page takes drops, so the files live there.
+  const page = usePageDrop();
+  const sorted = page ? page.sorted : ownSorted;
+  const setSorted = page ? page.setSorted : setOwnSorted;
   const headingId = useId();
 
   const usable = sorted ? sorted.pdf.length + sorted.image.length : 0;
@@ -116,7 +121,7 @@ export function HeroDrop({ className = '' }: { className?: string }) {
       };
 
   return (
-    <div className={`relative ${className}`} {...drag}>
+    <div id={id} className={`relative scroll-mt-24 ${className}`} {...drag}>
       {/* Pip perches on the top edge and leans in when a file hovers. */}
       <motion.div
         aria-hidden="true"

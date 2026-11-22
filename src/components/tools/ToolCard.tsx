@@ -1,8 +1,19 @@
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
-import type { PointerEvent } from 'react';
-import { Link } from 'react-router-dom';
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from 'framer-motion';
+import { useState, type DragEvent, type PointerEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { toolPath, type ToolInfo } from '../../tools';
-import { accentGlow, accentSoft, type Accent } from '../ui/accent';
+import { handOff } from '../drop/handoff';
+import { rulesFor } from '../drop/validate';
+import { canTake, usePageDrop } from '../home/pageDrag';
+import { sortFiles } from '../home/suggest';
+import { accentFill, accentGlow, accentReady, accentSoft, type Accent } from '../ui/accent';
 import { ToolIcon } from './ToolIcon';
 
 /** The folded corner, in the tool's color. Full strings so Tailwind keeps them. */
@@ -46,12 +57,54 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
     py.set(0);
   };
 
+  // A file dragged over the home page: light up if this tool can open it.
+  const navigate = useNavigate();
+  const peek = usePageDrop()?.peek ?? null;
+  const takes = peek ? canTake(tool, peek) : false;
+  const [hot, setHot] = useState(false);
+  const isHot = hot && takes;
+  const dragState = !peek ? 'idle' : takes ? 'takes' : 'skips';
+
+  const drag = {
+    onDragOver: (e: DragEvent) => {
+      if (!takes) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      if (!hot) setHot(true);
+    },
+    onDragLeave: (e: DragEvent) => {
+      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHot(false);
+    },
+    onDrop: (e: DragEvent) => {
+      setHot(false);
+      if (!takes) return;
+      const files = sortFiles(Array.from(e.dataTransfer.files))[tool.input.kind];
+      // Not the kind this tool takes after all: the page shows what can open it.
+      if (!files.length) return;
+      e.preventDefault();
+      const max = rulesFor(tool.input).maxFiles;
+      handOff(tool.id, max ? files.slice(0, max) : files);
+      navigate(toolPath(tool.id));
+    },
+  };
+
+  const lift = reduced
+    ? { opacity: dragState === 'skips' ? 0.4 : 1 }
+    : dragState === 'takes'
+      ? { opacity: 1, y: isHot ? -14 : -8, scale: isHot ? 1.035 : 1.015 }
+      : dragState === 'skips'
+        ? { opacity: 0.35, y: 0, scale: 0.97 }
+        : { opacity: 1, y: 0, scale: 1 };
+
   return (
     <motion.div
-      className="h-full"
+      className={`h-full transition-[filter] duration-300 ${dragState === 'skips' ? 'saturate-[0.3]' : ''}`}
+      data-drag={dragState}
       style={reduced ? undefined : { rotateX, rotateY, transformPerspective: 900 }}
-      whileHover={reduced ? undefined : { y: -4 }}
+      animate={lift}
+      whileHover={reduced || peek ? undefined : { y: -4 }}
       transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+      {...drag}
     >
       <Link
         to={toolPath(tool.id)}
@@ -59,7 +112,7 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
         aria-describedby={`tool-${tool.id}-blurb`}
         onPointerMove={track}
         onPointerLeave={reset}
-        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale] duration-300 hover:border-line-strong focus-visible:rounded-card active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
+        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale] duration-300 focus-visible:rounded-card ${takes ? accentReady[tool.accent] : 'hover:border-line-strong'} active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
       >
         <span
           aria-hidden="true"
@@ -89,6 +142,21 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
         >
           {tool.category === 'pdf' ? 'PDF' : 'Image'}
         </span>
+        <AnimatePresence>
+          {isHot ? (
+            <motion.span
+              key="drop-here"
+              aria-hidden="true"
+              initial={{ opacity: 0, y: reduced ? 0 : 8, scale: reduced ? 1 : 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 26 }}
+              className={`pointer-events-none absolute right-4 bottom-4 rounded-full px-3 py-1.5 text-sm font-bold shadow-soft ${accentFill[tool.accent]}`}
+            >
+              Let go to open
+            </motion.span>
+          ) : null}
+        </AnimatePresence>
       </Link>
     </motion.div>
   );

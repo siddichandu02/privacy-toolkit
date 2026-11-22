@@ -53,3 +53,51 @@ test('the tool cards start above the fold on a laptop screen', async ({ page }, 
   const box = await card.boundingBox();
   expect(box?.y ?? 9999).toBeLessThan(800 - 120);
 });
+
+/** A DataTransfer holding real PDFs, built inside the page. */
+async function pdfTransfer(page: import('@playwright/test').Page, names: string[]) {
+  return page.evaluateHandle(
+    async (files) => {
+      const dt = new DataTransfer();
+      for (const f of files) {
+        const bytes = Uint8Array.from(atob(f.b64), (c) => c.charCodeAt(0));
+        dt.items.add(new File([bytes], f.name, { type: 'application/pdf' }));
+      }
+      return dt;
+    },
+    names.map((name) => ({ name, b64: Buffer.from(makePdf(1, name)).toString('base64') })),
+  );
+}
+
+test('dragging a PDF anywhere lights up the tools that can open it', async ({ page }) => {
+  await page.goto('./');
+  const data = await pdfTransfer(page, ['a.pdf']);
+  await page.locator('body').dispatchEvent('dragenter', { dataTransfer: data });
+  await page.locator('body').dispatchEvent('dragover', { dataTransfer: data });
+
+  await expect(page.getByTestId('page-drop')).toContainText(/drop the pdf on a glowing card/i);
+  const card = (name: string) =>
+    page.locator('[data-drag]').filter({ has: page.getByRole('link', { name }) });
+  await expect(card('Merge PDF')).toHaveAttribute('data-drag', 'takes');
+  await expect(card('Images to PDF')).toHaveAttribute('data-drag', 'skips');
+
+  // Let go on the Split card: it opens with the file.
+  const split = page.getByRole('link', { name: 'Split PDF' });
+  await split.dispatchEvent('dragover', { dataTransfer: data });
+  await split.dispatchEvent('drop', { dataTransfer: data });
+  await expect(page).toHaveURL(/#\/tools\/split$/);
+  await expect(page.getByTestId('file-row')).toHaveCount(1);
+});
+
+test('a file dropped on an empty part of the page lands in the hero', async ({ page }) => {
+  await page.goto('./');
+  const data = await pdfTransfer(page, ['a.pdf', 'b.pdf']);
+  const heading = page.getByRole('heading', { name: 'Or pick a tool' });
+  await heading.dispatchEvent('dragenter', { dataTransfer: data });
+  await heading.dispatchEvent('drop', { dataTransfer: data });
+
+  await expect(page.getByTestId('page-drop')).toHaveCount(0);
+  const group = page.getByRole('group', { name: 'What should we do with it?' });
+  await expect(group.getByText(/2 PDFs/)).toBeVisible();
+  await expect(page.locator('[data-drag="idle"]').first()).toBeVisible();
+});

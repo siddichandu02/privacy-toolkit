@@ -51,3 +51,12 @@ export const accentButtonGlow: Record<Accent, string> = {
   sunshine: 'hover:shadow-glow-sunshine',
   sky: 'hover:shadow-glow-sky',
 };
+
+/** A card that can take the file being dragged: accent edge and a steady glow. */
+export const accentReady: Record<Accent, string> = {
+  violet: 'border-violet/70 shadow-glow-violet',
+  coral: 'border-coral/70 shadow-glow-coral',
+  mint: 'border-mint/70 shadow-glow-mint',
+  sunshine: 'border-sunshine/70 shadow-glow-sunshine',
+  sky: 'border-sky/70 shadow-glow-sky',
+};
