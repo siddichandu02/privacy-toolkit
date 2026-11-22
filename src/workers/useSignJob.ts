@@ -23,7 +23,7 @@ const finish = ({ bytes, name, pages, signed }: SignDone): SignOutput => ({
 });
 
 /** Stamp a signature on PDF pages in a Web Worker. */
-export function useSignJob(createWorker: WorkerFactory = defaultFactory) {
+export function useSignJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
   const { job, clock, start, reset } = useWorkerJob<
     SignWorkerRequest,
     SignStage,
@@ -31,6 +31,7 @@ export function useSignJob(createWorker: WorkerFactory = defaultFactory) {
     SignOutput
   >({
     createWorker,
+    warm,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while signing your PDF. Try again.',

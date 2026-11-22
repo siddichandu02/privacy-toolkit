@@ -27,7 +27,7 @@ const finish = ({ bytes, ...rest }: CompressDone): CompressOutput => ({
 });
 
 /** Shrink a PDF in a Web Worker. */
-export function useCompressJob(createWorker: WorkerFactory = defaultFactory) {
+export function useCompressJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
   const { job, clock, start, reset } = useWorkerJob<
     CompressWorkerRequest,
     CompressStage,
@@ -35,6 +35,7 @@ export function useCompressJob(createWorker: WorkerFactory = defaultFactory) {
     CompressOutput
   >({
     createWorker,
+    warm,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while shrinking your PDF. Try again.',

@@ -32,7 +32,7 @@ const STEPS: readonly WaitStep[] = [
 /** Split PDF: pick pages on a grid or by typing ranges, then cut them out in a worker. */
 export function SplitTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue(tool.id);
-  const { job: work, clock, start, reset } = useSplitJob();
+  const { job: work, clock, start, reset } = useSplitJob(undefined, queue.items.length > 0);
   const story = useStory(work, clock, STEPS);
   const job = story.job;
   const still = useStillMotion();

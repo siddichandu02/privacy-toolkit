@@ -55,7 +55,7 @@ const MARGINS: readonly SegmentOption<Margin>[] = [
 /** Images to PDF: order photos, pick a page layout, build the PDF in a worker. */
 export function ImagesTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue(tool.id);
-  const { job: work, clock, start, reset } = useImagesJob();
+  const { job: work, clock, start, reset } = useImagesJob(undefined, queue.items.length > 0);
   const story = useStory(work, clock, STEPS);
   const job = story.job;
   const photos = useThumbnails(job.status === 'running' ? queue.items.map((i) => i.file) : []);

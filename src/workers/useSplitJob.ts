@@ -24,7 +24,7 @@ const finish = ({ bytes, name, mime, files, pages }: SplitDone): SplitOutput => 
 });
 
 /** Split or extract PDF pages in a Web Worker. */
-export function useSplitJob(createWorker: WorkerFactory = defaultFactory) {
+export function useSplitJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
   const { job, clock, start, reset } = useWorkerJob<
     SplitWorkerRequest,
     SplitStage,
@@ -32,6 +32,7 @@ export function useSplitJob(createWorker: WorkerFactory = defaultFactory) {
     SplitOutput
   >({
     createWorker,
+    warm,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while splitting. Try again.',

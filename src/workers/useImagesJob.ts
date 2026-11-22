@@ -21,7 +21,7 @@ const finish = ({ bytes, name, pages }: ImagesDone): ImagesOutput => ({
 });
 
 /** Turn images into one PDF in a Web Worker. */
-export function useImagesJob(createWorker: WorkerFactory = defaultFactory) {
+export function useImagesJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
   const { job, clock, start, reset } = useWorkerJob<
     ImagesWorkerRequest,
     ImagesStage,
@@ -29,6 +29,7 @@ export function useImagesJob(createWorker: WorkerFactory = defaultFactory) {
     ImagesOutput
   >({
     createWorker,
+    warm,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while making your PDF. Try again.',

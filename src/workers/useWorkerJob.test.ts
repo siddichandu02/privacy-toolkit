@@ -28,20 +28,23 @@ class FakeWorker {
 
 const finish = ({ n }: { n: number }) => ({ n });
 
-function setup() {
+function setup(initialWarm = false) {
   const workers: FakeWorker[] = [];
   const createWorker = () => {
     const w = new FakeWorker();
     workers.push(w);
     return w as unknown as Worker;
   };
-  const hook = renderHook(() =>
-    useWorkerJob<string, 'working', { n: number }, { n: number }>({
-      createWorker,
-      firstStage: 'working',
-      finish,
-      crashMessage: 'It broke.',
-    }),
+  const hook = renderHook(
+    ({ warm }: { warm: boolean }) =>
+      useWorkerJob<string, 'working', { n: number }, { n: number }>({
+        createWorker,
+        firstStage: 'working',
+        finish,
+        crashMessage: 'It broke.',
+        warm,
+      }),
+    { initialProps: { warm: initialWarm } },
   );
   return { hook, workers };
 }
@@ -108,5 +111,46 @@ describe('useWorkerJob failures', () => {
     act(() => workers[0]?.reply({ type: 'error', message: 'Late.' }));
     act(() => workers[1]?.reply({ type: 'done', n: 2 }));
     expect(hook.result.current.job).toEqual({ status: 'done', n: 2 });
+  });
+});
+
+describe('useWorkerJob warm start', () => {
+  it('loads one worker ahead of time and runs the job on it', () => {
+    const { hook, workers } = setup(true);
+    expect(workers).toHaveLength(1);
+    hook.rerender({ warm: true });
+    expect(workers).toHaveLength(1);
+    act(() => hook.result.current.start('go'));
+    expect(workers).toHaveLength(1);
+    expect(workers[0]?.postMessage).toHaveBeenCalledWith('go', []);
+  });
+
+  it('has the next one ready after a run finishes', () => {
+    const { hook, workers } = setup(true);
+    act(() => hook.result.current.start('go'));
+    act(() => workers[0]?.reply({ type: 'done', n: 3 }));
+    expect(hook.result.current.job).toEqual({ status: 'done', n: 3 });
+    expect(workers).toHaveLength(2);
+    expect(workers[1]?.terminate).not.toHaveBeenCalled();
+  });
+
+  it('closes the spare when there is nothing left to work on', () => {
+    const { hook, workers } = setup(true);
+    hook.rerender({ warm: false });
+    expect(workers[0]?.terminate).toHaveBeenCalled();
+  });
+
+  it('drops a spare that fails to load and starts fresh for the run', () => {
+    const { hook, workers } = setup(true);
+    act(() => workers[0]?.crash());
+    expect(workers[0]?.terminate).toHaveBeenCalled();
+    act(() => hook.result.current.start('go'));
+    expect(workers).toHaveLength(2);
+    expect(workers[1]?.postMessage).toHaveBeenCalledWith('go', []);
+  });
+
+  it('does not load anything until asked', () => {
+    const { workers } = setup();
+    expect(workers).toHaveLength(0);
   });
 });

@@ -16,7 +16,7 @@ const finish = ({ bytes, pages }: { bytes: Uint8Array; pages: number }) => {
 };
 
 /** Merge PDFs in a Web Worker. */
-export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
+export function useMergeJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
   const { job, clock, start, reset } = useWorkerJob<
     MergeRequest,
     MergeStage,
@@ -24,6 +24,7 @@ export function useMergeJob(createWorker: WorkerFactory = defaultFactory) {
     ReturnType<typeof finish>
   >({
     createWorker,
+    warm,
     firstStage: 'reading',
     finish,
     crashMessage: 'Something went wrong while merging. Try again.',

@@ -44,7 +44,7 @@ function tally(edits: Edits, count: number) {
 /** Rotate pages: turn and drop pages on a thumbnail grid, then save in a worker. */
 export function RotateTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue(tool.id);
-  const { job: work, clock, start, reset } = useRotateJob();
+  const { job: work, clock, start, reset } = useRotateJob(undefined, queue.items.length > 0);
   const story = useStory(work, clock, STEPS);
   const job = story.job;
   const still = useStillMotion();
