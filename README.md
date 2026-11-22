@@ -8,9 +8,9 @@ Free PDF and image tools that run entirely in your browser. Your files never lea
 
 ## Why
 
-Most "free" online PDF and image tools upload your files to a server. Privacy Toolkit does all the
-work locally, in your browser, using Web Workers. There are no uploads, no analytics, no trackers and
-no third-party requests at runtime. Fonts are self-hosted.
+Most "free" online PDF and image tools send your files to a server to do the work. Privacy Toolkit
+processes them locally, in your browser, using Web Workers. Your files are never sent anywhere, and
+there are no analytics, no trackers and no third-party requests at runtime. Fonts are self-hosted.
 
 ## Tools
 

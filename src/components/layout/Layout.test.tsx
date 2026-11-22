@@ -29,7 +29,7 @@ describe('app shell', () => {
       within(promise)
         .getAllByRole('listitem')
         .map((li) => li.textContent),
-    ).toEqual(['No uploads', 'No tracking', 'No accounts']);
+    ).toEqual(['Stays on your device', 'No tracking', 'No accounts']);
   });
 
   it('skip link is the first tab stop and moves focus to main', async () => {
@@ -59,7 +59,7 @@ describe('navigation', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: /edit pdfs and images without uploading/i,
+        name: /every pdf and image tool you need/i,
       }),
     ).toBeInTheDocument();
   });

@@ -4,7 +4,7 @@ import { Tooltip } from './Tooltip';
 
 function Example() {
   return (
-    <Tooltip content="Nothing is uploaded" delay={0}>
+    <Tooltip content="Nothing leaves your device" delay={0}>
       <button type="button">Privacy</button>
     </Tooltip>
   );
@@ -15,7 +15,7 @@ describe('Tooltip', () => {
     render(<Example />);
     await userEvent.tab();
     const tip = await screen.findByRole('tooltip');
-    expect(tip).toHaveTextContent('Nothing is uploaded');
+    expect(tip).toHaveTextContent('Nothing leaves your device');
     expect(screen.getByRole('button')).toHaveAttribute('aria-describedby', tip.id);
   });
 

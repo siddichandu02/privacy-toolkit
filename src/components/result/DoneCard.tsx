@@ -99,7 +99,7 @@ export function DoneCard({
             <p className="mt-3 text-muted">
               <span className={`font-semibold break-all ${accentText[accent]}`}>{fileName}</span>
               <br />
-              {details} Made on this device, never uploaded.
+              {details} Made on this device, never sent anywhere.
             </p>
             {extra}
             <a

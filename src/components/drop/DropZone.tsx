@@ -266,7 +266,8 @@ export function DropZone({
             <p id={hintId} className="mt-3 max-w-md text-base leading-relaxed text-muted">
               {single ? 'Or paste it, or pick it' : 'Or paste them, or pick them'} from your device.{' '}
               {limits ? `${limits}. ` : null}
-              {single ? 'It is' : 'They are'} opened right here in your browser and never uploaded.
+              {single ? 'It is' : 'They are'} opened right here in your browser and never sent to a
+              server.
             </p>
             <span
               aria-hidden="true"

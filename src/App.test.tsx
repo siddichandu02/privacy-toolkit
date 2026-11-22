@@ -9,7 +9,7 @@ describe('home route', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /edit pdfs and images without uploading them/i,
+        name: /every pdf and image tool you need, right in your browser/i,
       }),
     ).toBeInTheDocument();
   });
@@ -24,10 +24,10 @@ describe('home route', () => {
     );
   });
 
-  it('explains how to verify nothing is uploaded', async () => {
+  it('explains how to verify nothing is sent', async () => {
     renderApp('/');
     await userEvent.click(screen.getByRole('button', { name: /how can i check/i }));
-    expect(await screen.findByRole('status')).toHaveTextContent(/zero uploads/i);
+    expect(await screen.findByRole('status')).toHaveTextContent(/nothing sent anywhere/i);
   });
 });
 

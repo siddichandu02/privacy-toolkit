@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { GitHubIcon, REPO_URL } from './Header';
 
-const PROMISES = ['No uploads', 'No tracking', 'No accounts'];
+const PROMISES = ['Stays on your device', 'No tracking', 'No accounts'];
 
 export function Footer() {
   return (

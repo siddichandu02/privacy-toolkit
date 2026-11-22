@@ -35,15 +35,15 @@ export default function Home() {
   const explainPrivacy = () =>
     toast({
       tone: 'success',
-      title: 'Zero uploads',
+      title: 'Nothing sent anywhere',
       description:
         "Open your browser's network panel while using any tool. You won't see your files go anywhere.",
     });
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col px-4 pt-6 pb-8 sm:px-8 sm:pt-12">
-      <h1 className="font-display text-[clamp(2.15rem,6.6vw,4.75rem)] leading-[0.95] font-extrabold tracking-[-0.035em]">
-        {['Edit PDFs and images', 'without uploading them.'].map((text, i) => (
+      <h1 className="font-display text-[clamp(2rem,5.4vw,4.1rem)] leading-[0.95] font-extrabold tracking-[-0.035em] text-balance">
+        {['Every PDF and image tool you need,', 'right in your browser.'].map((text, i) => (
           <Fragment key={text}>
             {i > 0 ? ' ' : null}
             <motion.span
@@ -61,8 +61,8 @@ export default function Home() {
       </h1>
       <div className="mt-5 grid items-center gap-x-12 gap-y-12 sm:mt-6 sm:gap-y-16 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-          Merge, split, compress, sign and convert, right in your browser. Your files never leave
-          your device.{' '}
+          Merge, split, compress, sign and convert. Your files are processed on your device and
+          never sent to a server.{' '}
           <button
             type="button"
             onClick={explainPrivacy}

@@ -9,7 +9,7 @@ test('opens a tool from the home page and comes back', async ({ page }) => {
 
   await page.getByRole('link', { name: /privacy toolkit, home/i }).click();
   await expect(
-    page.getByRole('heading', { level: 1, name: /edit pdfs and images without uploading/i }),
+    page.getByRole('heading', { level: 1, name: /every pdf and image tool you need/i }),
   ).toBeVisible();
 });
 
@@ -42,6 +42,6 @@ test('back button returns to the previous page', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Sign PDF' })).toBeVisible();
   await page.goBack();
   await expect(
-    page.getByRole('heading', { level: 1, name: /edit pdfs and images without uploading/i }),
+    page.getByRole('heading', { level: 1, name: /every pdf and image tool you need/i }),
   ).toBeVisible();
 });
