@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { DropZone, RejectionNotice } from './DropZone';
 import { FileList } from './FileList';
+import { UndoBar } from './UndoBar';
 import { useFileQueue, type FileQueue } from './useFileQueue';
 import { formatBytes, rulesFor, type Rejection } from './validate';
 
@@ -28,7 +29,9 @@ export function ToolWorkbench({
   // Shared by the full and compact zones so a message survives the swap.
   const [rejected, setRejected] = useState<Rejection[]>([]);
   const rules = rulesFor(tool.input);
-  const { items } = queue;
+  const { items, forget } = queue;
+  // Undo only makes sense while the list is on screen.
+  useEffect(() => forget, [forget]);
   const hasFiles = items.length > 0;
   const room = rules.maxFiles === undefined || items.length < rules.maxFiles;
   const total = items.reduce((sum, item) => sum + item.file.size, 0);
@@ -58,7 +61,7 @@ export function ToolWorkbench({
               <button
                 type="button"
                 onClick={() => {
-                  queue.clear();
+                  queue.removeAll();
                   setRejected([]);
                 }}
                 className="rounded-lg text-sm font-semibold text-muted transition-colors hover:text-coral"
@@ -108,6 +111,12 @@ export function ToolWorkbench({
           </motion.div>
         )}
       </AnimatePresence>
+      <UndoBar
+        removed={queue.removed}
+        accent={tool.accent}
+        onUndo={queue.undo}
+        onDone={queue.forget}
+      />
     </section>
   );
 }

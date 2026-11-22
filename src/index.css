@@ -244,3 +244,16 @@ body {
     translate: none;
   }
 }
+
+/* Undo slip: the fuse line burns down while the slip is up. */
+.undo-fuse {
+  animation: undo-fuse var(--fuse, 7s) linear forwards;
+}
+@keyframes undo-fuse {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
