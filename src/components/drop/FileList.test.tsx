@@ -62,6 +62,17 @@ describe('FileList', () => {
     expect(screen.getByRole('status')).toHaveTextContent('one.pdf moved to position 2 of 3.');
   });
 
+  it('flashes only the slip that was moved', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add'));
+    expect(screen.queryByTestId('slip-flash')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Move three.pdf up' }));
+    const flashes = screen.getAllByTestId('slip-flash');
+    expect(flashes).toHaveLength(1);
+    expect(flashes[0]?.closest('[data-testid="file-row"]')).toHaveTextContent('three.pdf');
+  });
+
   it('moves files with arrow keys on the grip', async () => {
     const user = userEvent.setup();
     render(<Harness />);

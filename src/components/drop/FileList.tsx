@@ -1,5 +1,5 @@
-import { AnimatePresence, Reorder, useDragControls } from 'framer-motion';
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion';
+import { useEffect, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useStillMotion } from '../../useStillMotion';
 import { accentSoft, accentText, type Accent } from '../ui/accent';
 import { isPdf, makePreview, type FilePreview } from './preview';
@@ -51,11 +51,14 @@ export function FileList({
   ordered = true,
 }: FileListProps) {
   const [announcement, setAnnouncement] = useState('');
+  // The slip that was just moved with a key or button, so it can flash.
+  const [bump, setBump] = useState<{ id: string; n: number } | null>(null);
 
   const move = (item: QueuedFile, index: number, by: number) => {
     const to = index + by;
     if (to < 0 || to >= items.length) return;
     onMove(item.id, by);
+    setBump((b) => ({ id: item.id, n: (b?.n ?? 0) + 1 }));
     setAnnouncement(`${item.file.name} moved to position ${to + 1} of ${items.length}.`);
   };
 
@@ -83,6 +86,7 @@ export function FileList({
               count={items.length}
               accent={accent}
               ordered={ordered}
+              bump={bump?.id === item.id ? bump.n : 0}
               onMove={(by) => move(item, index, by)}
               onRemove={() => remove(item)}
             />
@@ -102,11 +106,13 @@ interface FileRowProps {
   count: number;
   accent: Accent;
   ordered: boolean;
+  /** Changes each time this slip is moved with a key or button (0 = never). */
+  bump: number;
   onMove: (by: number) => void;
   onRemove: () => void;
 }
 
-function FileRow({ item, index, count, accent, ordered, onMove, onRemove }: FileRowProps) {
+function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }: FileRowProps) {
   const still = useStillMotion();
   const controls = useDragControls();
   const preview = usePreview(item.file);
@@ -127,12 +133,44 @@ function FileRow({ item, index, count, accent, ordered, onMove, onRemove }: File
       dragControls={controls}
       initial={still ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={still ? { opacity: 0 } : { opacity: 0, x: 40, scale: 0.95 }}
+      // Removed slips crumple a little and drop away.
+      exit={
+        still
+          ? { opacity: 0 }
+          : { opacity: 0, x: 28, y: 6, scale: 0.82, rotate: 7, transition: { duration: 0.22 } }
+      }
       whileDrag={still ? undefined : { scale: 1.03, rotate: -1, zIndex: 10 }}
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
       className="relative flex items-center gap-2 rounded-card border border-line bg-surface p-2 pr-2.5 shadow-soft backdrop-blur-xl sm:gap-3 sm:p-2.5 sm:pr-3"
       data-testid="file-row"
+      style={{ '--slip': `var(--${accent})` } as CSSProperties}
     >
+      {/* A light glint runs across a slip when it lands in the list. */}
+      {still ? null : (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+        >
+          <motion.span
+            className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-[color-mix(in_srgb,var(--slip)_22%,transparent)] to-transparent"
+            initial={{ x: '0%' }}
+            animate={{ x: '450%' }}
+            transition={{ duration: 0.75, ease: 'easeOut', delay: 0.08 }}
+          />
+        </span>
+      )}
+      {/* Moved with a key or button: the rim flashes in the tool colour. */}
+      {bump > 0 ? (
+        <motion.span
+          key={bump}
+          aria-hidden="true"
+          data-testid="slip-flash"
+          className="pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-[var(--slip)]"
+          initial={{ opacity: 0.9, scale: still ? 1 : 1.015 }}
+          animate={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+        />
+      ) : null}
       {ordered ? (
         <button
           type="button"
@@ -150,9 +188,15 @@ function FileRow({ item, index, count, accent, ordered, onMove, onRemove }: File
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold" title={name}>
           {ordered ? (
-            <span className={`mr-1.5 font-display font-bold ${accentText[accent]}`}>
+            <motion.span
+              key={index}
+              initial={still ? false : { scale: 1.5, y: -2 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 14 }}
+              className={`mr-1.5 inline-block origin-bottom font-display font-bold ${accentText[accent]}`}
+            >
               {index + 1}.
-            </span>
+            </motion.span>
           ) : null}
           {name}
         </p>
