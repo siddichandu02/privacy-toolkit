@@ -6,7 +6,7 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion';
-import { useState, type DragEvent, type PointerEvent } from 'react';
+import { useState, type CSSProperties, type DragEvent, type PointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toolPath, type ToolInfo } from '../../tools';
 import { handOff } from '../drop/handoff';
@@ -108,12 +108,16 @@ export function ToolCard({ tool, featured = false }: ToolCardProps) {
     >
       <Link
         to={toolPath(tool.id)}
+        data-card
+        style={{ '--card-accent': `var(--${tool.accent})` } as CSSProperties}
         aria-labelledby={`tool-${tool.id}-name`}
         aria-describedby={`tool-${tool.id}-blurb`}
         onPointerMove={track}
         onPointerLeave={reset}
-        className={`group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale] duration-300 focus-visible:rounded-card ${takes ? accentReady[tool.accent] : 'hover:border-line-strong'} active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
+        className={`card-pull group relative grid h-full grid-cols-[auto_1fr] items-start gap-x-4 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-soft backdrop-blur-xl transition-[box-shadow,border-color,scale,translate] duration-300 focus-visible:rounded-card ${takes ? accentReady[tool.accent] : 'hover:border-line-strong'} active:scale-[0.97] active:duration-100 motion-reduce:active:scale-100 sm:flex sm:flex-col sm:p-6 ${featured ? 'lg:grid lg:content-center lg:gap-x-7 lg:p-8' : ''} ${accentGlow[tool.accent]}`}
       >
+        <span aria-hidden="true" className="card-spot" />
+        <span aria-hidden="true" className="card-rim" />
         <span
           aria-hidden="true"
           className={`absolute top-0 right-0 size-8 rounded-bl-xl bg-linear-to-bl from-canvas from-50% to-50% transition-[width,height] duration-300 ease-spring group-hover:size-12 group-focus-visible:size-12 motion-reduce:transition-none sm:size-9 ${fold[tool.accent]}`}

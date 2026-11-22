@@ -196,3 +196,51 @@ body {
     transition: none;
   }
 }
+
+/*
+ * Cursor spotlight on the tool grid. The grid writes --sx/--sy (the pointer,
+ * relative to each card) and --pull-x/--pull-y (a small lean toward it).
+ */
+.card-spot,
+.card-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.card-spot {
+  background: radial-gradient(
+    420px circle at var(--sx, 50%) var(--sy, 50%),
+    color-mix(in srgb, var(--card-accent) 11%, transparent),
+    transparent 60%
+  );
+}
+.card-rim {
+  padding: 1.5px;
+  background: radial-gradient(
+    240px circle at var(--sx, 50%) var(--sy, 50%),
+    color-mix(in srgb, var(--card-accent) 85%, transparent),
+    transparent 70%
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+[data-spotlight='on'] .card-spot,
+[data-spotlight='on'] .card-rim {
+  opacity: 1;
+}
+.card-pull {
+  translate: var(--pull-x, 0) var(--pull-y, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-spot,
+  .card-rim {
+    display: none;
+  }
+  .card-pull {
+    translate: none;
+  }
+}
