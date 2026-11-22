@@ -85,6 +85,10 @@ export function DropZone({
   const input = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
   const [over, setOver] = useState(false);
+  // Pointer or keyboard focus on the sheet: the pages lean out a little.
+  const [peek, setPeek] = useState(false);
+  // Bumped when files are turned away, so the pages give a small "no" shake.
+  const [shake, setShake] = useState(0);
   const [ownRejected, setOwnRejected] = useState<Rejection[]>([]);
   const rejected = rejectedProp ?? ownRejected;
   const setRejected = onRejectedChange ?? setOwnRejected;
@@ -95,6 +99,7 @@ export function DropZone({
     if (files.length === 0) return;
     const result = validateFiles(files, rules, existingCount);
     setRejected(result.rejected);
+    if (result.rejected.length > 0) setShake((n) => n + 1);
     if (result.accepted.length > 0) onFiles(result.accepted);
   };
 
@@ -216,6 +221,10 @@ export function DropZone({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
+        onPointerEnter={() => setPeek(true)}
+        onPointerLeave={() => setPeek(false)}
+        onFocus={() => setPeek(true)}
+        onBlur={() => setPeek(false)}
         animate={
           still
             ? undefined
@@ -251,7 +260,14 @@ export function DropZone({
           </div>
         ) : (
           <div className="flex flex-col items-center text-center">
-            <PagesArt accent={accent} lifted={over} still={still} />
+            <PagesArt
+              accent={accent}
+              lifted={over}
+              peek={peek}
+              shake={shake}
+              photo={!rules.extensions.includes('.pdf')}
+              still={still}
+            />
             <p className="mt-6 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
               {over ? (
                 title
@@ -339,33 +355,86 @@ function PlusIcon() {
   );
 }
 
-/** Three loose sheets that fan out while files hover the zone. */
-function PagesArt({ accent, lifted, still }: { accent: Accent; lifted: boolean; still: boolean }) {
-  const spread = lifted && !still;
+/**
+ * Three loose sheets: they lean out when the zone is hovered or focused, fan
+ * wide while files hover it, and shake once when files are turned away. Image
+ * tools get a little photo on the top sheet instead of lines of text.
+ */
+function PagesArt({
+  accent,
+  lifted,
+  peek,
+  shake,
+  photo,
+  still,
+}: {
+  accent: Accent;
+  lifted: boolean;
+  peek: boolean;
+  shake: number;
+  photo: boolean;
+  still: boolean;
+}) {
+  const spread = still ? 0 : lifted ? 1 : peek ? 0.45 : 0;
   const sheet =
     'absolute inset-0 rounded-xl border border-line-strong bg-canvas-raised shadow-soft';
+  const spring = { type: 'spring', stiffness: 300, damping: 18 } as const;
   return (
-    <div aria-hidden="true" className="relative h-24 w-20">
+    <motion.div
+      key={shake}
+      aria-hidden="true"
+      data-testid="pages-art"
+      data-shake={shake}
+      className="relative h-24 w-20"
+      animate={shake > 0 && !still ? { x: [0, -8, 7, -5, 3, 0], rotate: [0, -3, 3, -1, 0] } : {}}
+      transition={{ duration: 0.45, ease: 'easeOut' }}
+    >
       <motion.div
         className={sheet}
-        animate={{ rotate: spread ? -16 : -7, x: spread ? -14 : -4 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+        animate={{ rotate: -7 - 9 * spread, x: -4 - 10 * spread }}
+        transition={spring}
       />
       <motion.div
         className={sheet}
-        animate={{ rotate: spread ? 14 : 6, x: spread ? 14 : 4 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+        animate={{ rotate: 6 + 8 * spread, x: 4 + 10 * spread }}
+        transition={spring}
       />
       <motion.div
         className={`${sheet} flex flex-col gap-1.5 p-3`}
-        animate={{ y: spread ? -10 : 0 }}
+        animate={{ y: -10 * spread, rotate: peek && !lifted && !still ? -2 : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 16 }}
       >
-        <span className={`h-2 w-8 rounded-full ${accentFill[accent]}`} />
-        <span className="h-1.5 w-full rounded-full bg-line-strong" />
-        <span className="h-1.5 w-full rounded-full bg-line-strong" />
-        <span className="h-1.5 w-2/3 rounded-full bg-line-strong" />
+        {photo ? (
+          <PhotoFace accent={accent} />
+        ) : (
+          <>
+            <span className={`h-2 w-8 rounded-full ${accentFill[accent]}`} />
+            <span className="h-1.5 w-full rounded-full bg-line-strong" />
+            <span className="h-1.5 w-full rounded-full bg-line-strong" />
+            <span className="h-1.5 w-2/3 rounded-full bg-line-strong" />
+          </>
+        )}
       </motion.div>
-    </div>
+    </motion.div>
+  );
+}
+
+/** A tiny landscape snapshot: sun and two folded paper hills. */
+function PhotoFace({ accent }: { accent: Accent }) {
+  return (
+    <span
+      data-testid="photo-face"
+      className="relative block h-full w-full overflow-hidden rounded-md bg-line"
+    >
+      <svg viewBox="0 0 40 52" className="absolute inset-0 size-full" preserveAspectRatio="none">
+        <circle cx="28" cy="15" r="6" fill={`var(--${accent})`} />
+        <path
+          d="M0 40 14 24l12 13 6-6 8 9v12H0Z"
+          fill="currentColor"
+          className="text-line-strong"
+        />
+        <path d="M0 52V44l10-8 16 16Z" fill={`var(--${accent})`} opacity="0.55" />
+      </svg>
+    </span>
   );
 }

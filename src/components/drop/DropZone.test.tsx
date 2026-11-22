@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MotionConfig } from 'framer-motion';
 import { describe, expect, it, vi } from 'vitest';
 import { DropZone } from './DropZone';
-import { PDF_RULES } from './validate';
+import { IMAGE_RULES, PDF_RULES } from './validate';
 
 const pdf = (name: string, size = 20) =>
   new File([new Uint8Array(size)], name, { type: 'application/pdf' });
@@ -86,6 +86,26 @@ describe('DropZone', () => {
     Object.assign(event, { clipboardData: { files: [pdf('pasted.pdf')] } });
     window.dispatchEvent(event);
     expect(onFiles).toHaveBeenCalledWith([expect.objectContaining({ name: 'pasted.pdf' })]);
+  });
+
+  it('shakes the pages each time files are turned away', () => {
+    const { zone } = setup();
+    expect(screen.getByTestId('pages-art')).toHaveAttribute('data-shake', '0');
+    const png = new File(['x'], 'cat.png', { type: 'image/png' });
+    fireEvent.drop(zone, dropEvent([png]));
+    expect(screen.getByTestId('pages-art')).toHaveAttribute('data-shake', '1');
+    fireEvent.drop(zone, dropEvent([pdf('ok.pdf')]));
+    expect(screen.getByTestId('pages-art')).toHaveAttribute('data-shake', '1');
+  });
+
+  it('draws a photo on the top sheet for image tools only', () => {
+    const { unmount } = render(
+      <DropZone rules={PDF_RULES} accent="violet" onFiles={() => {}} acceptPaste={false} />,
+    );
+    expect(screen.queryByTestId('photo-face')).toBeNull();
+    unmount();
+    render(<DropZone rules={IMAGE_RULES} accent="sky" onFiles={() => {}} acceptPaste={false} />);
+    expect(screen.getByTestId('photo-face')).toBeInTheDocument();
   });
 
   it('has a slim add-more mode', () => {
