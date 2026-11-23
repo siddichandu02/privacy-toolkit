@@ -1,7 +1,15 @@
 import '@fontsource/great-vibes/latin-400.css';
 import '@fontsource-variable/caveat';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { useStillMotion } from '../../useStillMotion';
 import type { Accent } from '../ui/accent';
 import { Segmented, type SegmentOption } from '../ui/Segmented';
@@ -155,19 +163,14 @@ export function SignaturePad({ accent, draft, onDraftChange, onChange }: Signatu
             }}
           />
         ) : (
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-6 top-0 bottom-[30%] flex items-end overflow-hidden pl-6 whitespace-nowrap"
-            style={{
-              fontFamily: handFamily(hand),
-              color,
-              fontSize:
-                hand === 'flowing' ? 'clamp(2.4rem, 8vw, 3.6rem)' : 'clamp(2.2rem, 7vw, 3.2rem)',
-              lineHeight: 1.1,
-            }}
-          >
-            {text}
-          </div>
+          <TypedPreview
+            text={text}
+            color={color}
+            family={handFamily(hand)}
+            fontSize={
+              hand === 'flowing' ? 'clamp(2.4rem, 8vw, 3.6rem)' : 'clamp(2.2rem, 7vw, 3.2rem)'
+            }
+          />
         )}
         <AnimatePresence>
           {empty ? (
@@ -402,5 +405,73 @@ function TypeIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/**
+ * The typed name on the slip. Long names shrink to fit the line instead of
+ * running off the edge, so what you see is what lands on the page.
+ */
+function TypedPreview({
+  text,
+  color,
+  family,
+  fontSize,
+}: {
+  text: string;
+  color: string;
+  family: string;
+  fontSize: string;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const line = useRef<HTMLSpanElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const outer = box.current;
+    const inner = line.current;
+    if (!outer || !inner) return;
+    const fit = () => {
+      const room = outer.clientWidth - parseFloat(getComputedStyle(outer).paddingLeft || '0');
+      const natural = inner.scrollWidth;
+      const next = natural > 0 && room > 0 ? Math.min(1, room / natural) : 1;
+      setScale((s) => (Math.abs(s - next) < 0.005 ? s : next));
+    };
+    fit();
+    // Script fonts arrive a moment later and are wider than the fallback.
+    let live = true;
+    void document.fonts?.ready.then(() => {
+      if (live) fit();
+    });
+    if (typeof ResizeObserver === 'undefined') {
+      return () => {
+        live = false;
+      };
+    }
+    const ro = new ResizeObserver(fit);
+    ro.observe(outer);
+    return () => {
+      live = false;
+      ro.disconnect();
+    };
+  }, [text, family, fontSize]);
+
+  return (
+    <div
+      ref={box}
+      aria-hidden="true"
+      data-testid="typed-preview"
+      data-scale={scale.toFixed(2)}
+      className="absolute inset-x-6 top-0 bottom-[30%] flex items-end overflow-hidden pl-6 whitespace-nowrap"
+      style={{ fontFamily: family, color, fontSize, lineHeight: 1.1 }}
+    >
+      <span
+        ref={line}
+        className="inline-block origin-bottom-left transition-transform duration-150"
+        style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}
+      >
+        {text}
+      </span>
+    </div>
   );
 }

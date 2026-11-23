@@ -106,3 +106,23 @@ test('types a name and signs every page', async ({ page }) => {
   ]);
   expect(await signedPages(await download.path())).toEqual([true, true, true]);
 });
+
+test('a long typed name shrinks to fit the slip', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.goto('./#/tools/sign');
+  await page.getByTestId('file-input').setInputFiles([pdf('form.pdf', 2)]);
+  await expect(page.getByText('Page 1 of 2')).toBeVisible({ timeout: 15_000 });
+  await page.getByText('Type', { exact: true }).click();
+  await page.getByLabel('Your name').fill('Alexandra Montgomery-Smith');
+
+  const preview = page.getByTestId('typed-preview');
+  await expect.poll(async () => Number(await preview.getAttribute('data-scale'))).toBeLessThan(1);
+  await expect
+    .poll(() =>
+      preview.evaluate((box) => {
+        const line = box.firstElementChild?.getBoundingClientRect();
+        return !!line && line.right <= box.getBoundingClientRect().right + 1;
+      }),
+    )
+    .toBe(true);
+});
