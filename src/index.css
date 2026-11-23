@@ -523,3 +523,18 @@ body {
     background: rgb(255 255 255 / 0.12);
   }
 }
+
+/* Convert image: the dashed arrow between the old and new format keeps flowing. */
+.relabel-flow {
+  animation: relabel-flow 0.9s linear infinite;
+}
+@keyframes relabel-flow {
+  to {
+    stroke-dashoffset: -6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .relabel-flow {
+    animation: none;
+  }
+}

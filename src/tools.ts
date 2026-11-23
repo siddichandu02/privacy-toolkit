@@ -94,6 +94,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sky',
     blurb: 'Switch between HEIC, PNG, WebP and JPG.',
     input: { kind: 'image', multiple: true, ordered: false },
+    ready: true,
   },
   {
     id: 'resize',
