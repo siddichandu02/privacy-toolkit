@@ -14,6 +14,8 @@ const loaders: Record<string, () => Promise<Panel>> = {
   'images-to-pdf': () => import('../components/images/ImagesTool').then((m) => m.ImagesTool),
   sign: () => import('../components/sign/SignTool').then((m) => m.SignTool),
   'compress-pdf': () => import('../components/compress/CompressTool').then((m) => m.CompressTool),
+  'compress-image': () =>
+    import('../components/compress-image/CompressImageTool').then((m) => m.CompressImageTool),
 };
 const workbench = () => import('../components/drop/ToolWorkbench').then((m) => m.ToolWorkbench);
 

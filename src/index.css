@@ -417,3 +417,109 @@ body {
     rotate: -4deg;
   }
 }
+
+/*
+ * Quality slider: a thick rounded track filled up to the thumb in the tool
+ * colour (--fill is the filled share, --tone the accent), with a big paper
+ * thumb that grows a little while held.
+ */
+.tone-range {
+  appearance: none;
+  height: 2.75rem;
+  background: transparent;
+  cursor: pointer;
+}
+.tone-range::-webkit-slider-runnable-track {
+  height: 0.75rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--tone) 0 var(--fill),
+    var(--line-strong) var(--fill) 100%
+  );
+}
+.tone-range::-moz-range-track {
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+.tone-range::-moz-range-progress {
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--tone);
+}
+.tone-range::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: -0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--tone);
+  box-shadow: 0 4px 14px -4px rgb(20 10 60 / 0.45);
+  transition: transform 150ms ease;
+}
+.tone-range::-moz-range-thumb {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--tone);
+  box-shadow: 0 4px 14px -4px rgb(20 10 60 / 0.45);
+  transition: transform 150ms ease;
+}
+.tone-range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.tone-range:active::-moz-range-thumb {
+  transform: scale(1.15);
+}
+.tone-range:focus-visible {
+  outline: none;
+}
+.tone-range:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 4px var(--canvas),
+    0 0 0 7px var(--tone);
+}
+.tone-range:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 4px var(--canvas),
+    0 0 0 7px var(--tone);
+}
+.tone-range:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tone-range::-webkit-slider-thumb,
+  .tone-range::-moz-range-thumb {
+    transition: none;
+  }
+}
+
+/* A slow light sweep over the photo while its preview is redrawn. */
+.photo-busy {
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.22) 50%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: photo-busy 1.1s ease-in-out infinite;
+}
+@keyframes photo-busy {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-busy {
+    animation: none;
+    background: rgb(255 255 255 / 0.12);
+  }
+}

@@ -24,6 +24,8 @@ export interface CompareSliderProps {
   fit?: 'cover' | 'contain';
   /** Laid over the frame, e.g. a "working" veil while the after picture is redrawn. */
   overlay?: ReactNode;
+  /** Width over height; sets the frame's shape instead of `frameClassName`. */
+  aspect?: number;
   testId?: string;
 }
 
@@ -42,6 +44,7 @@ export function CompareSlider({
   frameClassName = 'aspect-[16/10]',
   fit = 'cover',
   overlay,
+  aspect,
   testId,
 }: CompareSliderProps) {
   const [split, setSplit] = useState(50);
@@ -50,8 +53,8 @@ export function CompareSlider({
   return (
     <div
       data-testid={testId}
-      className={`group relative overflow-hidden rounded-panel border border-line bg-canvas-raised shadow-lifted select-none ${frameClassName}`}
-      style={{ '--split': `${split}%` } as CSSProperties}
+      className={`group relative overflow-hidden rounded-panel border border-line bg-canvas-raised shadow-lifted select-none ${aspect ? '' : frameClassName}`}
+      style={{ '--split': `${split}%`, aspectRatio: aspect } as CSSProperties}
     >
       {before ? (
         <img

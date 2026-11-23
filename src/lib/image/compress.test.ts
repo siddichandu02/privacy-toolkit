@@ -28,7 +28,7 @@ const fakeEncode =
     const width = req.maxEdge ? Math.min(full, req.maxEdge) : full;
     return {
       bytes: new Uint8Array(size),
-      type: opts.actualType ?? req.type,
+      mime: opts.actualType ?? req.type,
       width,
       height: Math.round(width * 0.75),
       sourceWidth: full,
@@ -83,7 +83,7 @@ describe('compressImages', () => {
       (p) => stages.push(p.stage),
     );
     expect(out.name).toBe('cat-compressed.jpg');
-    expect(out.type).toBe('image/jpeg');
+    expect(out.mime).toBe('image/jpeg');
     expect(out.bytes.byteLength).toBe(500);
     expect(out).toMatchObject({ before: 1000, after: 500, skipped: [] });
     expect([...new Set(stages)]).toEqual(['reading', 'working', 'packing']);
@@ -128,7 +128,7 @@ describe('compressImages', () => {
       fakeEncode({ fail: ['phone.heic'] }),
     );
     expect(out.name).toBe(ZIP_NAME);
-    expect(out.type).toBe('application/zip');
+    expect(out.mime).toBe('application/zip');
     expect(out.skipped).toEqual([{ name: 'phone.heic', reason: expect.stringMatching(/HEIC/) }]);
     expect(out).toMatchObject({ before: 1800, after: 900 });
     const zip = await JSZip.loadAsync(out.bytes);

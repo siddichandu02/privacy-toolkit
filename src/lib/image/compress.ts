@@ -25,7 +25,7 @@ export interface EncodeRequest {
 export interface Encoded {
   bytes: Uint8Array;
   /** What the browser actually wrote; it may fall back to PNG for WebP. */
-  type: string;
+  mime: string;
   width: number;
   height: number;
   /** Size before any resize, after the EXIF turn. */
@@ -54,7 +54,7 @@ export interface ImageCompressResult {
   /** One photo, or a ZIP when there are several. */
   bytes: Uint8Array;
   name: string;
-  type: string;
+  mime: string;
   items: CompressedImage[];
   skipped: SkippedImage[];
   before: number;
@@ -121,12 +121,12 @@ export async function compressImages(
       const before = source.bytes.byteLength;
       const resized =
         encoded.width !== encoded.sourceWidth || encoded.height !== encoded.sourceHeight;
-      const keep = !resized && encoded.type === source.type && encoded.bytes.byteLength >= before;
+      const keep = !resized && encoded.mime === source.type && encoded.bytes.byteLength >= before;
       const bytes = keep ? new Uint8Array(source.bytes) : encoded.bytes;
       done.push({
         item: {
-          name: keep ? source.name : compressedImageName(source.name, encoded.type),
-          type: keep ? source.type : encoded.type,
+          name: keep ? source.name : compressedImageName(source.name, encoded.mime),
+          type: keep ? source.type : encoded.mime,
           before,
           after: bytes.byteLength,
           kept: keep,
@@ -157,7 +157,7 @@ export async function compressImages(
     return {
       bytes: single.bytes,
       name: single.item.name,
-      type: single.item.type,
+      mime: single.item.type,
       items,
       skipped,
       before,
@@ -172,5 +172,5 @@ export async function compressImages(
   done.forEach((d, i) => zip.file(names[i] as string, d.bytes, { compression: 'STORE' }));
   const bytes = await zip.generateAsync({ type: 'uint8array' });
   onProgress({ stage: 'packing', progress: 1 });
-  return { bytes, name: ZIP_NAME, type: 'application/zip', items, skipped, before, after };
+  return { bytes, name: ZIP_NAME, mime: 'application/zip', items, skipped, before, after };
 }

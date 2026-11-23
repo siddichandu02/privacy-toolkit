@@ -85,6 +85,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'mint',
     blurb: 'Make photos smaller while keeping them sharp.',
     input: { kind: 'image', multiple: true, ordered: false },
+    ready: true,
   },
   {
     id: 'convert',
