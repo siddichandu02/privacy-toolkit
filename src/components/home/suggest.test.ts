@@ -27,6 +27,12 @@ describe('suggestTools', () => {
     expect(list.every((t) => t.ready && t.input.kind === 'image')).toBe(true);
   });
 
+  it('leads with convert when every photo is HEIC', () => {
+    const heic = new File(['x'], 'IMG_1.HEIC');
+    expect(ids([heic])[0]).toBe('convert');
+    expect(ids([heic, jpg('b.jpg')])[0]).toBe('images-to-pdf');
+  });
+
   it('offers both kinds for a mixed drop and nothing for unknown files', () => {
     const mixed = ids([pdf('a.pdf'), jpg('b.jpg')]);
     expect(mixed).toContain('merge');

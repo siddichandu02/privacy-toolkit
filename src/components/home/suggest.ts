@@ -1,4 +1,5 @@
 import { TOOLS, type ToolInfo } from '../../tools';
+import { isHeic } from '../../lib/image/convert-names';
 import { IMAGE_RULES, PDF_RULES, matchesType } from '../drop/validate';
 
 type Kind = 'pdf' | 'image';
@@ -21,17 +22,19 @@ export function sortFiles(files: readonly File[]): Sorted {
 }
 
 /** The order tools are offered in for one PDF, for several, and for photos. */
-const ORDER: Record<'onePdf' | 'manyPdf' | 'image', readonly string[]> = {
+const ORDER: Record<'onePdf' | 'manyPdf' | 'image' | 'heic', readonly string[]> = {
   onePdf: ['compress-pdf', 'split', 'sign', 'rotate', 'merge'],
   manyPdf: ['merge', 'compress-pdf', 'split', 'sign', 'rotate'],
   image: ['images-to-pdf', 'compress-image', 'convert', 'resize', 'exif'],
+  // iPhone photos most often need to become JPG before anything else.
+  heic: ['convert', 'images-to-pdf', 'compress-image', 'resize', 'exif'],
 };
 
 /** Working tools that can open these files, most likely first. */
 export function suggestTools(sorted: Sorted, tools: readonly ToolInfo[] = TOOLS): ToolInfo[] {
   const ids = [
     ...(sorted.pdf.length ? ORDER[sorted.pdf.length > 1 ? 'manyPdf' : 'onePdf'] : []),
-    ...(sorted.image.length ? ORDER.image : []),
+    ...(sorted.image.length ? ORDER[sorted.image.every(isHeic) ? 'heic' : 'image'] : []),
   ];
   const ready = tools.filter((t) => t.ready);
   const picked = ids.flatMap((id) => ready.filter((t) => t.id === id));
