@@ -17,6 +17,7 @@ const loaders: Record<string, () => Promise<Panel>> = {
   'compress-image': () =>
     import('../components/compress-image/CompressImageTool').then((m) => m.CompressImageTool),
   convert: () => import('../components/convert/ConvertTool').then((m) => m.ConvertTool),
+  resize: () => import('../components/resize/ResizeTool').then((m) => m.ResizeTool),
 };
 const workbench = () => import('../components/drop/ToolWorkbench').then((m) => m.ToolWorkbench);
 

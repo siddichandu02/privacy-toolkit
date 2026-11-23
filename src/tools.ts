@@ -103,6 +103,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sunshine',
     blurb: 'Fit a photo to a passport, profile or banner size.',
     input: { kind: 'image', multiple: false, ordered: false },
+    ready: true,
   },
   {
     id: 'exif',
