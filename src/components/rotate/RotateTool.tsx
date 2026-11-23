@@ -239,7 +239,7 @@ function RotatePanel({ file, accent, edits, onEditsChange, onSave }: RotatePanel
                 : `${pagesWord(count)}. Focus a page and press R to turn it, Delete to remove it.`}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-sm font-semibold">
+        <div className="grid w-full grid-cols-3 gap-1.5 text-sm font-semibold sm:flex sm:w-auto sm:flex-wrap sm:gap-2">
           <Chip onClick={() => turnAll(-1)} disabled={!count || kept === 0}>
             <TurnIcon dir={-1} />
             All left
@@ -317,7 +317,7 @@ function Chip({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded-full border border-line py-1.5 pr-3.5 pl-3 text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted"
+      className="inline-flex items-center justify-center gap-1 rounded-full border border-line px-1.5 py-2 whitespace-nowrap text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted sm:gap-1.5 sm:py-1.5 sm:pr-3.5 sm:pl-3"
     >
       {children}
     </button>
