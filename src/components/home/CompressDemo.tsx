@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useStillMotion } from '../../useStillMotion';
 import { formatBytes } from '../drop/validate';
+import { CompareSlider } from '../ui/CompareSlider';
 import { Segmented } from '../ui/Segmented';
 import { paintScene, SCENE_HEIGHT, SCENE_WIDTH } from './sampleScene';
 
@@ -86,7 +87,6 @@ export function CompressDemo({ className = '' }: { className?: string }) {
   const canvas = useSample();
   const still = useStillMotion();
   const [level, setLevel] = useState<Level>('balanced');
-  const [split, setSplit] = useState(50);
   const before = useEncoded(canvas, 'image/png');
   const after = useEncoded(canvas, 'image/jpeg', QUALITY[level]);
 
@@ -155,73 +155,13 @@ export function CompressDemo({ className = '' }: { className?: string }) {
             </AnimatePresence>
           </p>
         </div>
-        <div
-          className="group relative aspect-[16/10] overflow-hidden rounded-panel border border-line bg-canvas-raised shadow-lifted select-none"
-          style={{ '--split': `${split}%` } as CSSProperties}
-        >
-          {before ? (
-            <img
-              src={before.url}
-              alt="Sample picture: an evening sky with stars over folded paper hills, original"
-              className="absolute inset-0 size-full object-cover"
-              draggable={false}
-            />
-          ) : null}
-          {after ? (
-            <img
-              src={after.url}
-              alt=""
-              data-testid="demo-after"
-              className="absolute inset-0 size-full object-cover"
-              style={{ clipPath: 'inset(0 0 0 var(--split))' }}
-              draggable={false}
-            />
-          ) : null}
-
-          <span className="absolute top-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-            Original
-          </span>
-          <span className="absolute top-3 right-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-            Compressed
-          </span>
-
-          {/* The divider and its grip. Purely visual; the range input below does the work. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_12px_rgb(0_0_0/0.45)]"
-            style={{ left: 'var(--split)' }}
-          >
-            <span className="absolute top-1/2 left-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-mint text-on-accent shadow-lifted transition-transform duration-200 group-hover:scale-110 group-active:scale-95 motion-reduce:transition-none">
-              <svg
-                viewBox="0 0 24 24"
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 6l-5 6 5 6M15 6l5 6-5 6" />
-              </svg>
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={split}
-            onChange={(e) => setSplit(Number(e.target.value))}
-            aria-label="Compare original and compressed"
-            aria-valuetext={`${split}% original, ${100 - split}% compressed`}
-            className="peer absolute inset-0 size-full cursor-ew-resize opacity-0"
-          />
-          {/* Focus ring for keyboard users, drawn on the frame. */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-panel ring-mint peer-focus-visible:ring-3 peer-focus-visible:ring-inset"
-          />
-        </div>
+        <CompareSlider
+          before={before?.url ?? null}
+          after={after?.url ?? null}
+          beforeAlt="Sample picture: an evening sky with stars over folded paper hills, original"
+          accent="mint"
+          testId="demo"
+        />
       </div>
     </section>
   );
