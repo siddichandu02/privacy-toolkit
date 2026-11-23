@@ -44,8 +44,8 @@ export interface PreparedFiles {
   files: File[];
   /** Original sizes, in the same order, so results can compare with what was picked. */
   sizes: number[];
-  /** Names of HEIC photos that could not be decoded. They stay in `files` untouched. */
-  undecoded: string[];
+  /** Positions of HEIC photos that could not be decoded. They stay in `files` untouched. */
+  undecoded: number[];
 }
 
 /**
@@ -59,9 +59,9 @@ export async function prepareImages(
 ): Promise<PreparedFiles> {
   const heics = files.filter(isHeic).length;
   let decoded = 0;
-  const undecoded: string[] = [];
+  const undecoded: number[] = [];
   const out: File[] = [];
-  for (const file of files) {
+  for (const [i, file] of files.entries()) {
     if (!isHeic(file)) {
       out.push(file);
       continue;
@@ -69,7 +69,7 @@ export async function prepareImages(
     try {
       out.push(await decode(file));
     } catch {
-      undecoded.push(file.name);
+      undecoded.push(i);
       out.push(file);
     }
     decoded += 1;

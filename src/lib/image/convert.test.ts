@@ -168,6 +168,6 @@ describe('prepareImages', () => {
       throw new Error('nope');
     });
     expect(out.files[0]?.type).toBe('');
-    expect(out.undecoded).toEqual(['x.heic']);
+    expect(out.undecoded).toEqual([0]);
   });
 });
