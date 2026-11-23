@@ -10,6 +10,7 @@ import { QuillScene } from '../components/wait/scenes/QuillScene';
 import { JarScene } from '../components/wait/scenes/JarScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { SuitcaseScene } from '../components/wait/scenes/SuitcaseScene';
+import { TailorScene } from '../components/wait/scenes/TailorScene';
 import { WashScene } from '../components/wait/scenes/WashScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
@@ -146,6 +147,22 @@ export default function PipLab() {
         progress={within}
         accent="sky"
         scene={<WashScene progress={scrub} accent="sky" thumb={photos[0]} label="JPG" />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Cutting beach.jpg to 1080 × 1350"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="sunshine"
+        scene={
+          <TailorScene
+            progress={scrub}
+            accent="sunshine"
+            thumb={photos[1]}
+            aspect={4 / 5}
+            label="1080 × 1350"
+          />
+        }
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
