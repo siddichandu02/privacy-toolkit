@@ -33,3 +33,12 @@ test('the compare line moves with the slider and the keyboard', async ({ page })
   await page.keyboard.press('ArrowRight');
   await expect(slider).toHaveValue('21');
 });
+
+test('the demo leads to the real tool', async ({ page }) => {
+  await page.goto('./');
+  const link = page.getByRole('link', { name: 'Compress your own photos' });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await expect(page).toHaveURL(/#\/tools\/compress-image$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Compress image' })).toBeVisible();
+});

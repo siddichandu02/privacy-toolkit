@@ -1,5 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { prefetchTool } from '../../routes/toolLoaders';
+import { toolPath } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { formatBytes } from '../drop/validate';
 import { CompareSlider } from '../ui/CompareSlider';
@@ -154,6 +157,36 @@ export function CompressDemo({ className = '' }: { className?: string }) {
               ) : null}
             </AnimatePresence>
           </p>
+          <Link
+            to={toolPath('compress-image')}
+            onMouseEnter={() => prefetchTool('compress-image')}
+            onFocus={() => prefetchTool('compress-image')}
+            className="group/own mt-5 inline-flex items-center gap-2.5 rounded-full border border-mint/35 bg-mint/10 py-2 pr-4 pl-2 font-semibold text-mint transition-[background-color,border-color,transform] duration-200 hover:border-mint/60 hover:bg-mint/15 active:scale-[0.97] motion-reduce:transition-none"
+          >
+            <span className="grid size-8 place-items-center rounded-full bg-mint text-on-accent transition-transform duration-300 group-hover/own:-rotate-6 motion-reduce:transition-none">
+              <svg viewBox="0 0 20 20" className="size-4" aria-hidden="true">
+                <rect
+                  x="2.5"
+                  y="4"
+                  width="15"
+                  height="12"
+                  rx="2.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                />
+                <path
+                  d="m4.5 14 4-4.5 3 3 2-2 2.5 3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+                <circle cx="13.5" cy="7.5" r="1.3" fill="currentColor" />
+              </svg>
+            </span>
+            Compress your own photos
+          </Link>
         </div>
         <CompareSlider
           before={before?.url ?? null}
