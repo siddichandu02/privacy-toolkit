@@ -43,7 +43,7 @@ export const PRESETS: readonly SizePreset[] = [
     width: 400,
     height: 400,
   },
-  { id: 'youtube', label: 'YouTube thumbnail', hint: '16:9 video cover', width: 1280, height: 720 },
+  { id: 'youtube', label: 'YouTube thumbnail', hint: 'Video cover', width: 1280, height: 720 },
 ];
 
 export const CUSTOM = 'custom';

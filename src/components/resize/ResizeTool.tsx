@@ -377,7 +377,7 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
           className="shrink-0"
           icon={<ShearsIcon />}
         >
-          {plan.valid ? `${box ? 'Cut' : 'Resize'} to ${label}` : 'Pick a size'}
+          {plan.valid ? `${plan.aspect ? 'Cut' : 'Resize'} to ${label}` : 'Pick a size'}
         </Button>
       </div>
     </div>
@@ -508,7 +508,7 @@ function PresetPicker({
                 </svg>
               )}
               <span className="flex min-w-0 flex-col leading-tight">
-                <span className="truncate text-sm font-bold">{o.label}</span>
+                <span className="truncate text-sm font-bold">{o.label}</span>{' '}
                 <span className="truncate text-xs text-muted tabular-nums">
                   {preset ? `${times(preset.width, preset.height)}` : 'Your numbers'}
                   {preset ? (
