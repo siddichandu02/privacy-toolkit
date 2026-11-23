@@ -27,8 +27,11 @@ Ready now:
 - **Compress image**: a quality slider, JPG/WebP output and size presets, with a live before
   and after view of your own photo. Several photos come back in one ZIP, and camera and
   location details are left out of the new copies.
+- **Convert image**: HEIC, PNG, WebP, JPG or GIF to JPG, PNG or WebP. iPhone HEIC photos are
+  decoded in the browser too (the decoder, heic2any, is bundled with the site and only loads
+  when a HEIC photo is added). Several photos come back in one ZIP.
 
-On the way: Convert image, Resize and crop, Remove EXIF.
+On the way: Resize and crop, Remove EXIF.
 
 ## Develop
 
