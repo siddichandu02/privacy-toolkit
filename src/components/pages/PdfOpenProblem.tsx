@@ -1,3 +1,4 @@
+import { FileName } from '../result/FileName';
 import { useId } from 'react';
 import { Pip } from '../pip/Pip';
 import { pipFor } from '../result/panel';
@@ -34,12 +35,12 @@ export function PdfOpenProblem({ name, locked, accent }: PdfOpenProblemProps) {
         <p className="mt-2 text-muted">
           {locked ? (
             <>
-              <span className="font-semibold break-all text-fg">{name}</span> is locked, so its
-              pages can't be read here. Make an unlocked copy, then add that instead:
+              <FileName name={name} className="font-semibold text-fg" /> is locked, so its pages
+              can't be read here. Make an unlocked copy, then add that instead:
             </>
           ) : (
             <>
-              <span className="font-semibold break-all text-fg">{name}</span> may be damaged or not
+              <FileName name={name} className="font-semibold text-fg" /> may be damaged or not
               really a PDF. Try opening it in another app, or pick a different file.
             </>
           )}

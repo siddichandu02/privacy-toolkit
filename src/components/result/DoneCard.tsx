@@ -1,3 +1,4 @@
+import { FileName } from './FileName';
 import { motion } from 'framer-motion';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useStillMotion } from '../../useStillMotion';
@@ -97,7 +98,7 @@ export function DoneCard({
               {title}
             </h2>
             <p className="mt-3 text-muted">
-              <span className={`font-semibold break-all ${accentText[accent]}`}>{fileName}</span>
+              <FileName name={fileName} className={`font-semibold ${accentText[accent]}`} />
               <br />
               {details} Made on this device, never sent anywhere.
             </p>
