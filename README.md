@@ -30,8 +30,12 @@ Ready now:
 - **Convert image**: HEIC, PNG, WebP, JPG or GIF to JPG, PNG or WebP. iPhone HEIC photos are
   decoded in the browser too (the decoder, heic2any, is bundled with the site and only loads
   when a HEIC photo is added). Several photos come back in one ZIP.
+- **Resize and crop**: passport, Instagram, story, LinkedIn banner, profile photo and YouTube
+  sizes, or your own numbers. Drag or pinch the photo under the frame (arrow keys work too) to
+  choose what stays, or keep the whole photo and just scale it. Warns when a photo is too small
+  for the size and would look soft.
 
-On the way: Resize and crop, Remove EXIF.
+On the way: Remove EXIF.
 
 ## Develop
 
