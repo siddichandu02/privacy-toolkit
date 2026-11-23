@@ -10,6 +10,7 @@ import { QuillScene } from '../components/wait/scenes/QuillScene';
 import { JarScene } from '../components/wait/scenes/JarScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { SuitcaseScene } from '../components/wait/scenes/SuitcaseScene';
+import { WashScene } from '../components/wait/scenes/WashScene';
 import { WaitStage } from '../components/wait/WaitStage';
 import { useDocumentTitle } from '../useDocumentTitle';
 
@@ -137,6 +138,14 @@ export default function PipLab() {
         progress={within}
         accent="coral"
         scene={<SuitcaseScene progress={scrub} accent="coral" thumb={pages[3]} />}
+      />
+      <WaitStage
+        className="mt-6"
+        title="Converting 2 photos to JPG"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="sky"
+        scene={<WashScene progress={scrub} accent="sky" thumb={photos[0]} label="JPG" />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
