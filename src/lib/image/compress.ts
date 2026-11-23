@@ -5,6 +5,7 @@ import {
   uniqueNames,
   type ImageCompressSettings,
 } from './compress-names';
+import type { CropBox } from './resize-names';
 
 export * from './compress-names';
 
@@ -20,6 +21,10 @@ export interface EncodeRequest {
   type: string;
   quality: number;
   maxEdge: number | null;
+  /** Keep only this part of the photo, as shares of its size. */
+  crop?: CropBox;
+  /** Exact output size in pixels; `maxEdge` is ignored when set. */
+  size?: { width: number; height: number };
 }
 
 export interface Encoded {
