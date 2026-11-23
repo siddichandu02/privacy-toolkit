@@ -24,8 +24,11 @@ Ready now:
 - **Sign PDF**: draw or type a signature, drag it into place on one page or all of them.
 - **Compress PDF**: three levels, from a lossless tidy-up to re-saving large photos as smaller
   JPEGs. Shows the size before and after, and never hands back a bigger file.
+- **Compress image**: a quality slider, JPG/WebP output and size presets, with a live before
+  and after view of your own photo. Several photos come back in one ZIP, and camera and
+  location details are left out of the new copies.
 
-On the way: Compress image, Convert image, Resize and crop, Remove EXIF.
+On the way: Convert image, Resize and crop, Remove EXIF.
 
 ## Develop
 
