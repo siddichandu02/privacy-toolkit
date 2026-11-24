@@ -40,7 +40,7 @@ export function Header() {
             whileHover={reduced ? undefined : 'hover'}
           >
             <WordmarkIcon className="size-8 drop-shadow-[0_4px_12px_rgb(124_92_255/0.35)]" />
-            <span className="font-display text-lg leading-none font-bold tracking-tight sm:text-xl">
+            <span className="font-display text-lg leading-none font-bold tracking-tight whitespace-nowrap sm:text-xl">
               Privacy Toolkit
             </span>
           </motion.span>
@@ -62,7 +62,7 @@ export function Header() {
             href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className="grid size-11 place-items-center rounded-full text-muted transition-colors hover:text-fg"
+            className="hidden size-11 place-items-center rounded-full text-muted transition-colors hover:text-fg sm:grid"
             aria-label="Source code on GitHub (opens in a new tab)"
           >
             <GitHubIcon className="size-5" />
