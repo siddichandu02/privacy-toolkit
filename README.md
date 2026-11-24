@@ -34,8 +34,11 @@ Ready now:
   sizes, or your own numbers. Drag or pinch the photo under the frame (arrow keys work too) to
   choose what stays, or keep the whole photo and just scale it. Warns when a photo is too small
   for the size and would look soft.
-
-On the way: Remove EXIF.
+- **Remove EXIF**: see what a photo gives away before you share it (where it was taken, when,
+  whose it is, the camera, the apps that edited it) on a small globe and a plain list, then
+  strip all of it. JPG, PNG and WebP are cut losslessly, so every pixel stays the same and the
+  photo keeps its colour profile and stays upright. HEIC is saved as JPG. The cleaned photo is
+  read again on the device to check nothing is left.
 
 ## Develop
 
@@ -53,6 +56,7 @@ npm run build        # type-check and production build
 ## Stack
 
 React 18, Vite, TypeScript (strict), Tailwind CSS, Framer Motion, React Router, pdf-lib, pdfjs-dist,
+exifr (reading photo details), heic2any,
 three.js (the 3D paper helpers in the wait animations, loaded only when a tool has files),
 Vitest, Testing Library and Playwright. Deployed to GitHub Pages by GitHub Actions on every push to
 `main`.
