@@ -25,6 +25,14 @@ export interface EncodeRequest {
   crop?: CropBox;
   /** Exact output size in pixels; `maxEdge` is ignored when set. */
   size?: { width: number; height: number };
+  /**
+   * Work out the crop and size once the photo's real (upright) size is known.
+   * Used for batches, where every photo has its own shape. Wins over `crop` and `size`.
+   */
+  fit?: (
+    srcW: number,
+    srcH: number,
+  ) => { crop: CropBox | null; size: { width: number; height: number } };
 }
 
 export interface Encoded {

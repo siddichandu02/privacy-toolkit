@@ -39,6 +39,26 @@ export async function decodeHeic(file: File): Promise<File> {
   return new File([blob], file.name, { type: 'image/png', lastModified: file.lastModified });
 }
 
+const decodedCopies = new WeakMap<File, Promise<File>>();
+
+/**
+ * `decodeHeic`, but each picked file is decoded only once per visit, so a
+ * photo opened for the preview is not decoded again when the job starts.
+ * A failed decode is forgotten so the next try runs again.
+ */
+export function decodeHeicOnce(
+  file: File,
+  decode: (file: File) => Promise<File> = decodeHeic,
+): Promise<File> {
+  let copy = decodedCopies.get(file);
+  if (!copy) {
+    copy = decode(file);
+    decodedCopies.set(file, copy);
+    copy.catch(() => decodedCopies.delete(file));
+  }
+  return copy;
+}
+
 export interface PreparedFiles {
   /** Every file in order: HEIC photos swapped for PNG copies, others as they were. */
   files: File[];
@@ -55,7 +75,7 @@ export interface PreparedFiles {
 export async function prepareImages(
   files: readonly File[],
   onProgress: (share: number) => void = () => {},
-  decode: (file: File) => Promise<File> = decodeHeic,
+  decode: (file: File) => Promise<File> = (file) => decodeHeicOnce(file),
 ): Promise<PreparedFiles> {
   const heics = files.filter(isHeic).length;
   let decoded = 0;

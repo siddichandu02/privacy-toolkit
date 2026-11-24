@@ -112,6 +112,17 @@ export const heightFor = (srcW: number, srcH: number, width: number) =>
 export const widthFor = (srcW: number, srcH: number, height: number) =>
   Math.max(1, Math.round((height * srcW) / srcH));
 
+/**
+ * The biggest size with the photo's own shape that fits inside `width` by
+ * `height`. When `height` already follows the photo's shape it gives exactly
+ * `width` by `height`.
+ */
+export function fitInside(srcW: number, srcH: number, width: number, height: number) {
+  const h = heightFor(srcW, srcH, width);
+  if (h <= height) return { width, height: h };
+  return { width: Math.min(width, widthFor(srcW, srcH, height)), height };
+}
+
 /** A whole number of pixels between 1 and MAX_SIDE, or null for anything else. */
 export function parseSide(text: string): number | null {
   if (!/^\s*\d+\s*$/.test(text)) return null;

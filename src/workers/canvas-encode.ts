@@ -9,11 +9,14 @@ import { fitEdge } from '../lib/image/compress-names';
  */
 export const canvasEncode: ImageEncoder = async (
   source,
-  { type, quality, maxEdge, crop, size },
+  { type, quality, maxEdge, crop: askedCrop, size: askedSize, fit },
 ) => {
   const bitmap = await createImageBitmap(new Blob([source.bytes], { type: source.type }), {
     imageOrientation: 'from-image',
   });
+  const fitted = fit?.(bitmap.width, bitmap.height);
+  const crop = fitted ? fitted.crop : askedCrop;
+  const size = fitted ? fitted.size : askedSize;
   // The part of the photo to draw, in its own pixels.
   const sx = crop ? crop.x * bitmap.width : 0;
   const sy = crop ? crop.y * bitmap.height : 0;

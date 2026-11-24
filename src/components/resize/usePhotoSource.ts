@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { isHeic } from '../../lib/image/convert-names';
-import { decodeHeic, prefetchHeic } from '../../lib/image/heic';
+import { decodeHeicOnce, prefetchHeic } from '../../lib/image/heic';
 import { useObjectUrl } from '../result/useObjectUrl';
 
 export interface PhotoSource {
@@ -31,7 +31,7 @@ interface Decoded {
  */
 export function usePhotoSource(
   picked: File | null,
-  decode: (file: File) => Promise<File> = decodeHeic,
+  decode: (file: File) => Promise<File> = decodeHeicOnce,
 ): PhotoSource {
   const heic = picked ? isHeic(picked) : false;
   const [decoded, setDecoded] = useState<Decoded | null>(null);

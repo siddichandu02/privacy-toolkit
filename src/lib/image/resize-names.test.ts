@@ -5,6 +5,7 @@ import {
   cropBox,
   enlargement,
   getPreset,
+  fitInside,
   heightFor,
   parseSide,
   PRESETS,
@@ -130,5 +131,17 @@ describe('names and types', () => {
     expect(resizeOutputType({ name: 'a.webp', type: 'image/webp' })).toBe('image/webp');
     expect(resizeOutputType({ name: 'a.png', type: 'image/png' })).toBe('image/png');
     expect(resizeOutputType({ name: 'a.gif', type: 'image/gif' })).toBe('image/png');
+  });
+});
+
+describe('fitInside', () => {
+  it('keeps the shape and touches the box on one side', () => {
+    expect(fitInside(4000, 2000, 1000, 1000)).toEqual({ width: 1000, height: 500 });
+    expect(fitInside(1500, 3000, 1000, 1000)).toEqual({ width: 500, height: 1000 });
+  });
+
+  it('gives the box itself when the height already follows the shape', () => {
+    expect(fitInside(3024, 4032, 1200, 1600)).toEqual({ width: 1200, height: 1600 });
+    expect(fitInside(4000, 3001, 1000, 750)).toEqual({ width: 1000, height: 750 });
   });
 });
