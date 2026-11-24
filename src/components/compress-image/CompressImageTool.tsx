@@ -29,6 +29,7 @@ import { SuitcaseScene } from '../wait/scenes/SuitcaseScene';
 import { useStory } from '../wait/useStory';
 import { useThumbnails } from '../wait/useThumbnails';
 import { WaitStage } from '../wait/WaitStage';
+import { ZipContents } from '../result/ZipContents';
 
 const STEPS: readonly WaitStep[] = [
   { id: 'reading', label: 'Opening your photos' },
@@ -151,7 +152,21 @@ export function CompressImageTool({ tool }: { tool: ToolInfo }) {
                   job.items.filter((i) => i.kept).length,
                   job.skipped,
                 )}
-                extra={<SizeCompare before={job.before} after={job.after} accent={tool.accent} />}
+                extra={
+                  <div className="grid gap-5">
+                    <SizeCompare before={job.before} after={job.after} accent={tool.accent} />
+                    {job.items.length > 1 ? (
+                      <ZipContents
+                        blob={job.blob}
+                        accent={tool.accent}
+                        items={job.items.map((i) => ({
+                          name: i.name,
+                          detail: i.kept ? 'kept as it was' : formatBytes(i.after),
+                        }))}
+                      />
+                    ) : null}
+                  </div>
+                }
                 downloadLabel={job.items.length > 1 ? 'Download ZIP' : 'Download photo'}
                 actions={[
                   { label: 'Compress other photos', onClick: startOver },

@@ -106,7 +106,8 @@ describe('ConvertTool', () => {
     expect(screen.getByRole('heading', { name: 'Your photos are now JPG' })).toBeVisible();
     expect(screen.getByText(/2 photos converted\./)).toBeVisible();
     expect(screen.getByText(/Left out broken\.png/)).toBeVisible();
-    expect(screen.getByTestId('converted-list')).toHaveTextContent(/b\.jpg\s*2 KB to 1 KB/);
+    expect(screen.getByTestId('zip-contents')).toHaveTextContent(/b\.jpg\s*2 KB to 1 KB/);
+    expect(screen.getByRole('button', { name: 'Save b.jpg' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Download ZIP' })).toBeVisible();
   });
 

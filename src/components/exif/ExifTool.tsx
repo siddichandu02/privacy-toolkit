@@ -18,6 +18,7 @@ import { useFileQueue, type QueuedFile } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
+import { ZipContents } from '../result/ZipContents';
 import { useObjectUrl } from '../result/useObjectUrl';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
@@ -138,6 +139,12 @@ export function ExifTool({ tool }: { tool: ToolInfo }) {
               extra={
                 job.items.length === 1 && job.blob.type.startsWith('image/') ? (
                   <CleanCheck blob={job.blob} accent={tool.accent} />
+                ) : job.items.length > 1 ? (
+                  <ZipContents
+                    blob={job.blob}
+                    accent={tool.accent}
+                    items={job.items.map((i) => ({ name: i.name }))}
+                  />
                 ) : null
               }
               downloadLabel={job.items.length > 1 ? 'Download ZIP' : 'Download photo'}

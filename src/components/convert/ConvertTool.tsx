@@ -18,6 +18,7 @@ import { useFileQueue, type QueuedFile } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
+import { ZipContents } from '../result/ZipContents';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { accentFill, accentText } from '../ui/accent';
@@ -142,7 +143,20 @@ export function ConvertTool({ tool }: { tool: ToolInfo }) {
               fileName={job.name}
               blob={job.blob}
               details={doneDetails(job.items.length, job.skipped, job.fellBack, to)}
-              extra={<ConvertedList items={job.items} accent={tool.accent} />}
+              extra={
+                job.items.length > 1 ? (
+                  <ZipContents
+                    blob={job.blob}
+                    accent={tool.accent}
+                    items={job.items.map((i) => ({
+                      name: i.name,
+                      detail: `${formatBytes(i.before)} to ${formatBytes(i.after)}`,
+                    }))}
+                  />
+                ) : (
+                  <ConvertedList items={job.items} accent={tool.accent} />
+                )
+              }
               downloadLabel={job.items.length > 1 ? 'Download ZIP' : 'Download photo'}
               actions={[
                 { label: 'Convert other photos', onClick: startOver },
@@ -190,9 +204,7 @@ function doneDetails(
   return parts.join(' ');
 }
 
-const LIST_MAX = 4;
-
-/** Old name and size to new name and size, for the first few photos. */
+/** Old name and size to new name and size, for a single photo. */
 function ConvertedList({
   items,
   accent,
@@ -200,10 +212,9 @@ function ConvertedList({
   items: readonly { name: string; from: string; before: number; after: number }[];
   accent: Accent;
 }) {
-  const shown = items.slice(0, LIST_MAX);
   return (
     <ul className="mt-1 space-y-1.5 text-sm" data-testid="converted-list">
-      {shown.map((item, i) => (
+      {items.map((item, i) => (
         <li key={i} className="flex min-w-0 items-baseline justify-between gap-3">
           <span className="truncate font-medium text-fg">{item.name}</span>
           <span className="shrink-0 text-muted tabular-nums">
@@ -213,9 +224,6 @@ function ConvertedList({
           </span>
         </li>
       ))}
-      {items.length > LIST_MAX ? (
-        <li className="text-muted">and {items.length - LIST_MAX} more in the ZIP</li>
-      ) : null}
     </ul>
   );
 }

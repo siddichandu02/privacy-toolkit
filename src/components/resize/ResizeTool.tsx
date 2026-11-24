@@ -29,6 +29,7 @@ import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
 import { useObjectUrl } from '../result/useObjectUrl';
+import { ZipContents } from '../result/ZipContents';
 import { Button } from '../ui';
 import type { Accent } from '../ui/accent';
 import { accentFill, accentText } from '../ui/accent';
@@ -158,7 +159,11 @@ export function ResizeTool({ tool }: { tool: ToolInfo }) {
               details={doneDetails(job.items, job.skipped)}
               extra={
                 job.items.length > 1 ? (
-                  <ResizedList items={job.items} accent={tool.accent} />
+                  <ZipContents
+                    blob={job.blob}
+                    accent={tool.accent}
+                    items={job.items.map((i) => ({ name: i.name, detail: formatBytes(i.after) }))}
+                  />
                 ) : (
                   <ResultPreview blob={job.blob} accent={tool.accent} />
                 )
@@ -213,22 +218,6 @@ function doneDetails(items: readonly ResizedImage[], skipped: readonly { name: s
   }
   parts.push('Camera and location details removed.');
   return parts.join(' ');
-}
-
-/** New name and size of every photo in the ZIP. */
-function ResizedList({ items, accent }: { items: readonly ResizedImage[]; accent: Accent }) {
-  return (
-    <ul className="mt-1 max-h-48 space-y-1.5 overflow-y-auto text-sm" data-testid="resized-list">
-      {items.map((item, i) => (
-        <li key={i} className="flex min-w-0 items-baseline justify-between gap-3">
-          <span className="truncate font-medium text-fg">{item.name}</span>
-          <span className={`shrink-0 font-semibold tabular-nums ${accentText[accent]}`}>
-            {formatBytes(item.after)}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
 }
 
 /** The finished photo, small, so people see what they are downloading. */

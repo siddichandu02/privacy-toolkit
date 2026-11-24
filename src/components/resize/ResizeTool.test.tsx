@@ -259,7 +259,7 @@ describe('ResizeTool', () => {
     render(ui());
     expect(screen.getByRole('heading', { name: /2 photos are now/ })).toBeVisible();
     expect(screen.getByText(/Left out broken\.jpg/)).toBeVisible();
-    expect(screen.getByTestId('resized-list')).toHaveTextContent('b-400x400.png');
+    expect(screen.getByRole('button', { name: 'Save b-400x400.png' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Download ZIP' })).toBeVisible();
   });
 });
