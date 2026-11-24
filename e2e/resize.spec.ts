@@ -178,4 +178,19 @@ test('cuts a batch to one size, each with its own framing, into a ZIP', async ({
     { size: '400x400', red: true },
     { size: '400x400', red: false },
   ]);
+
+  // Just one of them, taken out of the ZIP on the page.
+  const [single] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Save right-400x400.jpg' }).click(),
+  ]);
+  expect(single.suggestedFilename()).toBe('right-400x400.jpg');
+  const bytes = await readFile(await single.path());
+  expect(
+    bytes.equals(Buffer.from((await zip.file('right-400x400.jpg')?.async('uint8array')) ?? [])),
+  ).toBe(true);
+  await expect(page.getByRole('button', { name: 'Save right-400x400.jpg' })).toHaveAttribute(
+    'data-state',
+    'saved',
+  );
 });

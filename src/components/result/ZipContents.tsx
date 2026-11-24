@@ -74,8 +74,8 @@ export function ZipContents({
   const failed = Object.values(rows).includes('failed');
 
   return (
-    <div className="min-w-0" data-testid="zip-contents">
-      <p className="mb-2 text-sm text-muted">
+    <div className="mt-2 min-w-0 text-left" data-testid="zip-contents">
+      <p className="mb-2.5 text-center text-sm text-muted">
         {items.length} files in the ZIP. Need just one? Save it on its own.
       </p>
       <ul className="max-h-56 divide-y divide-line overflow-y-auto rounded-2xl border border-line bg-canvas/40 text-sm">
