@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { resizeImage, ResizeError } from '../lib/image/resize';
+import { resizeImages, ResizeError, type ResizeSource } from '../lib/image/resize';
 import { canvasEncode } from './canvas-encode';
 import { unexpectedMessage } from './fail';
 import type { ResizeReply, ResizeWorkerRequest } from './resize-protocol';
@@ -8,19 +8,20 @@ const post = (msg: ResizeReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
 
 self.onmessage = async (event: MessageEvent<ResizeWorkerRequest>) => {
-  const { file, settings, originalName, size } = event.data;
+  const { files, settings, sizes = [], undecoded = [] } = event.data;
   try {
-    const result = await resizeImage(
-      {
+    const sources: ResizeSource[] = [];
+    for (const [i, file] of files.entries()) {
+      sources.push({
         name: file.name,
         type: file.type,
         bytes: await file.arrayBuffer(),
-        originalName,
-        size: size ?? file.size,
-      },
-      settings,
-      canvasEncode,
-      (p) => post({ type: 'progress', ...p }),
+        size: sizes[i] ?? file.size,
+        undecoded: undecoded.includes(i),
+      });
+    }
+    const result = await resizeImages(sources, settings, canvasEncode, (p) =>
+      post({ type: 'progress', ...p }),
     );
     post({ type: 'done', ...result }, [result.bytes.buffer]);
   } catch (err) {
@@ -29,7 +30,7 @@ self.onmessage = async (event: MessageEvent<ResizeWorkerRequest>) => {
       type: 'error',
       message: known
         ? err.message
-        : unexpectedMessage(err, 'Something went wrong while resizing your photo. Try again.'),
+        : unexpectedMessage(err, 'Something went wrong while resizing your photos. Try again.'),
       fileName: known ? err.fileName : undefined,
     });
   }

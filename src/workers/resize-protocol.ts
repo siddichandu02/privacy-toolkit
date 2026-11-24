@@ -1,14 +1,8 @@
 import type { ResizeResult, ResizeSettings, ResizeStage } from '../lib/image/resize';
+import type { PreparedRequest } from './usePreparedJob';
 import type { WorkerReply } from './useWorkerJob';
 
-export interface ResizeWorkerRequest {
-  /** HEIC photos arrive already decoded on the page. */
-  file: File;
-  settings: ResizeSettings;
-  /** Name and size of the file as picked. */
-  originalName?: string;
-  size?: number;
-}
+export type ResizeWorkerRequest = PreparedRequest<ResizeSettings>;
 
 export type ResizeDone = ResizeResult;
 

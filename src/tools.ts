@@ -101,8 +101,8 @@ export const TOOLS: readonly ToolInfo[] = [
     name: 'Resize and crop',
     category: 'image',
     accent: 'sunshine',
-    blurb: 'Fit a photo to a passport, profile or banner size.',
-    input: { kind: 'image', multiple: false, ordered: false },
+    blurb: 'Fit photos to a passport, profile or banner size.',
+    input: { kind: 'image', multiple: true, ordered: false },
     ready: true,
   },
   {

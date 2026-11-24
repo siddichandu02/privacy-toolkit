@@ -1,10 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useId, useState, type CSSProperties } from 'react';
+import type { ResizedImage, ResizeSettings } from '../../lib/image/resize';
 import {
   CENTERED,
   cropBox,
   CUSTOM,
   enlargement,
+  fitInside,
   getPreset,
   heightFor,
   MAX_SIDE,
@@ -14,6 +16,7 @@ import {
   ratioLabel,
   resizeOutputType,
   widthFor,
+  type CropBox,
   type CropView,
   type SizePreset,
 } from '../../lib/image/resize-names';
@@ -21,7 +24,7 @@ import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useResizeJob } from '../../workers/useResizeJob';
 import { ToolWorkbench } from '../drop/ToolWorkbench';
-import { useFileQueue } from '../drop/useFileQueue';
+import { useFileQueue, type QueuedFile } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
@@ -37,7 +40,7 @@ import { Cropper } from './Cropper';
 import { usePhotoSource, type PhotoSource } from './usePhotoSource';
 
 const STEPS: readonly WaitStep[] = [
-  { id: 'reading', label: 'Laying out your photo' },
+  { id: 'reading', label: 'Laying out your photos' },
   { id: 'working', label: 'Cutting along the pattern' },
   { id: 'packing', label: 'Sewing on the size tag' },
 ];
@@ -45,6 +48,7 @@ const STEPS: readonly WaitStep[] = [
 const RESIZE_QUALITY = 0.92;
 
 const times = (w: number, h: number) => `${w} × ${h}`;
+const photosWord = (n: number) => (n === 1 ? '1 photo' : `${n} photos`);
 
 /** What the person has asked for, worked out against the photo's real size. */
 interface Plan {
@@ -65,17 +69,21 @@ interface CustomSize {
 /** Resize and crop: pick a size, choose what stays, cut in a worker. */
 export function ResizeTool({ tool }: { tool: ToolInfo }) {
   const queue = useFileQueue(tool.id);
-  const item = queue.items[0] ?? null;
+  const [picked, setPicked] = useState(0);
+  const index = Math.min(picked, Math.max(0, queue.items.length - 1));
+  const item = queue.items[index] ?? null;
   const photo = usePhotoSource(item?.file ?? null);
   const { job: work, clock, start, reset } = useResizeJob(undefined, Boolean(item));
   const story = useStory(work, clock, STEPS);
   const job = story.job;
   const still = useStillMotion();
-  const [last, setLast] = useState<{ label: string; aspect: number; cut: boolean } | null>(null);
+  const [last, setLast] = useState<CutInfo | null>(null);
+  const many = queue.items.length > 1;
 
   const startOver = () => {
     reset();
     queue.clear();
+    setPicked(0);
   };
 
   const swap = still
@@ -86,7 +94,7 @@ export function ResizeTool({ tool }: { tool: ToolInfo }) {
         exit: { opacity: 0, y: -10, scale: 0.98 },
       };
   const transition = { duration: 0.22 };
-  const name = item?.file.name ?? 'your photo';
+  const name = many ? photosWord(queue.items.length) : (item?.file.name ?? 'your photo');
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -98,19 +106,17 @@ export function ResizeTool({ tool }: { tool: ToolInfo }) {
             footer={
               item ? (
                 <ResizePanel
-                  key={item.id}
-                  file={item.file}
+                  items={queue.items}
+                  index={index}
+                  onPick={setPicked}
                   photo={photo}
                   accent={tool.accent}
                   onCut={(settings, info) => {
-                    if (!photo.file) return;
                     setLast(info);
-                    start({
-                      file: photo.file,
+                    void start(
+                      queue.items.map((i) => i.file),
                       settings,
-                      originalName: item.file.name,
-                      size: item.file.size,
-                    });
+                    );
                   }}
                 />
               ) : null
@@ -146,20 +152,29 @@ export function ResizeTool({ tool }: { tool: ToolInfo }) {
           ) : job.status === 'done' ? (
             <DoneCard
               accent={tool.accent}
-              title={`Your photo is ${times(job.width, job.height)}`}
+              title={doneTitle(job.items, last)}
               fileName={job.name}
               blob={job.blob}
-              details={`${formatBytes(job.before)} to ${formatBytes(job.after)}. Camera and location details removed.`}
-              extra={<ResultPreview blob={job.blob} accent={tool.accent} />}
-              downloadLabel="Download photo"
+              details={doneDetails(job.items, job.skipped)}
+              extra={
+                job.items.length > 1 ? (
+                  <ResizedList items={job.items} accent={tool.accent} />
+                ) : (
+                  <ResultPreview blob={job.blob} accent={tool.accent} />
+                )
+              }
+              downloadLabel={job.items.length > 1 ? 'Download ZIP' : 'Download photo'}
               actions={[
-                { label: 'Resize another photo', onClick: startOver },
+                {
+                  label: many ? 'Resize other photos' : 'Resize another photo',
+                  onClick: startOver,
+                },
                 { label: 'Try another size', onClick: reset },
               ]}
             />
           ) : (
             <ErrorCard
-              title="Your photo was not resized"
+              title={many ? 'Your photos were not resized' : 'Your photo was not resized'}
               message={job.message}
               fileName={job.fileName}
               reason={job.reason}
@@ -170,6 +185,49 @@ export function ResizeTool({ tool }: { tool: ToolInfo }) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+interface CutInfo {
+  label: string;
+  aspect: number;
+  cut: boolean;
+}
+
+function doneTitle(items: readonly ResizedImage[], last: CutInfo | null): string {
+  const first = items[0];
+  if (items.length === 1 && first) return `Your photo is ${times(first.width, first.height)}`;
+  return last?.cut === false
+    ? `${photosWord(items.length)} now fit inside ${last.label}`
+    : `${photosWord(items.length)} are now ${last?.label ?? 'resized'}`;
+}
+
+function doneDetails(items: readonly ResizedImage[], skipped: readonly { name: string }[]) {
+  const before = items.reduce((n, i) => n + i.before, 0);
+  const after = items.reduce((n, i) => n + i.after, 0);
+  const parts = [`${formatBytes(before)} to ${formatBytes(after)}.`];
+  if (skipped.length) {
+    parts.push(
+      `Left out ${skipped.map((s) => s.name).join(', ')}: ${skipped.length === 1 ? 'it' : 'they'} could not be opened.`,
+    );
+  }
+  parts.push('Camera and location details removed.');
+  return parts.join(' ');
+}
+
+/** New name and size of every photo in the ZIP. */
+function ResizedList({ items, accent }: { items: readonly ResizedImage[]; accent: Accent }) {
+  return (
+    <ul className="mt-1 max-h-48 space-y-1.5 overflow-y-auto text-sm" data-testid="resized-list">
+      {items.map((item, i) => (
+        <li key={i} className="flex min-w-0 items-baseline justify-between gap-3">
+          <span className="truncate font-medium text-fg">{item.name}</span>
+          <span className={`shrink-0 font-semibold tabular-nums ${accentText[accent]}`}>
+            {formatBytes(item.after)}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -191,19 +249,23 @@ function ResultPreview({ blob, accent }: { blob: Blob; accent: Accent }) {
 }
 
 interface PanelProps {
-  file: File;
+  items: readonly QueuedFile[];
+  index: number;
+  onPick: (index: number) => void;
+  /** The photo on show. */
   photo: PhotoSource;
   accent: Accent;
-  onCut: (
-    settings: {
-      width: number;
-      height: number;
-      crop: ReturnType<typeof cropBox> | null;
-      type: string;
-      quality: number;
-    },
-    info: { label: string; aspect: number; cut: boolean },
-  ) => void;
+  onCut: (settings: ResizeSettings, info: CutInfo) => void;
+}
+
+const EMPTY_FILE = new File([], 'photo');
+
+function buttonLabel(plan: Plan, label: string, count: number): string {
+  if (!plan.valid) return 'Pick a size';
+  if (count === 1) return `${plan.aspect ? 'Cut' : 'Resize'} to ${label}`;
+  return plan.aspect
+    ? `Cut ${photosWord(count)} to ${label}`
+    : `Fit ${photosWord(count)} inside ${label}`;
 }
 
 function planFor(presetId: string, custom: CustomSize): Plan {
@@ -222,10 +284,18 @@ function planFor(presetId: string, custom: CustomSize): Plan {
   return { width: w, height: h, aspect: custom.whole ? null : w / h, valid: true };
 }
 
-function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
+function ResizePanel({ items, index, onPick, photo, accent, onCut }: PanelProps) {
   const [presetId, setPresetId] = useState<string>(PRESETS[0]?.id ?? CUSTOM);
-  const [view, setView] = useState<CropView>(CENTERED);
+  /** Framing per photo; photos not in here are centred. */
+  const [views, setViews] = useState<Record<string, CropView>>({});
   const [custom, setCustom] = useState<CustomSize | null>(null);
+  const current = items[index] ?? items[0];
+  const file = current?.file ?? EMPTY_FILE;
+  const many = items.length > 1;
+  const view = (current && views[current.id]) ?? CENTERED;
+  const setView = (next: CropView) => {
+    if (current) setViews((all) => ({ ...all, [current.id]: next }));
+  };
   const size = photo.size;
   // Custom starts at the photo's own size, once known.
   const customNow: CustomSize = custom ?? {
@@ -236,28 +306,36 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
   const plan = planFor(presetId, customNow);
   const label = plan.valid ? times(plan.width, plan.height) : 'pick a size';
   const box = size && plan.aspect ? cropBox(size.width, size.height, plan.aspect, view) : null;
+  // A whole photo in a batch fits inside the box, so its own size may be smaller.
+  const out =
+    size && plan.valid && !plan.aspect
+      ? fitInside(size.width, size.height, plan.width, plan.height)
+      : plan;
   const grow =
     size && plan.valid
       ? enlargement(
           size.width,
           size.height,
           box ?? { x: 0, y: 0, width: 1, height: 1 },
-          plan.width,
-          plan.height,
+          out.width,
+          out.height,
         )
       : 1;
   const type = resizeOutputType(file);
   const typeLabel = type === 'image/jpeg' ? 'JPG' : type === 'image/webp' ? 'WebP' : 'PNG';
-  const ready = Boolean(size && photo.file && plan.valid && !photo.failed);
+  // In a batch a photo that cannot be shown is left out and named, not a blocker.
+  const ready = many ? plan.valid : Boolean(size && photo.file && plan.valid && !photo.failed);
+  const moved = items.filter((i) => !isCentred(views[i.id])).length;
 
   const pick = (id: string) => {
     setPresetId(id);
-    setView(CENTERED);
+    setViews({});
   };
 
   const editCustom = (next: Partial<CustomSize>) => {
     const merged = { ...customNow, ...next };
-    if (size && merged.whole) {
+    // One photo: the other side follows its shape. A batch fits each photo inside both numbers.
+    if (size && merged.whole && !many) {
       // Keep the photo's shape: the other side follows.
       if (next.width !== undefined) {
         const w = parseSide(next.width);
@@ -271,13 +349,19 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
       }
     }
     setCustom(merged);
-    setView(CENTERED);
+    setViews({});
   };
 
   const notes: string[] = [];
   if (grow > 1.05)
     notes.push(
-      `This part of the photo is ${grow.toFixed(1)}× smaller than ${label}, so it gets stretched and will look softer.`,
+      `${many ? `In ${file.name}, this` : 'This'} part of the photo is ${grow.toFixed(1)}× smaller than ${times(out.width, out.height)}, so it gets stretched and will look softer.`,
+    );
+  if (many && plan.valid && plan.aspect)
+    notes.push(
+      moved
+        ? `Every photo is cut to the same size. You moved the frame on ${photosWord(moved)}; the rest are centred.`
+        : 'Every photo is cut to the same size, centred. Pick a photo above to move its frame.',
     );
   if (presetId === 'passport' || presetId === 'us-passport')
     notes.push(
@@ -287,22 +371,45 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
     notes.push('Your profile photo covers the lower left of the banner, so keep that part plain.');
 
   const cut = () => {
-    if (!ready || !size) return;
+    if (!ready) return;
     onCut(
-      { width: plan.width, height: plan.height, crop: box, type, quality: RESIZE_QUALITY },
-      { label, aspect: plan.aspect ?? size.width / size.height, cut: Boolean(box) },
+      {
+        width: plan.width,
+        height: plan.height,
+        cut: Boolean(plan.aspect),
+        views: items.map((i) => views[i.id] ?? null),
+        quality: RESIZE_QUALITY,
+      },
+      {
+        label,
+        aspect: plan.aspect ?? (size ? size.width / size.height : plan.width / plan.height),
+        cut: Boolean(plan.aspect),
+      },
     );
   };
 
   return (
     <div className="rounded-panel border border-line bg-surface p-4 shadow-soft backdrop-blur-xl sm:p-7">
-      <h2 className="sr-only">Choose a size for {file.name}</h2>
+      <h2 className="sr-only">Choose a size for {many ? photosWord(items.length) : file.name}</h2>
       <div className="grid min-w-0 gap-7">
         <div className="min-w-0">
+          {many ? (
+            <FrameStrip
+              items={items}
+              index={index}
+              onPick={onPick}
+              aspect={plan.valid ? plan.aspect : null}
+              views={views}
+              accent={accent}
+            />
+          ) : null}
           {photo.failed ? (
             <p className="rounded-2xl border border-coral/40 bg-coral/10 p-5 text-fg" role="alert">
               {file.name} could not be opened. It may be damaged, or use a format this browser
-              cannot show. Try another photo.
+              cannot show.{' '}
+              {many
+                ? 'It will be left out; the other photos still get resized.'
+                : 'Try another photo.'}
             </p>
           ) : (
             <Cropper
@@ -329,7 +436,9 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
               box
                 ? 'Drag the photo to choose what stays.'
                 : plan.valid
-                  ? 'The whole photo is kept, nothing is cut off.'
+                  ? many
+                    ? `Each whole photo is kept and fits inside ${label}, nothing is cut off.`
+                    : 'The whole photo is kept, nothing is cut off.'
                   : 'Enter a width and height.'
             }
           />
@@ -338,7 +447,7 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
         <div className="flex min-w-0 flex-col gap-6">
           <PresetPicker value={presetId} accent={accent} onChange={pick} />
           {presetId === CUSTOM ? (
-            <CustomFields value={customNow} accent={accent} onChange={editCustom} />
+            <CustomFields value={customNow} accent={accent} onChange={editCustom} many={many} />
           ) : null}
           {notes.length ? (
             <ul className="space-y-2 text-sm text-muted" data-testid="resize-notes">
@@ -358,7 +467,15 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
 
       <div className="mt-8 flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted" data-testid="resize-summary">
-          {size ? (
+          {many ? (
+            <>
+              {photosWord(items.length)} to{' '}
+              <span className="font-semibold text-fg">
+                {plan.valid && !plan.aspect ? `fit inside ${label}` : label}
+              </span>
+              , each saved in its own format. The originals stay as they are.
+            </>
+          ) : size ? (
             <>
               {times(size.width, size.height)} to{' '}
               <span className="font-semibold text-fg">{label}</span>, saved as {typeLabel}. The
@@ -377,7 +494,7 @@ function ResizePanel({ file, photo, accent, onCut }: PanelProps) {
           className="shrink-0"
           icon={<ShearsIcon />}
         >
-          {plan.valid ? `${plan.aspect ? 'Cut' : 'Resize'} to ${label}` : 'Pick a size'}
+          {buttonLabel(plan, label, items.length)}
         </Button>
       </div>
     </div>
@@ -530,10 +647,13 @@ function CustomFields({
   value,
   accent,
   onChange,
+  many,
 }: {
   value: CustomSize;
   accent: Accent;
   onChange: (next: Partial<CustomSize>) => void;
+  /** Several photos: keeping them whole fits each inside both numbers. */
+  many: boolean;
 }) {
   const id = useId();
   const w = parseSide(value.width);
@@ -595,7 +715,9 @@ function CustomFields({
           <span className="font-semibold text-fg">Keep the whole photo</span>
           <span className="block text-xs text-muted">
             {value.whole
-              ? 'Height follows width, so nothing is cut off.'
+              ? many
+                ? 'Each photo fits inside these numbers and keeps its shape.'
+                : 'Height follows width, so nothing is cut off.'
               : 'Cut to exactly these numbers. Drag the photo to choose what stays.'}
           </span>
         </span>
@@ -609,6 +731,127 @@ function CustomFields({
         </p>
       ) : null}
     </div>
+  );
+}
+
+const isCentred = (v: CropView | undefined) => !v || (v.zoom === 1 && v.x === 0.5 && v.y === 0.5);
+
+/**
+ * Every photo in the batch, each drawn in the target shape with its own
+ * framing, so the strip is a preview of the results.
+ */
+function FrameStrip({
+  items,
+  index,
+  onPick,
+  aspect,
+  views,
+  accent,
+}: {
+  items: readonly QueuedFile[];
+  index: number;
+  onPick: (index: number) => void;
+  aspect: number | null;
+  views: Record<string, CropView>;
+  accent: Accent;
+}) {
+  return (
+    <div
+      className="-mx-1 mb-4 flex items-end gap-2.5 overflow-x-auto px-1 pt-2 pb-2"
+      role="group"
+      aria-label="Pick a photo to frame"
+    >
+      {items.map((item, i) => (
+        <FrameThumb
+          key={item.id}
+          file={item.file}
+          on={i === index}
+          aspect={aspect}
+          view={views[item.id]}
+          accent={accent}
+          onPick={() => onPick(i)}
+        />
+      ))}
+    </div>
+  );
+}
+
+const THUMB_H = 68;
+
+function FrameThumb({
+  file,
+  on,
+  aspect,
+  view,
+  accent,
+  onPick,
+}: {
+  file: File;
+  on: boolean;
+  aspect: number | null;
+  view: CropView | undefined;
+  accent: Accent;
+  onPick: () => void;
+}) {
+  const photo = usePhotoSource(file);
+  const size = photo.size;
+  // Whole photos show in their own shape; cut ones in the frame's.
+  const shape = aspect ?? (size ? size.width / size.height : 1);
+  const w = Math.round(Math.min(132, Math.max(44, THUMB_H * shape)));
+  const h = Math.round(Math.min(THUMB_H, w / shape));
+  const box: CropBox | null =
+    size && aspect ? cropBox(size.width, size.height, aspect, view ?? CENTERED) : null;
+  const moved = Boolean(aspect) && !isCentred(view);
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      aria-pressed={on}
+      aria-label={`${file.name}${moved ? ', frame moved' : ''}`}
+      className={`relative shrink-0 rounded-[10px] border-2 p-0.5 transition-[border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+        on
+          ? `border-current ${accentText[accent]} -translate-y-1`
+          : 'border-transparent hover:border-line-strong'
+      }`}
+      data-testid="resize-thumb"
+      data-moved={moved}
+    >
+      <span
+        className="relative block overflow-hidden rounded-md bg-canvas/70 shadow-soft motion-safe:transition-[width,height] motion-safe:duration-200"
+        style={{ width: w, height: h }}
+      >
+        {photo.url ? (
+          <img
+            src={photo.url}
+            alt=""
+            draggable={false}
+            onLoad={(e) => photo.onLoad(e.currentTarget)}
+            onError={photo.onError}
+            className={box ? 'absolute max-w-none' : 'h-full w-full object-cover'}
+            style={
+              box
+                ? {
+                    width: `${100 / box.width}%`,
+                    height: `${100 / box.height}%`,
+                    left: `${(-box.x / box.width) * 100}%`,
+                    top: `${(-box.y / box.height) * 100}%`,
+                  }
+                : undefined
+            }
+          />
+        ) : (
+          <span className="grid h-full place-items-center text-xs font-bold text-muted">
+            {photo.failed ? '!' : '…'}
+          </span>
+        )}
+      </span>
+      {moved ? (
+        <span
+          aria-hidden="true"
+          className={`absolute -top-1 -right-1 size-3 rounded-full border-2 border-surface ${accentFill[accent]}`}
+        />
+      ) : null}
+    </button>
   );
 }
 
