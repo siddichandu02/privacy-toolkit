@@ -10,6 +10,7 @@ import { QuillScene } from '../components/wait/scenes/QuillScene';
 import { JarScene } from '../components/wait/scenes/JarScene';
 import { ScrapbookScene } from '../components/wait/scenes/ScrapbookScene';
 import { SuitcaseScene } from '../components/wait/scenes/SuitcaseScene';
+import { ShredderScene } from '../components/wait/scenes/ShredderScene';
 import { TailorScene } from '../components/wait/scenes/TailorScene';
 import { WashScene } from '../components/wait/scenes/WashScene';
 import { WaitStage } from '../components/wait/WaitStage';
@@ -163,6 +164,14 @@ export default function PipLab() {
             label="1080 × 1350"
           />
         }
+      />
+      <WaitStage
+        className="mt-6"
+        title="Removing details from 3 photos"
+        current={DEFAULT_STEPS[slice]?.id ?? 'reading'}
+        progress={within}
+        accent="violet"
+        scene={<ShredderScene progress={scrub} accent="violet" thumb={photos[0]} />}
       />
 
       <div className="mt-16 flex flex-wrap items-baseline justify-between gap-4">
