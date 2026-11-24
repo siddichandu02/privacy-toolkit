@@ -4,6 +4,7 @@ import { filterTools, type CategoryFilter as Category, type ToolInfo } from '../
 import { Pip } from '../pip/Pip';
 import { Button } from '../ui';
 import { CategoryFilter, type CategoryOption } from './CategoryFilter';
+import { RecentTools } from './RecentTools';
 import { ToolGrid } from './ToolGrid';
 import { ToolSearch } from './ToolSearch';
 
@@ -35,6 +36,7 @@ export function ToolBrowser({ tools }: { tools: readonly ToolInfo[] }) {
 
   return (
     <div>
+      <RecentTools className="mt-4" />
       <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center sm:justify-between">
         <CategoryFilter
           options={options}
