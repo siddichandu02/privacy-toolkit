@@ -44,6 +44,13 @@ Ready now:
 Compress image, Convert image, Resize and crop and Remove EXIF all take batches. The results come
 back in one ZIP, and the finished card lists each file with its own save button for when you only need one or two.
 
+## Keyboard
+
+Press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac) on any page to search
+every tool by name or by what you want to do ("join", "passport", "gps"). The tools you opened
+lately come first, and are also listed above the tool grid on the home page. They are kept in
+your browser's local storage and nowhere else. Press <kbd>?</kbd> to see every shortcut.
+
 ## Develop
 
 Requires Node 22 or newer.
