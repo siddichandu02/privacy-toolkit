@@ -33,12 +33,16 @@ Ready now:
 - **Resize and crop**: passport, Instagram, story, LinkedIn banner, profile photo and YouTube
   sizes, or your own numbers. Drag or pinch the photo under the frame (arrow keys work too) to
   choose what stays, or keep the whole photo and just scale it. Warns when a photo is too small
-  for the size and would look soft.
+  for the size and would look soft. Add several photos to cut them all to one size: each is
+  centred, and a strip of previews lets you move the frame on any of them.
 - **Remove EXIF**: see what a photo gives away before you share it (where it was taken, when,
   whose it is, the camera, the apps that edited it) on a small globe and a plain list, then
   strip all of it. JPG, PNG and WebP are cut losslessly, so every pixel stays the same and the
   photo keeps its colour profile and stays upright. HEIC is saved as JPG. The cleaned photo is
   read again on the device to check nothing is left.
+
+Compress image, Convert image, Resize and crop and Remove EXIF all take batches. The results come
+back in one ZIP, and the finished card lists each file with its own save button for when you only need one or two.
 
 ## Develop
 
