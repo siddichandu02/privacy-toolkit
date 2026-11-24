@@ -112,6 +112,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'violet',
     blurb: 'See and strip the location and camera details hidden in a photo.',
     input: { kind: 'image', multiple: true, ordered: false },
+    ready: true,
   },
 ];
 

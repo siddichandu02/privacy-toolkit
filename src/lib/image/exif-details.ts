@@ -21,11 +21,19 @@ export interface PhotoDetails {
   groups: Partial<Record<DetailGroup, DetailRow[]>>;
   /** Every tag found, including dull ones like the colour space. */
   total: number;
+  /** Tags not shown in any row: the dull technical ones. */
+  extra: number;
   /** EXIF turn, 1 to 8. Kept in the cleaned copy so the photo stays upright. */
   orientation: number;
 }
 
-export const NO_DETAILS: PhotoDetails = { location: null, groups: {}, total: 0, orientation: 1 };
+export const NO_DETAILS: PhotoDetails = {
+  location: null,
+  groups: {},
+  total: 0,
+  extra: 0,
+  orientation: 1,
+};
 
 /** Groups in the order they matter to a person, most revealing first. */
 export const GROUP_ORDER: readonly DetailGroup[] = [
@@ -47,6 +55,43 @@ export const GROUP_TITLE: Record<DetailGroup, string> = {
 };
 
 type Raw = Record<string, unknown>;
+
+/** Tags that feed a row, or say how to read one (refs, the turn). The rest are technical. */
+const SHOWN = new Set([
+  'latitude',
+  'longitude',
+  'GPSLatitude',
+  'GPSLongitude',
+  'GPSLatitudeRef',
+  'GPSLongitudeRef',
+  'GPSAltitude',
+  'GPSAltitudeRef',
+  'DateTimeOriginal',
+  'CreateDate',
+  'DateCreated',
+  'ModifyDate',
+  'Artist',
+  'OwnerName',
+  'CameraOwnerName',
+  'Copyright',
+  'Rights',
+  'BodySerialNumber',
+  'SerialNumber',
+  'LensSerialNumber',
+  'Make',
+  'Model',
+  'LensModel',
+  'Lens',
+  'FNumber',
+  'ExposureTime',
+  'ISO',
+  'ISOSpeedRatings',
+  'FocalLength',
+  'Software',
+  'CreatorTool',
+  'HostComputer',
+  'Orientation',
+]);
 
 const text = (v: unknown): string | null => {
   if (typeof v === 'string') {
@@ -162,10 +207,12 @@ export function summarizeDetails(raw: Raw | null | undefined): PhotoDetails {
   add('software', 'Computer', text(raw.HostComputer));
 
   const orientation = num(raw.Orientation);
+  const present = Object.entries(raw).filter(([, v]) => v !== undefined && v !== null);
   return {
     location: loc,
     groups,
-    total: Object.values(raw).filter((v) => v !== undefined && v !== null).length,
+    total: present.length,
+    extra: present.filter(([k]) => !SHOWN.has(k)).length,
     orientation: orientation && orientation >= 1 && orientation <= 8 ? orientation : 1,
   };
 }

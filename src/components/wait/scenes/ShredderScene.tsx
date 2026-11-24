@@ -285,29 +285,6 @@ export function ShredderScene({
             );
           })}
 
-          {/* The location tag, dangling from Pip's paw until last. */}
-          <g transform={`translate(${PAW.x} ${PAW.y})`}>
-            <motion.g
-              data-part="tag-location"
-              data-gone={shredded === TAGS.length}
-              initial={false}
-              animate={
-                shredded === TAGS.length
-                  ? still
-                    ? { opacity: 0 }
-                    : { x: [0, 6, 10], y: [0, 4, 24], rotate: [0, 0, 0], opacity: [1, 1, 0] }
-                  : { x: 0, y: 0, rotate: still ? 0 : [-10, 10, -10], opacity: 1 }
-              }
-              transition={
-                shredded === TAGS.length
-                  ? { duration: still ? 0.2 : 0.6, ease: 'easeIn' }
-                  : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
-              }
-            >
-              <Tag kind="location" color="var(--coral)" />
-            </motion.g>
-          </g>
-
           {/* Shredder head, drawn over the tags so they vanish into the slot. */}
           <motion.g
             data-part="shredder"
@@ -333,11 +310,11 @@ export function ShredderScene({
               />
             ))}
             {/* Screen: details left, then a tick. */}
-            <rect x={HEAD.x + 8} y={HEAD.y + 6} width={16} height={9} rx={2} fill={INK} />
+            <rect x={HEAD.x + 36} y={HEAD.y + 6} width={16} height={9} rx={2} fill={INK} />
             <text
               data-part="screen"
               data-left={left}
-              x={HEAD.x + 16}
+              x={HEAD.x + 44}
               y={HEAD.y + 13}
               textAnchor="middle"
               fontSize={7}
@@ -348,7 +325,7 @@ export function ShredderScene({
               {done ? '✓' : left}
             </text>
             <circle
-              cx={HEAD.x + 32}
+              cx={HEAD.x + 28}
               cy={HEAD.y + 10.5}
               r={2}
               fill={done ? 'var(--mint)' : buzzing ? 'var(--coral)' : '#b3acd0'}
@@ -396,6 +373,44 @@ export function ShredderScene({
             className="h-full w-full"
           />
         </motion.div>
+
+        {/* Drawn over Pip, so the tag in its paw stays in front. */}
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          aria-hidden="true"
+          overflow="visible"
+        >
+          <defs>
+            <clipPath id={`${id}-above`}>
+              <rect x={0} y={-40} width={W} height={HEAD.y - 1 + 40} />
+            </clipPath>
+          </defs>
+          {/* The location tag, dangling from Pip's paw until last; clipped at the slot so it drops in. */}
+          <g clipPath={`url(#${id}-above)`}>
+            <g transform={`translate(${PAW.x} ${PAW.y})`}>
+              <motion.g
+                data-part="tag-location"
+                data-gone={shredded === TAGS.length}
+                initial={false}
+                animate={
+                  shredded === TAGS.length
+                    ? still
+                      ? { opacity: 0 }
+                      : { x: [0, 6, 10], y: [0, 4, 24], rotate: [0, 0, 0], opacity: [1, 1, 0] }
+                    : { x: 0, y: 0, rotate: still ? 0 : [-10, 10, -10], opacity: 1 }
+                }
+                transition={
+                  shredded === TAGS.length
+                    ? { duration: still ? 0.2 : 0.6, ease: 'easeIn' }
+                    : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                }
+              >
+                <Tag kind="location" color="var(--coral)" />
+              </motion.g>
+            </g>
+          </g>
+        </svg>
       </With3DHelpers>
     </div>
   );
