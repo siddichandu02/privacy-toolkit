@@ -1,4 +1,6 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
+import JSZip from 'jszip';
 
 /** A photo drawn in the page: left half red, right half blue, saved as JPEG or PNG. */
 async function photo(page: Page, width: number, height: number, type = 'image/jpeg') {
@@ -118,4 +120,62 @@ test('drags the photo inside the frame', async ({ page }, info) => {
   expect(before).toBe('0.250,0.000,0.500,1.000');
   // Dragging the photo right shows more of its left side.
   expect(Number(after?.split(',')[0])).toBeLessThan(0.25);
+});
+
+test('cuts a batch to one size, each with its own framing, into a ZIP', async ({ page }) => {
+  await page.goto('./#/tools/resize');
+  await page.getByTestId('file-input').setInputFiles([
+    { name: 'left.jpg', mimeType: 'image/jpeg', buffer: await photo(page, 1200, 900) },
+    { name: 'right.jpg', mimeType: 'image/jpeg', buffer: await photo(page, 1200, 900) },
+    { name: 'broken.png', mimeType: 'image/png', buffer: Buffer.from('not a picture') },
+  ]);
+  await expect(page.getByTestId('resize-thumb')).toHaveCount(3);
+  await page.getByText('Profile photo').click();
+  await expect(page.getByTestId('cropper')).toHaveAttribute('data-ready', 'true');
+
+  // Frame the first photo on its red half and the second on its blue half.
+  const frame = page.getByTestId('crop-frame');
+  await frame.focus();
+  for (let i = 0; i < 12; i += 1) await page.keyboard.press('Shift+ArrowLeft');
+  await page.getByTestId('resize-thumb').nth(1).click();
+  // Wait for the second photo to open before moving its frame.
+  await expect(page.getByTestId('resize-thumb').nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('cropper')).toHaveAttribute('data-ready', 'true');
+  await frame.focus();
+  for (let i = 0; i < 12; i += 1) await page.keyboard.press('Shift+ArrowRight');
+  await expect(page.getByTestId('resize-thumb').nth(0)).toHaveAttribute('data-moved', 'true');
+  await expect(page.getByTestId('resize-thumb').nth(1)).toHaveAttribute('data-moved', 'true');
+
+  await page.getByRole('button', { name: 'Cut 3 photos to 400 × 400' }).click();
+  await expect(page.getByRole('heading', { name: '2 photos are now 400 × 400' })).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByText(/Left out broken\.png/)).toBeVisible();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', { name: 'Download ZIP' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('resized-photos.zip');
+  const zip = await JSZip.loadAsync(await readFile(await download.path()));
+  expect(Object.keys(zip.files)).toEqual(['left-400x400.jpg', 'right-400x400.jpg']);
+  const colours = await Promise.all(
+    ['left-400x400.jpg', 'right-400x400.jpg'].map(async (name) => {
+      const base64 = (await zip.file(name)?.async('base64')) ?? '';
+      return page.evaluate(async (b64) => {
+        const blob = await fetch(`data:image/jpeg;base64,${b64}`).then((r) => r.blob());
+        const bitmap = await createImageBitmap(blob);
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('no canvas');
+        ctx.drawImage(bitmap, 0, 0);
+        const [r, , b] = ctx.getImageData(200, 200, 1, 1).data;
+        return { size: `${bitmap.width}x${bitmap.height}`, red: (r ?? 0) > (b ?? 0) };
+      }, base64);
+    }),
+  );
+  expect(colours).toEqual([
+    { size: '400x400', red: true },
+    { size: '400x400', red: false },
+  ]);
 });

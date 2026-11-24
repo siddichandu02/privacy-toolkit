@@ -145,6 +145,7 @@ export function Cropper({
       className="relative w-full overflow-hidden rounded-2xl border border-line bg-[#120f24] select-none"
       style={{ height: stageH, touchAction: movable ? 'none' : undefined }}
       data-testid="cropper"
+      data-ready={movable}
       data-zoom={view.zoom.toFixed(2)}
       data-box={`${box.x.toFixed(3)},${box.y.toFixed(3)},${box.width.toFixed(3)},${box.height.toFixed(3)}`}
     >
