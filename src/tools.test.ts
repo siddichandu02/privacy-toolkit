@@ -1,4 +1,4 @@
-import { TOOLS, filterTools, getTool, toolPath } from './tools';
+import { TOOLS, filterTools, getTool, matchScore, rankTools, toolPath } from './tools';
 
 describe('TOOLS registry', () => {
   it('has unique, URL-safe ids', () => {
@@ -57,5 +57,41 @@ describe('filterTools', () => {
 
   it('ignores accents in the query', () => {
     expect(ids(filterTools(TOOLS, 'all', 'résize'))).toEqual(['resize']);
+  });
+
+  it('matches extra search words', () => {
+    expect(ids(filterTools(TOOLS, 'all', 'passport'))).toEqual(['resize']);
+    expect(ids(filterTools(TOOLS, 'all', 'gps'))).toEqual(['exif']);
+  });
+});
+
+describe('rankTools', () => {
+  const ids = (list: { id: string }[]) => list.map((t) => t.id);
+
+  it('keeps registry order for an empty query', () => {
+    expect(ids(rankTools(TOOLS, ''))).toEqual(ids(TOOLS));
+  });
+
+  it('puts name matches before keyword and blurb matches', () => {
+    // "Images to PDF" starts with "im"; "Compress image" has a name word; the rest is blurb.
+    const found = ids(rankTools(TOOLS, 'im'));
+    expect(found[0]).toBe('images-to-pdf');
+    expect(found[1]).toBe('compress-image');
+  });
+
+  it('finds tools by keyword prefix', () => {
+    expect(ids(rankTools(TOOLS, 'joi'))).toEqual(['merge']);
+    expect(ids(rankTools(TOOLS, 'insta'))).toEqual(['resize']);
+  });
+
+  it('needs every word to hit', () => {
+    expect(rankTools(TOOLS, 'merge teleport')).toEqual([]);
+    expect(ids(rankTools(TOOLS, 'compress pdf'))[0]).toBe('compress-pdf');
+  });
+
+  it('scores zero for no match', () => {
+    const merge = TOOLS[0];
+    if (!merge) throw new Error('no tools');
+    expect(matchScore(merge, 'zebra')).toBe(0);
   });
 });

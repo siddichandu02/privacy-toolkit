@@ -18,6 +18,8 @@ export interface ToolInfo {
   blurb: string;
   /** What the tool takes: file kind, one or many, and whether order matters. */
   input: ToolInput;
+  /** Other words people search with, e.g. "join" for merge. */
+  keywords?: readonly string[];
   /** True once the tool works end to end. */
   ready?: boolean;
 }
@@ -31,6 +33,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'violet',
     blurb: 'Combine several PDFs into one file, in the order you choose.',
     input: { kind: 'pdf', multiple: true, ordered: true },
+    keywords: ['join', 'combine', 'stitch'],
     ready: true,
   },
   {
@@ -40,6 +43,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'coral',
     blurb: 'Pull out page ranges or single pages into new PDFs.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    keywords: ['extract', 'cut', 'separate', 'pages'],
     ready: true,
   },
   {
@@ -49,6 +53,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sunshine',
     blurb: 'Turn sideways pages upright and drop the ones you do not need.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    keywords: ['turn', 'delete', 'remove', 'upside down', 'landscape'],
     ready: true,
   },
   {
@@ -58,6 +63,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'mint',
     blurb: 'Turn photos and scans into a single, tidy PDF.',
     input: { kind: 'image', multiple: true, ordered: true },
+    keywords: ['jpg', 'png', 'scan', 'photos'],
     ready: true,
   },
   {
@@ -67,6 +73,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sky',
     blurb: 'Draw or type your signature and place it on any page.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    keywords: ['signature', 'autograph', 'initials'],
     ready: true,
   },
   {
@@ -76,6 +83,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'coral',
     blurb: 'Shrink a PDF so it fits in an email or a web form.',
     input: { kind: 'pdf', multiple: false, ordered: false },
+    keywords: ['shrink', 'smaller', 'reduce', 'email'],
     ready: true,
   },
   {
@@ -85,6 +93,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'mint',
     blurb: 'Make photos smaller while keeping them sharp.',
     input: { kind: 'image', multiple: true, ordered: false },
+    keywords: ['shrink', 'smaller', 'reduce', 'optimize'],
     ready: true,
   },
   {
@@ -94,6 +103,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sky',
     blurb: 'Switch between HEIC, PNG, WebP and JPG.',
     input: { kind: 'image', multiple: true, ordered: false },
+    keywords: ['jpg', 'jpeg', 'png', 'webp', 'iphone', 'format'],
     ready: true,
   },
   {
@@ -103,6 +113,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'sunshine',
     blurb: 'Fit photos to a passport, profile or banner size.',
     input: { kind: 'image', multiple: true, ordered: false },
+    keywords: ['crop', 'passport', 'instagram', 'linkedin', 'profile', 'dimensions'],
     ready: true,
   },
   {
@@ -112,6 +123,7 @@ export const TOOLS: readonly ToolInfo[] = [
     accent: 'violet',
     blurb: 'See and strip the location and camera details hidden in a photo.',
     input: { kind: 'image', multiple: true, ordered: false },
+    keywords: ['gps', 'location', 'metadata', 'privacy', 'strip'],
     ready: true,
   },
 ];
@@ -140,7 +152,40 @@ export function filterTools(
   const words = fold(query).split(' ').filter(Boolean);
   return tools.filter((t) => {
     if (category !== 'all' && t.category !== category) return false;
-    const haystack = fold(`${t.name} ${t.blurb}`);
+    const haystack = fold(`${t.name} ${t.blurb} ${(t.keywords ?? []).join(' ')}`);
     return words.every((w) => haystack.includes(w));
   });
+}
+
+/**
+ * How well one tool matches a query, for the command palette: 0 means no
+ * match. Every word has to hit somewhere; a word that starts the name or a
+ * name word beats a keyword, which beats the blurb.
+ */
+export function matchScore(tool: ToolInfo, query: string): number {
+  const words = fold(query).split(' ').filter(Boolean);
+  if (words.length === 0) return 1;
+  const name = fold(tool.name);
+  const nameWords = name.split(' ');
+  const keywords = (tool.keywords ?? []).map(fold);
+  const blurb = fold(tool.blurb);
+  let score = 0;
+  for (const w of words) {
+    if (name.startsWith(w)) score += 8;
+    else if (nameWords.some((n) => n.startsWith(w))) score += 6;
+    else if (name.includes(w)) score += 4;
+    else if (keywords.some((k) => k.startsWith(w))) score += 3;
+    else if (keywords.some((k) => k.includes(w)) || blurb.includes(w)) score += 1;
+    else return 0;
+  }
+  return score;
+}
+
+/** Tools that match the query, best first; ties keep registry order. */
+export function rankTools(tools: readonly ToolInfo[], query: string): ToolInfo[] {
+  return tools
+    .map((tool, index) => ({ tool, index, score: matchScore(tool, query) }))
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((r) => r.tool);
 }
