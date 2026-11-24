@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { modKey, openOverlay } from '../palette/store';
 import { ThemeToggle } from '../ThemeToggle';
 import { WordmarkIcon } from './Wordmark';
 
@@ -44,6 +45,7 @@ export function Header() {
             </span>
           </motion.span>
         </Link>
+        <SearchButton />
         <nav aria-label="Main" className="flex items-center gap-1">
           <NavLink
             to="/"
@@ -69,6 +71,30 @@ export function Header() {
         <ThemeToggle />
       </div>
     </header>
+  );
+}
+
+/** Opens the tool search. Shows the shortcut on wider screens. */
+function SearchButton() {
+  const [mod] = useState(modKey);
+  return (
+    <button
+      type="button"
+      onClick={() => openOverlay('palette')}
+      aria-label="Search tools"
+      aria-keyshortcuts="Control+K Meta+K"
+      aria-haspopup="dialog"
+      className="group flex h-11 cursor-pointer items-center gap-2 rounded-full px-3 text-muted transition-colors hover:text-fg sm:border sm:border-line sm:bg-surface sm:pr-2 sm:pl-3.5 sm:hover:border-line-strong"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5 sm:size-4">
+        <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      <span className="hidden text-sm font-semibold md:inline">Find a tool</span>
+      <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 font-sans text-xs font-semibold sm:inline">
+        {mod} K
+      </kbd>
+    </button>
   );
 }
 

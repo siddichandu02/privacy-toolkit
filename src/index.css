@@ -137,6 +137,11 @@ body {
   border-radius: 8px;
 }
 
+/* The search sheet's field marks focus on its whole row instead. */
+.palette-input:focus-visible {
+  outline: none;
+}
+
 /* Slowly drifting gradient mesh behind the page */
 .mesh {
   position: fixed;

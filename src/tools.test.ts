@@ -29,7 +29,7 @@ describe('getTool', () => {
 });
 
 describe('filterTools', () => {
-  const ids = (list: { id: string }[]) => list.map((t) => t.id);
+  const ids = (list: readonly { id: string }[]) => list.map((t) => t.id);
 
   it('returns every tool for "all" and an empty query', () => {
     expect(filterTools(TOOLS, 'all', '')).toHaveLength(TOOLS.length);
@@ -66,7 +66,7 @@ describe('filterTools', () => {
 });
 
 describe('rankTools', () => {
-  const ids = (list: { id: string }[]) => list.map((t) => t.id);
+  const ids = (list: readonly { id: string }[]) => list.map((t) => t.id);
 
   it('keeps registry order for an empty query', () => {
     expect(ids(rankTools(TOOLS, ''))).toEqual(ids(TOOLS));
