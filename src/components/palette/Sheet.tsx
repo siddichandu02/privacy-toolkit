@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useStillMotion } from '../../useStillMotion';
+import { getReturnFocus } from './store';
 
 interface SheetProps {
   label: string;
@@ -19,7 +20,7 @@ export function Sheet({ label, onClose, children, className = '', testId }: Shee
   const still = useStillMotion();
   const panel = useRef<HTMLDivElement>(null);
   // Read during render, before an autofocused field inside takes focus.
-  const [opener] = useState(() => document.activeElement);
+  const [opener] = useState(() => getReturnFocus() ?? document.activeElement);
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;

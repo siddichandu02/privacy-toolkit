@@ -4,15 +4,22 @@ import { useSyncExternalStore } from 'react';
 export type Overlay = 'palette' | 'shortcuts' | null;
 
 let current: Overlay = null;
+let returnTo: Element | null = null;
 const listeners = new Set<() => void>();
 
 export function openOverlay(next: Overlay) {
   if (next === current) return;
+  // Remember what had focus before the first sheet, so switching from the
+  // search to the shortcuts list still hands focus back to the right place.
+  if (current === null && typeof document !== 'undefined') returnTo = document.activeElement;
   current = next;
   listeners.forEach((l) => l());
 }
 
 export const closeOverlay = () => openOverlay(null);
+
+/** The element that had focus before any sheet opened. */
+export const getReturnFocus = () => returnTo;
 export const getOverlay = () => current;
 
 function subscribe(listener: () => void) {

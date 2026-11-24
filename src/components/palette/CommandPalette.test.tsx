@@ -136,12 +136,16 @@ describe('shortcuts sheet', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('opens from the palette', async () => {
+  it('opens from the palette and hands focus back to the opener', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    await user.keyboard('{Control>}k{/Control}');
+    const button = screen.getByRole('button', { name: 'Search tools' });
+    await user.click(button);
     await user.keyboard('shortcuts{Enter}');
     expect(await screen.findByRole('dialog', { name: 'Keyboard shortcuts' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(button).toHaveFocus();
   });
 
   it('keeps Tab inside the sheet', async () => {
