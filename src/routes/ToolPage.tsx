@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { rememberTool } from '../components/palette/recent';
 import { PrivacyPill } from '../components/privacy/PrivacyPill';
 import { Badge } from '../components/ui';
 import { accentText } from '../components/ui/accent';
@@ -19,6 +20,10 @@ function ToolView({ tool }: { tool: ToolInfo }) {
   useDocumentTitle(tool.name);
   // The privacy check counts from the moment this tool opened.
   const [openedAt] = useState(() => performance.now());
+
+  useEffect(() => {
+    if (tool.ready) rememberTool(tool.id);
+  }, [tool]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
