@@ -44,6 +44,9 @@ Ready now:
 Compress image, Convert image, Resize and crop and Remove EXIF all take batches. The results come
 back in one ZIP, and the finished card lists each file with its own save button for when you only need one or two.
 
+Every image tool opens iPhone HEIC photos, decoded on the device. Compress image saves them as
+JPG, and Images to PDF puts them on the page as JPEG so the PDF stays photo-sized.
+
 ## Keyboard
 
 Press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac) on any page to search
