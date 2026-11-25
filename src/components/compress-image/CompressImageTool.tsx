@@ -69,6 +69,31 @@ function qualityWord(q: number) {
   return 'Smallest, visibly softer';
 }
 
+/**
+ * The new copies came out bigger, which can happen when the type changes:
+ * HEIC packs a photo very tightly, and PNG to JPG can go either way.
+ */
+function biggerDetails(
+  before: number,
+  after: number,
+  heic: boolean,
+  skipped: readonly { name: string }[],
+) {
+  const parts = [
+    `${formatBytes(before)} became ${formatBytes(after)}.`,
+    heic
+      ? 'HEIC packs photos very tightly, so a JPG copy comes out a little bigger, but it opens in every app.'
+      : 'The new type holds this picture less tightly than the original did.',
+    'Try a lower quality or a smaller size to shrink it.',
+  ];
+  if (skipped.length) {
+    parts.push(
+      `Left out ${skipped.map((s) => s.name).join(', ')}: ${skipped.length === 1 ? 'it' : 'they'} could not be opened here.`,
+    );
+  }
+  return parts.join(' ');
+}
+
 const photosWord = (n: number) => `${n} ${n === 1 ? 'photo' : 'photos'}`;
 
 /** Compress image: pick quality, type and size, compare live, shrink in a worker. */
@@ -178,6 +203,31 @@ export function CompressImageTool({ tool }: { tool: ToolInfo }) {
                 actions={[
                   { label: 'Compress other photos', onClick: startOver },
                   { label: 'Change the settings', onClick: reset },
+                ]}
+              />
+            ) : !job.items.every((i) => i.kept) ? (
+              <DoneCard
+                accent={tool.accent}
+                title={job.items.length > 1 ? 'Your photos are ready' : 'Your photo is ready'}
+                fileName={job.name}
+                blob={job.blob}
+                details={biggerDetails(job.before, job.after, anyHeic, job.skipped)}
+                extra={
+                  job.items.length > 1 ? (
+                    <ZipContents
+                      blob={job.blob}
+                      accent={tool.accent}
+                      items={job.items.map((i) => ({
+                        name: i.name,
+                        detail: i.kept ? 'kept as it was' : formatBytes(i.after),
+                      }))}
+                    />
+                  ) : undefined
+                }
+                downloadLabel={job.items.length > 1 ? 'Download ZIP' : 'Download photo'}
+                actions={[
+                  { label: 'Change the settings', onClick: reset },
+                  { label: 'Compress other photos', onClick: startOver },
                 ]}
               />
             ) : (

@@ -170,6 +170,21 @@ describe('CompressImageTool', () => {
     expect(screen.getByRole('link', { name: 'Download ZIP' })).toBeVisible();
   });
 
+  it('does not claim the originals came back when a new type came out bigger', () => {
+    state.job = done({
+      name: 'logo-compressed.jpg',
+      before: 1000,
+      after: 1400,
+      items: [
+        { name: 'logo-compressed.jpg', type: 'image/jpeg', before: 1000, after: 1400, kept: false },
+      ],
+    });
+    render(ui());
+    expect(screen.getByRole('heading', { name: 'Your photo is ready' })).toBeVisible();
+    expect(screen.getByText(/less tightly than the original/)).toBeVisible();
+    expect(screen.queryByText(/you get the originals/)).toBeNull();
+  });
+
   it('hands back the original when nothing got smaller', () => {
     state.job = done({
       after: 4000,
