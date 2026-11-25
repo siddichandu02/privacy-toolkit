@@ -274,7 +274,9 @@ function SignPanel({
               ) : null}
             </>
           ) : (
-            <div className="mx-auto aspect-[612/792] w-full max-w-[22rem] animate-pulse rounded-md bg-line" />
+            <div className="sign-desk grid aspect-[648/824] max-h-[min(70vh,40rem)] w-full place-items-center rounded-2xl border border-line p-6">
+              <div className="aspect-[612/792] h-full animate-pulse rounded-[3px] bg-line" />
+            </div>
           )}
         </div>
       </section>
@@ -323,8 +325,10 @@ function PlacedSignature({
 
 function EmptySheet() {
   return (
-    <div className="mx-auto grid aspect-[612/792] w-full max-w-[22rem] place-items-center rounded-md border-2 border-dashed border-line p-8 text-center text-sm text-muted">
-      Your signature lands here
+    <div className="sign-desk grid aspect-[648/824] max-h-[min(70vh,40rem)] w-full place-items-center rounded-2xl border border-line p-6">
+      <div className="grid aspect-[612/792] h-full max-h-full place-items-center rounded-[3px] border-2 border-dashed border-line-strong p-6 text-center text-sm text-muted">
+        Your signature lands here
+      </div>
     </div>
   );
 }

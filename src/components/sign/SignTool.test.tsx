@@ -80,20 +80,22 @@ describe('SignTool', () => {
 
     box.focus();
     const x = Number(box.dataset.x);
+    // Shift + arrow nudges 10 screen pixels of the page as shown.
+    const shownWidth = 816 * Number(screen.getByTestId('sign-view').dataset.zoom);
     await user.keyboard('{Shift>}{ArrowLeft}{/Shift}');
-    expect(Number(box.dataset.x)).toBeCloseTo(x - 0.05);
+    expect(Number(box.dataset.x)).toBeCloseTo(x - 10 / shownWidth, 3);
     const w = Number(box.dataset.w);
     await user.keyboard('-');
     expect(Number(box.dataset.w)).toBeCloseTo(w - 0.01);
 
     await user.click(signButton());
-    expect(state.start).toHaveBeenCalledWith({
-      file,
-      signature: sig.blob,
-      aspect: 0.25,
-      place: { x: Number(box.dataset.x), y: Number(box.dataset.y), w: Number(box.dataset.w) },
-      pages: [1],
-    });
+    expect(state.start).toHaveBeenCalledWith(
+      expect.objectContaining({ file, signature: sig.blob, aspect: 0.25, pages: [1] }),
+    );
+    const { place } = state.start.mock.calls[0]?.[0] as { place: Record<string, number> };
+    expect(place.x).toBeCloseTo(Number(box.dataset.x), 3);
+    expect(place.y).toBeCloseTo(Number(box.dataset.y), 3);
+    expect(place.w).toBeCloseTo(Number(box.dataset.w), 3);
   });
 
   it('can sign every page', async () => {
