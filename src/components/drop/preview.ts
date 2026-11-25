@@ -1,3 +1,5 @@
+import { isHeic } from '../../lib/image/convert-names';
+import { decodeHeicOnce } from '../../lib/image/heic';
 import { extensionOf } from './validate';
 
 export interface FilePreview {
@@ -7,7 +9,7 @@ export interface FilePreview {
   pages: number | null;
 }
 
-/** Images the browser can draw without help (HEIC needs converting first). */
+/** Images the browser can draw without help (HEIC is opened on the device first). */
 const DRAWABLE = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
 
 export function isPdf(file: File): boolean {
@@ -126,6 +128,11 @@ export async function makePreview(file: File, width = 120): Promise<FilePreview>
   }
   if (DRAWABLE.has(extensionOf(file.name)) || /^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
     return { url: URL.createObjectURL(file), pages: null };
+  }
+  if (isHeic(file)) {
+    // The same decoded copy the tool uses later, so the photo is opened only once.
+    const copy = await previewSlot(() => decodeHeicOnce(file)).catch(() => null);
+    return { url: copy ? URL.createObjectURL(copy) : null, pages: null };
   }
   return { url: null, pages: null };
 }

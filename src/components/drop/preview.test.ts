@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { limitConcurrency } from './preview';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { limitConcurrency, makePreview } from './preview';
+
+const decodeHeicOnce = vi.hoisted(() => vi.fn());
+vi.mock('../../lib/image/heic', () => ({ decodeHeicOnce }));
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -35,5 +38,30 @@ describe('limitConcurrency', () => {
     const run = limitConcurrency(1);
     await expect(run(() => Promise.reject(new Error('bad file')))).rejects.toThrow('bad file');
     expect(await run(() => Promise.resolve('next'))).toBe('next');
+  });
+});
+
+describe('makePreview for photos', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('shows ordinary photos as they are', async () => {
+    const url = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:jpg');
+    const jpg = new File(['j'], 'a.jpg', { type: 'image/jpeg' });
+    expect(await makePreview(jpg)).toEqual({ url: 'blob:jpg', pages: null });
+    expect(url).toHaveBeenCalledWith(jpg);
+  });
+
+  it('shows a HEIC photo from its decoded copy, and nothing if it cannot be opened', async () => {
+    const url = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:png');
+    const png = new File(['p'], 'IMG_1.HEIC', { type: 'image/png' });
+    decodeHeicOnce.mockResolvedValueOnce(png);
+    expect(await makePreview(new File(['h'], 'IMG_1.HEIC'))).toEqual({
+      url: 'blob:png',
+      pages: null,
+    });
+    expect(url).toHaveBeenCalledWith(png);
+
+    decodeHeicOnce.mockRejectedValueOnce(new Error('bad'));
+    expect(await makePreview(new File(['h'], 'IMG_2.heic'))).toEqual({ url: null, pages: null });
   });
 });
