@@ -120,3 +120,20 @@ test('a removed file comes back with Undo, and all of them with Ctrl+Z', async (
   await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(() => rowNames(page)).toEqual(['one.pdf', 'two.pdf', 'three.pdf']);
 });
+
+test('a long list folds so the tool settings stay close', async ({ page }) => {
+  await page.goto('./#/tools/merge');
+  await page
+    .getByTestId('file-input')
+    .setInputFiles(Array.from({ length: 12 }, (_, i) => pdf(`part-${i + 1}.pdf`)));
+  await expect(page.getByTestId('file-row')).toHaveCount(5);
+  const fold = page.getByRole('button', { name: /7 more PDFs/ });
+  await expect(fold).toHaveAttribute('aria-expanded', 'false');
+  await fold.click();
+  await expect(page.getByTestId('file-row')).toHaveCount(12);
+  await expect.poll(async () => (await rowNames(page)).at(-1)).toBe('part-12.pdf');
+  await page.getByRole('button', { name: 'Show fewer' }).click();
+  await expect(page.getByTestId('file-row')).toHaveCount(5);
+  // The merge still takes every file, folded or not.
+  await expect(page.getByRole('button', { name: 'Merge 12 PDFs' })).toBeVisible();
+});
