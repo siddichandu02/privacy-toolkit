@@ -21,7 +21,9 @@ Ready now:
 - **Rotate pages**: turn pages and drop the ones you do not need.
 - **Images to PDF**: one page per image, A4, Letter or sized to the photo, with margins.
   Phone photos are turned upright using their EXIF orientation.
-- **Sign PDF**: draw or type a signature, drag it into place on one page or all of them.
+- **Sign PDF**: draw or type a signature, drag it into place on one page or all of them. Zoom
+  in up to 400% (buttons, Ctrl + scroll or a pinch) to line it up exactly with the signature line;
+  the page is redrawn sharply at every zoom and a magnifier follows the signature while you drag.
 - **Compress PDF**: three levels, from a lossless tidy-up to re-saving large photos as smaller
   JPEGs. Shows the size before and after, and never hands back a bigger file.
 - **Compress image**: a quality slider, JPG/WebP output and size presets, with a live before
