@@ -93,6 +93,9 @@ function drawFirstPage(file: File, width: number): Promise<DrawnPage> {
   return made;
 }
 
+/** Biggest canvas we draw, in pixels. Phones refuse much larger ones. */
+export const MAX_CANVAS_PIXELS = 16_000_000;
+
 /** Draw the first page of a PDF about `width` CSS pixels wide. */
 async function previewPdf(file: File, width: number): Promise<DrawnPage> {
   const { pdfjs, worker } = await loadPdfJs();
@@ -102,8 +105,9 @@ async function previewPdf(file: File, width: number): Promise<DrawnPage> {
     const doc = await task.promise;
     const page = await doc.getPage(1);
     const base = page.getViewport({ scale: 1 });
-    const scale = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
-    const viewport = page.getViewport({ scale });
+    const wanted = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
+    const most = Math.sqrt(MAX_CANVAS_PIXELS / (base.width * base.height));
+    const viewport = page.getViewport({ scale: Math.min(wanted, most) });
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
@@ -145,6 +149,8 @@ export interface PdfPages {
    * returned URL and must revoke it.
    */
   render: (page: number, width: number) => Promise<string | null>;
+  /** A page's shown size (after its own rotation) in PDF points. */
+  size?: (page: number) => Promise<{ width: number; height: number }>;
   close: () => void;
 }
 
@@ -164,8 +170,9 @@ export async function openPdfPages(file: File): Promise<PdfPages> {
     if (closed) return null;
     const page = await doc.getPage(n);
     const base = page.getViewport({ scale: 1 });
-    const scale = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
-    const viewport = page.getViewport({ scale });
+    const wanted = (width * Math.min(window.devicePixelRatio || 1, 2)) / base.width;
+    const most = Math.sqrt(MAX_CANVAS_PIXELS / (base.width * base.height));
+    const viewport = page.getViewport({ scale: Math.min(wanted, most) });
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
@@ -184,6 +191,11 @@ export async function openPdfPages(file: File): Promise<PdfPages> {
       const next = queue.then(() => draw(n, width));
       queue = next.catch(() => null);
       return next;
+    },
+    size: async (n) => {
+      const page = await doc.getPage(n);
+      const { width, height } = page.getViewport({ scale: 1 });
+      return { width, height };
     },
     close: () => {
       closed = true;
