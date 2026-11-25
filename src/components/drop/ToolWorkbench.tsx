@@ -84,6 +84,7 @@ export function ToolWorkbench({
               items={items}
               accent={tool.accent}
               ordered={tool.input.ordered}
+              noun={tool.input.kind === 'pdf' ? 'PDFs' : 'images'}
               onReorder={queue.setItems}
               onMove={queue.move}
               onRemove={queue.remove}

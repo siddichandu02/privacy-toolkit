@@ -14,7 +14,14 @@ export interface FileListProps {
   onRemove: (id: string) => void;
   /** Show order numbers and reorder controls (off for tools where order does not matter). */
   ordered?: boolean;
+  /** Plain name for the files, used on the fold ("images", "PDFs"). */
+  noun?: string;
 }
+
+/** Lists longer than this fold up, so the tool's settings stay in reach on a phone. */
+export const FOLD_AFTER = 8;
+/** Slips still shown while the list is folded. */
+export const FOLD_PEEK = 5;
 
 /** Load a preview for a file and revoke its object URL when the row goes away. */
 function usePreview(file: File): FilePreview | 'loading' | 'failed' {
@@ -49,14 +56,22 @@ export function FileList({
   onMove,
   onRemove,
   ordered = true,
+  noun = 'files',
 }: FileListProps) {
   const [announcement, setAnnouncement] = useState('');
+  const [open, setOpen] = useState(false);
+  const folds = items.length > FOLD_AFTER;
+  const folded = folds && !open;
+  const shown = folded ? items.slice(0, FOLD_PEEK) : items;
+  const hidden = items.length - shown.length;
   // The slip that was just moved with a key or button, so it can flash.
   const [bump, setBump] = useState<{ id: string; n: number } | null>(null);
 
   const move = (item: QueuedFile, index: number, by: number) => {
     const to = index + by;
     if (to < 0 || to >= items.length) return;
+    // Moving a slip past the fold opens the list, so it never vanishes from view.
+    if (folded && to >= FOLD_PEEK) setOpen(true);
     onMove(item.id, by);
     setBump((b) => ({ id: item.id, n: (b?.n ?? 0) + 1 }));
     setAnnouncement(`${item.file.name} moved to position ${to + 1} of ${items.length}.`);
@@ -72,13 +87,14 @@ export function FileList({
       <Reorder.Group
         as="ol"
         axis="y"
-        values={items as QueuedFile[]}
-        onReorder={onReorder}
+        values={shown as QueuedFile[]}
+        // While folded only the top slips can be dragged; the rest keep their order.
+        onReorder={(next) => onReorder([...next, ...items.slice(next.length)])}
         className="space-y-2.5"
         aria-label="Selected files"
       >
         <AnimatePresence initial={false}>
-          {items.map((item, index) => (
+          {shown.map((item, index) => (
             <FileRow
               key={item.id}
               item={item}
@@ -93,10 +109,114 @@ export function FileList({
           ))}
         </AnimatePresence>
       </Reorder.Group>
+      {folds ? (
+        <FoldToggle
+          open={open}
+          hidden={hidden}
+          noun={noun}
+          accent={accent}
+          onToggle={() => setOpen((o) => !o)}
+        />
+      ) : null}
       <p className="sr-only" aria-live="polite" role="status">
         {announcement}
       </p>
     </>
+  );
+}
+
+/**
+ * The paper stack under a folded list: the slips that are not shown peek out
+ * as fanned sheet edges behind a slip that says how many there are. Open, it
+ * becomes a slim "Show fewer" strip.
+ */
+function FoldToggle({
+  open,
+  hidden,
+  noun,
+  accent,
+  onToggle,
+}: {
+  open: boolean;
+  hidden: number;
+  noun: string;
+  accent: Accent;
+  onToggle: () => void;
+}) {
+  const still = useStillMotion();
+  // One sheet edge per few hidden slips, three at most, so the stack looks as thick as it is.
+  const sheets = Math.min(3, Math.ceil(hidden / 4));
+  return (
+    <div
+      className={`relative isolate ${open ? 'mt-3' : 'mt-2.5'}`}
+      style={{ paddingBottom: open ? 0 : sheets * 5 }}
+    >
+      {open
+        ? null
+        : Array.from({ length: sheets }, (_, i) => (
+            <motion.span
+              key={i}
+              aria-hidden="true"
+              data-testid="fold-sheet"
+              className="absolute inset-x-0 top-0 rounded-card border border-line bg-surface shadow-soft"
+              initial={false}
+              animate={{
+                y: (i + 1) * 5,
+                rotate: still ? 0 : [0.8, -1.1, 1.4][i],
+                scaleX: 1 - (i + 1) * 0.025,
+              }}
+              style={{ zIndex: -1 - i, height: `calc(100% - ${sheets * 5}px)` }}
+            />
+          ))}
+      <motion.button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        data-testid="fold-toggle"
+        whileHover={still ? undefined : { y: -2 }}
+        whileTap={still ? undefined : { scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 520, damping: 26 }}
+        className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-card border bg-surface text-left shadow-soft backdrop-blur-xl ${
+          open ? 'border-line px-3 py-2' : 'border-line-strong p-2.5 pr-3'
+        }`}
+      >
+        {open ? null : (
+          <span
+            aria-hidden="true"
+            className={`flex h-12 min-w-11 shrink-0 items-center justify-center rounded-md px-1.5 font-display text-lg font-bold ${accentSoft[accent]}`}
+          >
+            +{hidden}
+          </span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">
+            {open ? 'Show fewer' : `${hidden} more ${noun}`}
+          </span>
+          {open ? null : (
+            <span className="mt-0.5 block text-sm text-muted">
+              Folded to keep the settings close
+            </span>
+          )}
+        </span>
+        <span
+          className={`flex shrink-0 items-center gap-1 text-sm font-semibold ${accentText[accent]}`}
+        >
+          {open ? null : 'Show all'}
+          <svg
+            viewBox="0 0 20 20"
+            className={`size-5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 7.5 10 12.5l5-5" />
+          </svg>
+        </span>
+      </motion.button>
+    </div>
   );
 }
 
