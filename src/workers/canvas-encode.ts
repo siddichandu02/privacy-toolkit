@@ -1,6 +1,9 @@
 /// <reference lib="webworker" />
 import type { ImageEncoder } from '../lib/image/compress';
 import { fitEdge } from '../lib/image/compress-names';
+import { canvasAreaFor, fitCanvas } from '../lib/image/canvas-limit';
+
+const MAX_AREA = canvasAreaFor(self.navigator.userAgent);
 
 /**
  * Draw the photo upright (EXIF turn applied), cropped if asked, at the chosen size and save it
@@ -22,7 +25,9 @@ export const canvasEncode: ImageEncoder = async (
   const sy = crop ? crop.y * bitmap.height : 0;
   const sw = crop ? Math.max(1, crop.width * bitmap.width) : bitmap.width;
   const sh = crop ? Math.max(1, crop.height * bitmap.height) : bitmap.height;
-  const { width, height } = size ?? fitEdge(sw, sh, maxEdge);
+  const asked = size ?? fitEdge(sw, sh, maxEdge);
+  // Too big for this browser's canvas: draw it as large as it allows instead of failing.
+  const { width, height, shrunk } = fitCanvas(asked.width, asked.height, MAX_AREA);
   const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext('2d');
   if (!ctx) {
@@ -46,5 +51,6 @@ export const canvasEncode: ImageEncoder = async (
     height,
     sourceWidth,
     sourceHeight,
+    shrunk,
   };
 };

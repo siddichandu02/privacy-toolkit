@@ -2,6 +2,9 @@
 import { ImagesError, imagesToPdf, type ImageDecoder, type ImageSource } from '../lib/pdf/images';
 import type { ImagesReply, ImagesWorkerRequest } from './images-protocol';
 import { unexpectedMessage } from './fail';
+import { canvasAreaFor, fitCanvas } from '../lib/image/canvas-limit';
+
+const MAX_AREA = canvasAreaFor(self.navigator.userAgent);
 
 const post = (msg: ImagesReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
@@ -23,11 +26,13 @@ const decode: ImageDecoder = async (bytes, type) => {
   const bitmap = await createImageBitmap(new Blob([bytes as BlobPart], { type }), {
     imageOrientation: 'from-image',
   });
-  const { width, height } = bitmap;
+  // A photo too big for this browser's canvas is drawn as large as it allows.
+  const { width, height } = fitCanvas(bitmap.width, bitmap.height, MAX_AREA);
   const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('no canvas');
-  ctx.drawImage(bitmap, 0, 0);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
   const png = type !== 'image/jpeg' && hasAlpha(ctx, width, height);
   const blob = await canvas.convertToBlob(
