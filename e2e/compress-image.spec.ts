@@ -132,6 +132,11 @@ test.describe('HEIC', () => {
       timeout: 90_000,
     });
     await expect(page.getByText(/cannot be shown/)).toHaveCount(0);
+    // Both sides of the compare are real pictures, the original too.
+    const original = page.getByAltText('IMG_0042.HEIC, original');
+    await expect
+      .poll(() => original.evaluate((img: HTMLImageElement) => img.naturalWidth))
+      .toBe(64);
 
     await page.getByRole('button', { name: 'Compress photo' }).click();
     await expect(page.getByRole('heading', { name: /Your photo is (smaller|ready)/ })).toBeVisible({

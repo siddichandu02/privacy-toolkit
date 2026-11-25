@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { MARGINS, placeImage, type ImagesOptions } from '../../lib/pdf/page-layout';
 import { useStillMotion } from '../../useStillMotion';
 import { useObjectUrl } from '../result/useObjectUrl';
-import { useDrawableFile } from './useDrawableFile';
+import { useDrawableFile } from '../drop/useDrawableFile';
 import type { Accent } from '../ui/accent';
 
 /** Room the preview sheet can take, in CSS pixels. */

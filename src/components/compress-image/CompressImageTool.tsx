@@ -16,6 +16,7 @@ import { useImageCompressJob } from '../../workers/useImageCompressJob';
 import { useImagePreview } from '../../workers/useImagePreview';
 import { SizeCompare } from '../compress/SizeCompare';
 import { ToolWorkbench } from '../drop/ToolWorkbench';
+import { useDrawableFile } from '../drop/useDrawableFile';
 import { useFileQueue, type QueuedFile } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
@@ -293,7 +294,8 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
   const item = items[at];
   const file = item?.file;
   const { preview, busy, failed } = useImagePreview(file, settings);
-  const original = useObjectUrl(file ?? null);
+  // HEIC photos show their decoded copy; the browser cannot draw the original.
+  const original = useObjectUrl(useDrawableFile(file ?? null));
   // Remember the last known shape so the frame does not jump while a new preview is made.
   const [aspect, setAspect] = useState<number | undefined>(undefined);
   const nextAspect = preview ? preview.width / preview.height : undefined;
