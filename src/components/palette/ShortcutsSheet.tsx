@@ -46,7 +46,17 @@ function groups(mod: string): { title: string; where: string; items: Shortcut[] 
       items: [
         { keys: ['←', '↑', '→', '↓'], what: 'Nudge it' },
         { keys: ['Shift', '+ arrows'], what: 'Nudge in bigger steps' },
-        { keys: ['+', '−'], what: 'Zoom the photo in or out' },
+        { keys: ['+', '−'], what: 'Zoom the photo, or resize the signature' },
+      ],
+    },
+    {
+      title: 'Sign PDF page view',
+      where: 'Anywhere on the page with your signature.',
+      items: [
+        { keys: [mod, '+'], what: 'Zoom in' },
+        { keys: [mod, '−'], what: 'Zoom out' },
+        { keys: [mod, '0'], what: 'Fit the whole page' },
+        { keys: [mod, 'scroll'], what: 'Zoom where the pointer is' },
       ],
     },
   ];
