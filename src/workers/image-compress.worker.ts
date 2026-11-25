@@ -1,5 +1,10 @@
 /// <reference lib="webworker" />
-import { compressImages, ImageCompressError, outputType } from '../lib/image/compress';
+import {
+  compressImages,
+  ImageCompressError,
+  outputType,
+  type CompressSource,
+} from '../lib/image/compress';
 import type {
   ImageCompressReply,
   ImageCompressWorkerRequest,
@@ -12,12 +17,12 @@ import { unexpectedMessage } from './fail';
 const post = (msg: ImageCompressReply | ImagePreviewReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
 
-async function preview({ id, file, settings }: ImagePreviewRequest) {
+async function preview({ id, file, settings, sourceType }: ImagePreviewRequest) {
   try {
     const out = await encode(
       { name: file.name, type: file.type, bytes: await file.arrayBuffer() },
       {
-        type: outputType(file.type, settings.format),
+        type: outputType(sourceType ?? file.type, settings.format),
         quality: settings.quality,
         maxEdge: settings.maxEdge,
       },
@@ -34,11 +39,16 @@ self.onmessage = async (event: MessageEvent<ImageCompressWorkerRequest | ImagePr
     await preview(data);
     return;
   }
-  const { files, settings } = data;
+  const { files, settings, sizes = [] } = data;
   try {
-    const sources = [];
-    for (const file of files) {
-      sources.push({ name: file.name, type: file.type, bytes: await file.arrayBuffer() });
+    const sources: CompressSource[] = [];
+    for (const [i, file] of files.entries()) {
+      sources.push({
+        name: file.name,
+        type: file.type,
+        bytes: await file.arrayBuffer(),
+        size: sizes[i] ?? file.size,
+      });
     }
     const result = await compressImages(sources, settings, encode, (p) =>
       post({ type: 'progress', ...p }),

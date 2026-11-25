@@ -29,6 +29,12 @@ vi.mock('../../workers/useImagePreview', () => ({
   },
 }));
 
+const heic = vi.hoisted(() => ({ prefetch: vi.fn() }));
+vi.mock('../../lib/image/heic', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/image/heic')>()),
+  prefetchHeic: heic.prefetch,
+}));
+
 const tool = getTool('compress-image') as ToolInfo;
 const ui = () => (
   <MotionConfig reducedMotion="always">
@@ -83,9 +89,10 @@ describe('CompressImageTool', () => {
     await user.click(screen.getByRole('radio', { name: 'WebP' }));
     await user.click(screen.getByRole('radio', { name: '1920' }));
     await user.click(button);
-    expect(state.start).toHaveBeenCalledWith({
-      files,
-      settings: { quality: 0.4, format: 'webp', maxEdge: 1920 },
+    expect(state.start).toHaveBeenCalledWith(files, {
+      quality: 0.4,
+      format: 'webp',
+      maxEdge: 1920,
     });
     // The live preview follows the same settings.
     expect(state.previewFor).toHaveBeenLastCalledWith(files[0], {
@@ -126,6 +133,18 @@ describe('CompressImageTool', () => {
     await user.click(screen.getByRole('button', { name: 'Show the next photo' }));
     expect(screen.getByText('Photo 2 of 2')).toBeVisible();
     expect(state.previewFor).toHaveBeenLastCalledWith(files[1], expect.anything());
+  });
+
+  it('takes HEIC photos, fetches the decoder early and says they become JPG', async () => {
+    heic.prefetch.mockReset();
+    const photo = new File([new Uint8Array(64)], 'IMG_0042.HEIC');
+    const { user, button } = await setup([photo]);
+    expect(heic.prefetch).toHaveBeenCalled();
+    expect(screen.getByText(/HEIC becomes JPG/)).toBeVisible();
+    await user.click(screen.getByRole('radio', { name: 'WebP' }));
+    expect(screen.queryByText(/HEIC becomes JPG/)).toBeNull();
+    await user.click(button);
+    expect(state.start).toHaveBeenCalledWith([photo], expect.objectContaining({ format: 'webp' }));
   });
 
   it('explains a photo it cannot show', async () => {

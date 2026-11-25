@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import {
   compressedImageName,
   outputType,
+  sourceType,
   uniqueNames,
   type ImageCompressSettings,
 } from './compress-names';
@@ -15,6 +16,12 @@ export interface SourceImage {
   name: string;
   type: string;
   bytes: ArrayBuffer;
+}
+
+/** A photo to shrink. HEIC photos arrive already decoded, under their own name. */
+export interface CompressSource extends SourceImage {
+  /** Size as picked, when `bytes` is a decoded copy. */
+  size?: number;
 }
 
 export interface EncodeRequest {
@@ -91,12 +98,12 @@ export class ImageCompressError extends Error {
 
 export const ZIP_NAME = 'compressed-photos.zip';
 
-const isHeic = (s: SourceImage) => /\.hei[cf]$/i.test(s.name) || /hei[cf]/i.test(s.type);
+const isHeic = (s: SourceImage) => sourceType(s) === 'image/heic';
 
 /** Plain reason a photo could not be opened. */
 export function unreadableReason(source: SourceImage): string {
   return isHeic(source)
-    ? 'HEIC photos cannot be opened in this browser yet. Save it as a JPG first.'
+    ? 'This HEIC photo could not be read. It may be damaged, or use a variant this browser cannot decode.'
     : 'It could not be opened. It may be damaged or not really an image.';
 }
 
@@ -107,7 +114,7 @@ export function unreadableReason(source: SourceImage): string {
  * kept instead.
  */
 export async function compressImages(
-  sources: readonly SourceImage[],
+  sources: readonly CompressSource[],
   settings: ImageCompressSettings,
   encode: ImageEncoder,
   onProgress: (p: ImageCompressProgress) => void = () => {},
@@ -119,7 +126,8 @@ export async function compressImages(
   const skipped: SkippedImage[] = [];
 
   for (const [i, source] of sources.entries()) {
-    const type = outputType(source.type, settings.format);
+    const heic = isHeic(source);
+    const type = outputType(sourceType(source), settings.format);
     let encoded: Encoded | null = null;
     try {
       encoded = await encode(source, {
@@ -131,10 +139,12 @@ export async function compressImages(
       skipped.push({ name: source.name, reason: unreadableReason(source) });
     }
     if (encoded) {
-      const before = source.bytes.byteLength;
+      const before = source.size ?? source.bytes.byteLength;
       const resized =
         encoded.width !== encoded.sourceWidth || encoded.height !== encoded.sourceHeight;
-      const keep = !resized && encoded.mime === source.type && encoded.bytes.byteLength >= before;
+      // A HEIC photo is never kept: the point is a copy every app can open.
+      const keep =
+        !heic && !resized && encoded.mime === source.type && encoded.bytes.byteLength >= before;
       const bytes = keep ? new Uint8Array(source.bytes) : encoded.bytes;
       done.push({
         item: {
@@ -155,7 +165,7 @@ export async function compressImages(
     throw new ImageCompressError(
       only
         ? `${only.name} could not be compressed. ${unreadableReason(only)}`
-        : 'None of these photos could be opened. They may be damaged, or in a format this browser cannot read (like HEIC).',
+        : 'None of these photos could be opened. They may be damaged, or in a format this browser cannot read.',
       only?.name,
     );
   }

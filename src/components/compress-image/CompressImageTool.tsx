@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import {
   DEFAULT_SETTINGS,
   ignoresQuality,
   outputType,
+  sourceType,
   type ImageCompressSettings,
   type OutputFormat,
 } from '../../lib/image/compress-names';
+import { hasHeic, prefetchHeic } from '../../lib/image/heic';
 import { savedPercent } from '../../lib/pdf/file-names';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
@@ -79,9 +81,14 @@ export function CompressImageTool({ tool }: { tool: ToolInfo }) {
   const still = useStillMotion();
   const [thumb] = useThumbnails(job.status === 'running' ? files : [], 1);
   const [settings, setSettings] = useState<ImageCompressSettings>(DEFAULT_SETTINGS);
+  const anyHeic = hasHeic(files);
+  // Fetch the HEIC decoder as soon as a HEIC photo is added, so shrinking works offline too.
+  useEffect(() => {
+    if (anyHeic) prefetchHeic();
+  }, [anyHeic]);
 
   const run = () => {
-    if (files.length) start({ files, settings });
+    if (files.length) void start(files, settings);
   };
   const startOver = () => {
     reset();
@@ -242,7 +249,7 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
   const nextAspect = preview ? preview.width / preview.height : undefined;
   if (nextAspect && nextAspect !== aspect) setAspect(nextAspect);
 
-  const outType = file ? outputType(file.type, settings.format) : 'image/jpeg';
+  const outType = file ? outputType(sourceType(file), settings.format) : 'image/jpeg';
   const lossless = ignoresQuality(outType);
   const quality = Math.round(settings.quality * 100);
   const total = items.reduce((n, i) => n + i.file.size, 0);
@@ -256,7 +263,7 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
             <div className="grid aspect-[4/3] place-items-center rounded-panel border-2 border-dashed border-line px-6 text-center text-muted">
               <p>
                 <span className="font-semibold text-fg">{file?.name}</span> cannot be shown in this
-                browser. HEIC photos need saving as JPG first.
+                browser. It may be damaged, or saved in a way this browser cannot read.
               </p>
             </div>
           ) : (
@@ -336,7 +343,11 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
             value={settings.format}
             onChange={(format) => onChange({ ...settings, format })}
             accent={accent}
-            hint={FORMAT_HINTS[settings.format]}
+            hint={
+              settings.format === 'same' && items.some((i) => sourceType(i.file) === 'image/heic')
+                ? `${FORMAT_HINTS.same} HEIC becomes JPG, so every app can open it.`
+                : FORMAT_HINTS[settings.format]
+            }
           />
           <Segmented
             legend="Longest side (pixels)"

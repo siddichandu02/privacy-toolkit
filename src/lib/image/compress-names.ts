@@ -1,6 +1,8 @@
 // Small helpers the Compress image page uses. Kept apart from the batch code
 // (which pulls in JSZip) so the page bundle stays light.
 
+import { isHeic } from './convert-names';
+
 export type OutputFormat = 'same' | 'jpeg' | 'webp';
 
 export interface ImageCompressSettings {
@@ -25,13 +27,22 @@ const EXT: Record<string, string> = {
 
 /**
  * The type a photo is saved as. "Same" keeps JPG, PNG and WebP as they are;
- * anything the browser cannot write (GIF) becomes PNG.
+ * HEIC (which browsers cannot write) becomes JPG, and anything else the
+ * browser cannot write (GIF) becomes PNG.
  */
 export function outputType(inputType: string, format: OutputFormat): string {
   if (format === 'jpeg') return 'image/jpeg';
   if (format === 'webp') return 'image/webp';
+  if (/^image\/hei[cf]/i.test(inputType)) return 'image/jpeg';
   return inputType in EXT ? inputType : 'image/png';
 }
+
+/**
+ * The type a picked photo really is. HEIC photos often come with no type at
+ * all, and their decoded copies say PNG, so the name decides.
+ */
+export const sourceType = (file: { name: string; type: string }) =>
+  isHeic(file) ? 'image/heic' : file.type;
 
 /** True when quality has no effect on this output (PNG is lossless). */
 export const ignoresQuality = (type: string) => type === 'image/png';

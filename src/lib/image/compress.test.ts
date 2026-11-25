@@ -9,6 +9,7 @@ import {
   uniqueNames,
   ZIP_NAME,
   type ImageEncoder,
+  sourceType,
   type SourceImage,
 } from './compress';
 
@@ -45,6 +46,11 @@ describe('names and types', () => {
     expect(outputType('image/gif', 'same')).toBe('image/png');
     expect(outputType('image/png', 'webp')).toBe('image/webp');
     expect(outputType('image/webp', 'jpeg')).toBe('image/jpeg');
+    expect(outputType('image/heic', 'same')).toBe('image/jpeg');
+    expect(outputType('image/heif', 'webp')).toBe('image/webp');
+    expect(sourceType({ name: 'IMG_1.HEIC', type: '' })).toBe('image/heic');
+    expect(sourceType({ name: 'IMG_1.HEIC', type: 'image/png' })).toBe('image/heic');
+    expect(sourceType({ name: 'a.png', type: 'image/png' })).toBe('image/png');
     expect(ignoresQuality('image/png')).toBe(true);
     expect(ignoresQuality('image/jpeg')).toBe(false);
   });
@@ -133,6 +139,25 @@ describe('compressImages', () => {
     expect(out).toMatchObject({ before: 1800, after: 900 });
     const zip = await JSZip.loadAsync(out.bytes);
     expect(Object.keys(zip.files).sort()).toEqual(['a-compressed (2).jpg', 'a-compressed.jpg']);
+  });
+
+  it('saves a decoded HEIC photo as JPG and compares with the size as picked', async () => {
+    const seen: string[] = [];
+    const encode: ImageEncoder = async (source, req) => {
+      seen.push(req.type);
+      return fakeEncode()(source, req);
+    };
+    // The page decoded a 300-byte HEIC into a 1000-byte PNG copy under the same name.
+    const out = await compressImages(
+      [{ ...src('IMG_7.HEIC', 'image/png', 1000), size: 300 }],
+      settings,
+      encode,
+    );
+    expect(seen).toEqual(['image/jpeg']);
+    expect(out.items).toEqual([
+      { name: 'IMG_7-compressed.jpg', type: 'image/jpeg', before: 300, after: 500, kept: false },
+    ]);
+    expect(out).toMatchObject({ name: 'IMG_7-compressed.jpg', mime: 'image/jpeg', before: 300 });
   });
 
   it('fails with a plain message when nothing could be opened', async () => {

@@ -1,7 +1,9 @@
-import { useCallback } from 'react';
 import type { CompressedImage, ImageCompressStage, SkippedImage } from '../lib/image/compress';
-import type { ImageCompressDone, ImageCompressWorkerRequest } from './image-compress-protocol';
-import { useWorkerJob, type WorkerFactory, type WorkerJob } from './useWorkerJob';
+import type { ImageCompressSettings } from '../lib/image/compress-names';
+import { prepareImages } from '../lib/image/heic';
+import type { ImageCompressDone } from './image-compress-protocol';
+import { usePreparedJob, type Prepare } from './usePreparedJob';
+import type { WorkerFactory, WorkerJob } from './useWorkerJob';
 
 interface ImageCompressOutput {
   blob: Blob;
@@ -25,23 +27,17 @@ const finish = ({ bytes, mime, ...rest }: ImageCompressDone): ImageCompressOutpu
   ...rest,
 });
 
-/** Shrink photos in a Web Worker. */
+/** Shrink photos in a Web Worker, opening HEIC photos on the page first. */
 export function useImageCompressJob(
   createWorker: WorkerFactory = imageCompressWorker,
   warm = false,
+  prepare: Prepare = prepareImages,
 ) {
-  const { job, clock, start, reset } = useWorkerJob<
-    ImageCompressWorkerRequest,
-    ImageCompressStage,
-    ImageCompressDone,
-    ImageCompressOutput
-  >({
+  return usePreparedJob<ImageCompressSettings, ImageCompressDone, ImageCompressOutput>({
     createWorker,
     warm,
-    firstStage: 'reading',
+    prepare,
     finish,
     crashMessage: 'Something went wrong while shrinking your photos. Try again.',
   });
-  const compress = useCallback((request: ImageCompressWorkerRequest) => start(request), [start]);
-  return { job: job as ImageCompressJob, clock, start: compress, reset };
 }

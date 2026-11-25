@@ -4,13 +4,12 @@ import type {
   ImageCompressSettings,
   ImageCompressStage,
 } from '../lib/image/compress';
+import type { PreparedRequest } from './usePreparedJob';
 import type { WorkerReply } from './useWorkerJob';
 
-/** Compress every file and hand back one photo or a ZIP. */
-export interface ImageCompressWorkerRequest {
+/** Compress every file and hand back one photo or a ZIP. HEIC photos come decoded. */
+export interface ImageCompressWorkerRequest extends PreparedRequest<ImageCompressSettings> {
   kind?: 'run';
-  files: File[];
-  settings: ImageCompressSettings;
 }
 
 /** Re-save one photo so the page can show it next to the original. */
@@ -19,6 +18,8 @@ export interface ImagePreviewRequest {
   id: number;
   file: File;
   settings: ImageCompressSettings;
+  /** What the photo was before the page decoded it (HEIC), when that differs from `file.type`. */
+  sourceType?: string;
 }
 
 export type ImageCompressDone = ImageCompressResult;

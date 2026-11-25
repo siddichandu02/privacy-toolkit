@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ImageCompressSettings } from '../lib/image/compress-names';
+import { sourceType, type ImageCompressSettings } from '../lib/image/compress-names';
+import { decodeHeicOnce } from '../lib/image/heic';
 import type { ImagePreviewReply, ImagePreviewRequest } from './image-compress-protocol';
 import { imageCompressWorker } from './useImageCompressJob';
 import type { WorkerFactory } from './useWorkerJob';
@@ -43,6 +44,7 @@ export function useImagePreview(
   file: File | undefined,
   settings: ImageCompressSettings,
   createWorker: WorkerFactory = imageCompressWorker,
+  decodeHeic: (file: File) => Promise<File> = decodeHeicOnce,
 ): ImagePreviewState {
   const [answer, setAnswer] = useState<Answer | null>(null);
   const worker = useRef<Worker | null>(null);
@@ -121,16 +123,34 @@ export function useImagePreview(
         event.preventDefault();
         if (id === latest.current) fail();
       };
-      const request: ImagePreviewRequest = {
-        kind: 'preview',
-        id,
-        file,
-        settings: { quality, format, maxEdge },
+      const target = w;
+      const type = sourceType(file);
+      const send = (copy: File) => {
+        const request: ImagePreviewRequest = {
+          kind: 'preview',
+          id,
+          file: copy,
+          settings: { quality, format, maxEdge },
+          sourceType: type,
+        };
+        target.postMessage(request);
       };
-      w.postMessage(request);
+      if (type !== 'image/heic') {
+        send(file);
+        return;
+      }
+      // The worker has no canvas to decode HEIC with, so the page opens it first (once per photo).
+      decodeHeic(file).then(
+        (copy) => {
+          if (id === latest.current) send(copy);
+        },
+        () => {
+          if (id === latest.current) fail();
+        },
+      );
     }, PREVIEW_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [file, quality, format, maxEdge, createWorker]);
+  }, [file, quality, format, maxEdge, createWorker, decodeHeic]);
 
   const mine = file && answer?.file === fKey ? answer : null;
   return {

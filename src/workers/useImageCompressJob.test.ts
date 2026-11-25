@@ -36,7 +36,7 @@ describe('useImageCompressJob', () => {
   it('sends the files and settings and ends with a blob of the right type', () => {
     const { workers, make } = factory();
     const hook = renderHook(() => useImageCompressJob(make));
-    act(() => hook.result.current.start({ files: [photo], settings }));
+    act(() => void hook.result.current.start([photo], settings));
     expect(workers[0]?.posted).toEqual([{ files: [photo], settings }]);
 
     act(() =>
@@ -90,7 +90,9 @@ describe('useImagePreview', () => {
     expect(workers).toHaveLength(0);
 
     act(() => vi.advanceTimersByTime(PREVIEW_DEBOUNCE_MS));
-    expect(workers[0]?.posted).toEqual([{ kind: 'preview', id: 1, file: photo, settings }]);
+    expect(workers[0]?.posted).toEqual([
+      { kind: 'preview', id: 1, file: photo, settings, sourceType: 'image/jpeg' },
+    ]);
 
     // A quick change replaces the request; the first answer arrives late and is ignored.
     hook.rerender({ s: { ...settings, quality: 0.4 } });
@@ -114,5 +116,54 @@ describe('useImagePreview', () => {
     expect(hook.result.current.failed).toBe(true);
     hook.unmount();
     expect(workers[0]?.terminate).toHaveBeenCalled();
+  });
+
+  it('opens a HEIC photo on the page first and tells the worker what it was', async () => {
+    const { workers, make } = factory();
+    const heic = new File(['h'], 'IMG_1.HEIC');
+    const decoded = new File(['p'], 'IMG_1.HEIC', { type: 'image/png' });
+    const decode = vi.fn(() => Promise.resolve(decoded));
+    renderHook(() => useImagePreview(heic, settings, make, decode));
+    await act(async () => {
+      vi.advanceTimersByTime(PREVIEW_DEBOUNCE_MS);
+      await Promise.resolve();
+    });
+    expect(decode).toHaveBeenCalledWith(heic);
+    expect(workers[0]?.posted).toEqual([
+      { kind: 'preview', id: 1, file: decoded, settings, sourceType: 'image/heic' },
+    ]);
+  });
+
+  it('says the HEIC photo cannot be shown when decoding fails', async () => {
+    const { workers, make } = factory();
+    const heic = new File(['h'], 'IMG_2.heic', { type: 'image/heic' });
+    const decode = vi.fn(() => Promise.reject(new Error('bad')));
+    const hook = renderHook(() => useImagePreview(heic, settings, make, decode));
+    await act(async () => {
+      vi.advanceTimersByTime(PREVIEW_DEBOUNCE_MS);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(workers[0]?.posted).toEqual([]);
+    expect(hook.result.current).toMatchObject({ failed: true, busy: false });
+  });
+});
+
+describe('useImageCompressJob with HEIC', () => {
+  it('decodes HEIC photos first and passes the sizes as picked', async () => {
+    const { workers, make } = factory();
+    const heic = new File(['hhhh'], 'IMG_3.HEIC');
+    const decoded = new File(['pp'], 'IMG_3.HEIC', { type: 'image/png' });
+    const prepare = vi.fn(() =>
+      Promise.resolve({ files: [photo, decoded], sizes: [1, 4], undecoded: [] }),
+    );
+    const hook = renderHook(() => useImageCompressJob(make, false, prepare));
+    await act(async () => {
+      await hook.result.current.start([photo, heic], settings);
+    });
+    expect(prepare).toHaveBeenCalledWith([photo, heic], expect.any(Function));
+    expect(workers.at(-1)?.posted).toEqual([
+      { files: [photo, decoded], settings, sizes: [1, 4], undecoded: [] },
+    ]);
   });
 });
