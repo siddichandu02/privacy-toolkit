@@ -26,7 +26,11 @@ function Harness() {
   return (
     <MotionConfig reducedMotion="always">
       <button onClick={() => q.add([pdf('one.pdf'), pdf('two.pdf'), pdf('three.pdf')])}>add</button>
+      <button onClick={() => q.add(Array.from({ length: 9 }, (_, i) => pdf(`p${i + 1}.pdf`)))}>
+        add many
+      </button>
       <FileList
+        noun="PDFs"
         items={q.items}
         accent="violet"
         onReorder={q.setItems}
@@ -97,6 +101,49 @@ describe('FileList', () => {
     await user.click(screen.getByText('add'));
     const rows = screen.getAllByTestId('file-row');
     expect(within(rows[2] as HTMLElement).getByText('3.')).toBeInTheDocument();
+  });
+});
+
+describe('FileList fold', () => {
+  it('leaves short lists open', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add'));
+    expect(screen.queryByTestId('fold-toggle')).toBeNull();
+  });
+
+  it('folds a long list and opens it again', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add many'));
+    expect(names()).toEqual(['p1.pdf', 'p2.pdf', 'p3.pdf', 'p4.pdf', 'p5.pdf']);
+    const toggle = screen.getByRole('button', { name: /4 more PDFs/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(names()).toHaveLength(9);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('button', { name: 'Show fewer' }));
+    await waitFor(() => expect(names()).toHaveLength(5));
+  });
+
+  it('opens when a slip is moved past the fold', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add many'));
+    await user.click(screen.getByRole('button', { name: 'Move p5.pdf down' }));
+    expect(names()).toHaveLength(9);
+    expect(names()[5]).toBe('p5.pdf');
+  });
+
+  it('shows every file again once the list is short', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add many'));
+    await user.click(screen.getByRole('button', { name: 'Remove p2.pdf' }));
+    // 8 left is short enough to show in full, hidden files included.
+    await waitFor(() => expect(names()).toHaveLength(8));
+    expect(names()).not.toContain('p2.pdf');
+    expect(screen.queryByTestId('fold-toggle')).toBeNull();
   });
 });
 
