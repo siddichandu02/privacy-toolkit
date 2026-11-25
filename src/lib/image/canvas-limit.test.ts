@@ -4,6 +4,7 @@ import {
   DESKTOP_CANVAS_AREA,
   fitCanvas,
   isWebKitOnly,
+  shrunkNote,
   WEBKIT_CANVAS_AREA,
 } from './canvas-limit';
 
@@ -65,5 +66,13 @@ describe('fitCanvas', () => {
 
   it('never goes below 1 pixel', () => {
     expect(fitCanvas(1_000_000, 1, 100)).toMatchObject({ height: 1 });
+  });
+});
+
+describe('shrunkNote', () => {
+  it('names one photo, counts several, and stays quiet otherwise', () => {
+    expect(shrunkNote([])).toBeNull();
+    expect(shrunkNote(['pano.jpg'])).toMatch(/^pano\.jpg was too big .* saved a little smaller\.$/);
+    expect(shrunkNote(['a.jpg', 'b.jpg'])).toMatch(/^2 photos were too big/);
   });
 });

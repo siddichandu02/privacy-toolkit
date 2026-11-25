@@ -22,6 +22,8 @@ export interface ConvertedImage {
   type: string;
   before: number;
   after: number;
+  /** Saved smaller than the original, since the browser could not draw it at full size. */
+  shrunk?: boolean;
 }
 
 export interface ConvertResult {
@@ -96,6 +98,7 @@ export async function convertImages(
           type: encoded.mime,
           before: source.size ?? source.bytes.byteLength,
           after: encoded.bytes.byteLength,
+          ...(encoded.shrunk ? { shrunk: true } : {}),
         },
         bytes: encoded.bytes,
       });

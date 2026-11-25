@@ -25,6 +25,14 @@ export function isWebKitOnly(userAgent: string): boolean {
 export const canvasAreaFor = (userAgent: string) =>
   isWebKitOnly(userAgent) ? WEBKIT_CANVAS_AREA : DESKTOP_CANVAS_AREA;
 
+/** Sentence for a done card when some photos had to be saved smaller. */
+export function shrunkNote(names: readonly string[]): string | null {
+  if (names.length === 0) return null;
+  return names.length === 1
+    ? `${names[0]} was too big for this browser to draw at full size, so it was saved a little smaller.`
+    : `${names.length} photos were too big for this browser to draw at full size, so they were saved a little smaller.`;
+}
+
 /**
  * The asked size, scaled down evenly until it fits the limits. `shrunk` says
  * whether it had to be.

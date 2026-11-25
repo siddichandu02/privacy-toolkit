@@ -51,6 +51,8 @@ export interface Encoded {
   /** Size before any resize, after the EXIF turn. */
   sourceWidth: number;
   sourceHeight: number;
+  /** Drawn smaller than asked because the browser could not hold it at full size. */
+  shrunk?: boolean;
 }
 
 /** Draws and re-saves one photo. The worker passes an OffscreenCanvas one. */
@@ -63,6 +65,8 @@ export interface CompressedImage {
   after: number;
   /** The new copy was not smaller, so the original went in instead. */
   kept: boolean;
+  /** Saved smaller than asked, since the browser could not draw it at full size. */
+  shrunk?: boolean;
 }
 
 export interface SkippedImage {
@@ -153,6 +157,7 @@ export async function compressImages(
           before,
           after: bytes.byteLength,
           kept: keep,
+          ...(!keep && encoded.shrunk ? { shrunk: true } : {}),
         },
         bytes,
       });

@@ -27,6 +27,7 @@ import { WashScene } from '../wait/scenes/WashScene';
 import { useStory } from '../wait/useStory';
 import { useThumbnails } from '../wait/useThumbnails';
 import { WaitStage } from '../wait/WaitStage';
+import { shrunkNote } from '../../lib/image/canvas-limit';
 
 const STEPS: readonly WaitStep[] = [
   { id: 'reading', label: 'Opening your photos' },
@@ -142,7 +143,7 @@ export function ConvertTool({ tool }: { tool: ToolInfo }) {
               }
               fileName={job.name}
               blob={job.blob}
-              details={doneDetails(job.items.length, job.skipped, job.fellBack, to)}
+              details={doneDetails(job.items, job.skipped, job.fellBack, to)}
               extra={
                 job.items.length > 1 ? (
                   <ZipContents
@@ -188,13 +189,15 @@ function targetOf(type: string | undefined, asked: ConvertTarget): ConvertTarget
 }
 
 function doneDetails(
-  count: number,
+  items: readonly { name: string; shrunk?: boolean }[],
   skipped: readonly { name: string }[],
   fellBack: boolean,
   asked: string,
 ) {
-  const parts = [`${photosWord(count)} converted.`];
+  const parts = [`${photosWord(items.length)} converted.`];
   if (fellBack) parts.push(`This browser cannot save ${asked}, so you get PNG instead.`);
+  const shrunk = shrunkNote(items.filter((i) => i.shrunk).map((i) => i.name));
+  if (shrunk) parts.push(shrunk);
   if (skipped.length) {
     parts.push(
       `Left out ${skipped.map((s) => s.name).join(', ')}: ${skipped.length === 1 ? 'it' : 'they'} could not be opened.`,

@@ -21,7 +21,7 @@ const src = (name: string, type: string, size: number, extra = {}): ConvertSourc
 });
 
 const fakeEncode =
-  (opts: { fail?: string[]; actualType?: string } = {}): ImageEncoder =>
+  (opts: { fail?: string[]; actualType?: string; shrink?: string[] } = {}): ImageEncoder =>
   async (source, req) => {
     if (opts.fail?.includes(source.name)) throw new Error('bad');
     return {
@@ -31,6 +31,7 @@ const fakeEncode =
       height: 8,
       sourceWidth: 10,
       sourceHeight: 8,
+      shrunk: opts.shrink?.includes(source.name),
     };
   };
 
@@ -169,5 +170,16 @@ describe('prepareImages', () => {
     });
     expect(out.files[0]?.type).toBe('');
     expect(out.undecoded).toEqual([0]);
+  });
+});
+
+describe('photos too big for the canvas', () => {
+  it('marks the ones the browser had to draw smaller', async () => {
+    const result = await convertImages(
+      [src('pano.png', 'image/png', 40), src('small.png', 'image/png', 40)],
+      { to: 'jpeg', quality: 0.9 },
+      fakeEncode({ shrink: ['pano.png'] }),
+    );
+    expect(result.items.map((i) => Boolean(i.shrunk))).toEqual([true, false]);
   });
 });

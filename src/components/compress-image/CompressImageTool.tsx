@@ -33,6 +33,7 @@ import { useStory } from '../wait/useStory';
 import { useThumbnails } from '../wait/useThumbnails';
 import { WaitStage } from '../wait/WaitStage';
 import { ZipContents } from '../result/ZipContents';
+import { shrunkNote } from '../../lib/image/canvas-limit';
 
 const STEPS: readonly WaitStep[] = [
   { id: 'reading', label: 'Opening your photos' },
@@ -184,6 +185,7 @@ export function CompressImageTool({ tool }: { tool: ToolInfo }) {
                   job.items.length,
                   job.items.filter((i) => i.kept).length,
                   job.skipped,
+                  job.items.filter((i) => i.shrunk).map((i) => i.name),
                 )}
                 extra={
                   <div className="grid gap-5">
@@ -265,12 +267,19 @@ export function CompressImageTool({ tool }: { tool: ToolInfo }) {
   );
 }
 
-function doneDetails(count: number, kept: number, skipped: readonly { name: string }[]) {
+function doneDetails(
+  count: number,
+  kept: number,
+  skipped: readonly { name: string }[],
+  shrunkNames: readonly string[] = [],
+) {
   const parts = [`${photosWord(count)} compressed.`];
   if (kept)
     parts.push(
       `${kept === count ? 'Kept as it was' : `${kept} kept as they were`}, since a new copy was not smaller.`,
     );
+  const shrunk = shrunkNote(shrunkNames);
+  if (shrunk) parts.push(shrunk);
   if (skipped.length) {
     parts.push(
       `Left out ${skipped.map((s) => s.name).join(', ')}: ${skipped.length === 1 ? 'it' : 'they'} could not be opened here.`,
