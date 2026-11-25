@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { MARGINS, placeImage, type ImagesOptions } from '../../lib/pdf/page-layout';
 import { useStillMotion } from '../../useStillMotion';
 import { useObjectUrl } from '../result/useObjectUrl';
+import { useDrawableFile } from './useDrawableFile';
 import type { Accent } from '../ui/accent';
 
 /** Room the preview sheet can take, in CSS pixels. */
@@ -59,7 +60,7 @@ export function PagePreview({
   behind: number;
 }) {
   const still = useStillMotion();
-  const url = useObjectUrl(file);
+  const url = useObjectUrl(useDrawableFile(file));
   const loaded = useImageSize(url);
   // Until the image opens, lay out a 4:3 photo so the sheet still answers the options.
   const size = loaded?.size ?? { width: 4, height: 3 };

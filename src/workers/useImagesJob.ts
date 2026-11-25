@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
-import type { ImagesStage } from '../lib/pdf/images';
-import type { ImagesDone, ImagesWorkerRequest } from './images-protocol';
-import { useWorkerJob, type WorkerFactory, type WorkerJob } from './useWorkerJob';
+import { prepareImages } from '../lib/image/heic';
+import type { ImagesOptions, ImagesStage } from '../lib/pdf/images';
+import type { ImagesDone } from './images-protocol';
+import { usePreparedJob, type Prepare } from './usePreparedJob';
+import type { WorkerFactory, WorkerJob } from './useWorkerJob';
 
 interface ImagesOutput {
   blob: Blob;
@@ -20,20 +21,17 @@ const finish = ({ bytes, name, pages }: ImagesDone): ImagesOutput => ({
   pages,
 });
 
-/** Turn images into one PDF in a Web Worker. */
-export function useImagesJob(createWorker: WorkerFactory = defaultFactory, warm = false) {
-  const { job, clock, start, reset } = useWorkerJob<
-    ImagesWorkerRequest,
-    ImagesStage,
-    ImagesDone,
-    ImagesOutput
-  >({
+/** Turn images into one PDF in a Web Worker, opening HEIC photos on the page first. */
+export function useImagesJob(
+  createWorker: WorkerFactory = defaultFactory,
+  warm = false,
+  prepare: Prepare = prepareImages,
+) {
+  return usePreparedJob<ImagesOptions, ImagesDone, ImagesOutput>({
     createWorker,
     warm,
-    firstStage: 'reading',
+    prepare,
     finish,
     crashMessage: 'Something went wrong while making your PDF. Try again.',
   });
-  const run = useCallback((request: ImagesWorkerRequest) => start(request), [start]);
-  return { job: job as ImagesJob, clock, start: run, reset };
 }

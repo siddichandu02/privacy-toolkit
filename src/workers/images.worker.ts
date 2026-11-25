@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { ImagesError, imagesToPdf, type ImageDecoder } from '../lib/pdf/images';
+import { ImagesError, imagesToPdf, type ImageDecoder, type ImageSource } from '../lib/pdf/images';
 import type { ImagesReply, ImagesWorkerRequest } from './images-protocol';
 import { unexpectedMessage } from './fail';
 
@@ -37,11 +37,16 @@ const decode: ImageDecoder = async (bytes, type) => {
 };
 
 self.onmessage = async (event: MessageEvent<ImagesWorkerRequest>) => {
-  const { files, options } = event.data;
+  const { files, settings: options, undecoded = [] } = event.data;
   try {
-    const sources = [];
-    for (const file of files) {
-      sources.push({ name: file.name, type: file.type, bytes: await file.arrayBuffer() });
+    const sources: ImageSource[] = [];
+    for (const [i, file] of files.entries()) {
+      sources.push({
+        name: file.name,
+        type: file.type,
+        bytes: await file.arrayBuffer(),
+        undecoded: undecoded.includes(i),
+      });
     }
     const result = await imagesToPdf(sources, options, decode, (p) =>
       post({ type: 'progress', ...p }),

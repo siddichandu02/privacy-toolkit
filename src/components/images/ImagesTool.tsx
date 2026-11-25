@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import {
   DEFAULT_OPTIONS,
   type ImagesOptions,
@@ -7,6 +7,7 @@ import {
   type Orientation,
   type PageSize,
 } from '../../lib/pdf/page-layout';
+import { hasHeic, prefetchHeic } from '../../lib/image/heic';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { useImagesJob } from '../../workers/useImagesJob';
@@ -62,8 +63,17 @@ export function ImagesTool({ tool }: { tool: ToolInfo }) {
   const still = useStillMotion();
   const [options, setOptions] = useState<ImagesOptions>(DEFAULT_OPTIONS);
   const count = queue.items.length;
+  const anyHeic = hasHeic(queue.items.map((i) => i.file));
+  // Fetch the HEIC decoder as soon as a HEIC photo is added, so the PDF can be made offline too.
+  useEffect(() => {
+    if (anyHeic) prefetchHeic();
+  }, [anyHeic]);
 
-  const run = () => start({ files: queue.items.map((i) => i.file), options });
+  const run = () =>
+    void start(
+      queue.items.map((i) => i.file),
+      options,
+    );
   const startOver = () => {
     reset();
     queue.clear();

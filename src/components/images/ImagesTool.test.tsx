@@ -49,7 +49,7 @@ describe('ImagesTool', () => {
     const b = img('b.png');
     await user.upload(screen.getByTestId('file-input'), [a, b]);
     await user.click(await screen.findByRole('button', { name: 'Make a 2-page PDF' }));
-    expect(state.start).toHaveBeenCalledWith({ files: [a, b], options: DEFAULT_OPTIONS });
+    expect(state.start).toHaveBeenCalledWith([a, b], DEFAULT_OPTIONS);
   });
 
   it('sends the picked page size, orientation and margin', async () => {
@@ -59,11 +59,11 @@ describe('ImagesTool', () => {
     await user.click(screen.getByRole('radio', { name: 'Landscape' }));
     await user.click(screen.getByRole('radio', { name: 'None' }));
     await user.click(screen.getByRole('button', { name: 'Make PDF' }));
-    expect(state.start).toHaveBeenCalledWith(
-      expect.objectContaining({
-        options: { size: 'letter', orientation: 'landscape', margin: 'none' },
-      }),
-    );
+    expect(state.start).toHaveBeenCalledWith(expect.any(Array), {
+      size: 'letter',
+      orientation: 'landscape',
+      margin: 'none',
+    });
   });
 
   it('turns the preview with the orientation and locks it for fit image', async () => {
@@ -117,11 +117,12 @@ describe('ImagesTool', () => {
   it('names the image that failed', () => {
     state.job = {
       status: 'error',
-      message: 'b.heic is a HEIC photo, and this browser cannot open those yet.',
+      message:
+        'b.heic could not be read. It may be damaged, or a HEIC variant this browser cannot decode.',
       fileName: 'b.heic',
     };
     setup();
     expect(screen.getByRole('heading', { name: 'The PDF was not made' })).toBeInTheDocument();
-    expect(screen.getByText(/b\.heic is a HEIC photo/)).toBeInTheDocument();
+    expect(screen.getByText(/b\.heic could not be read/)).toBeInTheDocument();
   });
 });

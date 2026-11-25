@@ -30,12 +30,12 @@ function setup() {
 }
 
 const files = [new File(['x'], 'beach.jpg', { type: 'image/jpeg' })];
-const request = { files, options: DEFAULT_OPTIONS };
+const request = { files, settings: DEFAULT_OPTIONS };
 
 describe('useImagesJob', () => {
   it('sends the images and options and ends with a pdf blob', () => {
     const { hook, workers } = setup();
-    act(() => hook.result.current.start(request));
+    act(() => void hook.result.current.start(files, DEFAULT_OPTIONS));
     expect(workers[0]?.posted).toEqual([request]);
     expect(hook.result.current.job).toMatchObject({ status: 'running', stage: 'reading' });
 
@@ -53,7 +53,7 @@ describe('useImagesJob', () => {
 
   it('passes the broken file name through', () => {
     const { hook, workers } = setup();
-    act(() => hook.result.current.start(request));
+    act(() => void hook.result.current.start(files, DEFAULT_OPTIONS));
     act(() =>
       workers[0]?.reply({
         type: 'error',
@@ -70,7 +70,7 @@ describe('useImagesJob', () => {
 
   it('reports a crash in plain words', async () => {
     const { hook, workers } = setup();
-    act(() => hook.result.current.start(request));
+    act(() => void hook.result.current.start(files, DEFAULT_OPTIONS));
     act(() => workers[0]?.onerror?.({ preventDefault: () => {} } as ErrorEvent));
     await waitFor(() =>
       expect(hook.result.current.job).toEqual({

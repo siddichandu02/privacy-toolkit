@@ -149,11 +149,34 @@ describe('imagesToPdf', () => {
     await expect(run).rejects.toBeInstanceOf(ImagesError);
     await expect(run).rejects.toMatchObject({
       fileName: 'broken.heic',
-      message: expect.stringContaining('broken.heic is a HEIC photo'),
+      message: expect.stringContaining('HEIC variant this browser cannot decode'),
     });
     await expect(
       imagesToPdf([{ name: 'odd.bmp', type: '', bytes: new Uint8Array([0]) }], opts(), noDecode),
     ).rejects.toThrow('odd.bmp could not be read.');
+  });
+
+  it('redraws a decoded HEIC photo as JPEG instead of keeping the big PNG copy', async () => {
+    const decode = vi.fn<ImageDecoder>(async () => ({ kind: 'jpg', bytes: makeJpeg() }));
+    const out = await imagesToPdf(
+      [{ name: 'IMG_9.HEIC', type: 'image/png', bytes: makePng(3, 2) }],
+      opts({ size: 'fit' }),
+      decode,
+    );
+    expect(decode).toHaveBeenCalledWith(expect.any(Uint8Array), 'image/png');
+    expect(await pageSizes(out.bytes)).toHaveLength(1);
+    expect(out.name).toBe('IMG_9.pdf');
+  });
+
+  it('names a HEIC photo the page could not decode without trying it', async () => {
+    const decode = vi.fn<ImageDecoder>();
+    const run = imagesToPdf(
+      [{ name: 'IMG_5.HEIC', type: '', bytes: new Uint8Array([0, 1]), undecoded: true }],
+      opts(),
+      decode,
+    );
+    await expect(run).rejects.toMatchObject({ fileName: 'IMG_5.HEIC' });
+    expect(decode).not.toHaveBeenCalled();
   });
 
   it('needs at least one image', async () => {

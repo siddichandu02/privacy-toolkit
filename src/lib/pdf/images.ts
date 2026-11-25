@@ -29,6 +29,8 @@ export interface ImageSource {
   /** MIME type when known. Used with the file signature to pick a path. */
   type: string;
   bytes: ArrayBuffer | Uint8Array;
+  /** A HEIC photo the page could not decode before it got here. */
+  undecoded?: boolean;
 }
 
 export interface ImagesResult {
@@ -124,14 +126,16 @@ export async function imagesToPdf(
   onProgress({ stage: 'working', progress: 0 });
   for (const [i, source] of sources.entries()) {
     const bytes = source.bytes instanceof Uint8Array ? source.bytes : new Uint8Array(source.bytes);
+    const heic = /\.hei[cf]$/i.test(source.name) || /hei[cf]/i.test(source.type);
     let image: PDFImage;
     try {
-      image = await embed(doc, bytes, source.type, decode);
+      if (source.undecoded) throw new Error('not decoded');
+      // A decoded HEIC arrives as a lossless PNG copy; a JPEG keeps the PDF photo-sized.
+      image = await embed(doc, bytes, source.type, decode, heic);
     } catch {
-      const heic = /\.hei[cf]$/i.test(source.name) || /hei[cf]/i.test(source.type);
       throw new ImagesError(
         heic
-          ? `${source.name} is a HEIC photo, and this browser cannot open those yet. Save it as a JPG first, then try again.`
+          ? `${source.name} could not be read. It may be damaged, or a HEIC variant this browser cannot decode.`
           : `${source.name} could not be read. It may be damaged, or a kind of image this browser cannot open.`,
         source.name,
       );
@@ -157,9 +161,10 @@ async function embed(
   bytes: Uint8Array,
   type: string,
   decode: ImageDecoder,
+  redraw = false,
 ): Promise<PDFImage> {
-  if (isJpeg(bytes) && jpegOrientation(bytes) === 1) return doc.embedJpg(bytes);
-  if (isPng(bytes)) return doc.embedPng(bytes);
+  if (!redraw && isJpeg(bytes) && jpegOrientation(bytes) === 1) return doc.embedJpg(bytes);
+  if (!redraw && isPng(bytes)) return doc.embedPng(bytes);
   const ready = await decode(bytes, type);
   return ready.kind === 'jpg' ? doc.embedJpg(ready.bytes) : doc.embedPng(ready.bytes);
 }
