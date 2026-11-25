@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { PDFDocument } from 'pdf-lib';
 import { makePng, withOrientation } from '../src/test/make-image';
+import { HEIC } from './heic';
 
 const png = (name: string, w: number, h: number) => ({
   name,
@@ -101,4 +102,38 @@ test('says which image could not be read', async ({ page }) => {
     timeout: 15_000,
   });
   await expect(page.getByText(/broken\.webp could not be read/)).toBeVisible();
+});
+
+test.describe('HEIC', () => {
+  // The HEIC decoder is a big file and slow to start when many browsers share one machine.
+  test.slow();
+
+  test('puts an iPhone photo on a page, opened on the device', async ({ page }) => {
+    await page.goto('./#/tools/images-to-pdf');
+    await page
+      .getByTestId('file-input')
+      .setInputFiles([
+        { name: 'IMG_0042.HEIC', mimeType: 'image/heic', buffer: HEIC },
+        png('tall.png', 90, 160),
+      ]);
+    // The decoded photo shows on the page preview.
+    await expect(page.getByTestId('page-preview').locator('img')).toHaveAttribute('src', /^blob:/, {
+      timeout: 90_000,
+    });
+    await page.getByText('Fit image', { exact: true }).click();
+    await page.getByRole('button', { name: 'Make a 2-page PDF' }).click();
+    await expect(page.getByRole('heading', { name: 'Your PDF is ready' })).toBeVisible({
+      timeout: 60_000,
+    });
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('link', { name: 'Download PDF' }).click(),
+    ]);
+    expect(download.suggestedFilename()).toBe('IMG_0042-and-1-more.pdf');
+    const path = await download.path();
+    expect(await pageSizes(path)).toHaveLength(2);
+    // The photo went in as a JPEG, not as a big lossless copy.
+    const pdf = await readFile(path);
+    expect(pdf.includes('/DCTDecode')).toBe(true);
+  });
 });

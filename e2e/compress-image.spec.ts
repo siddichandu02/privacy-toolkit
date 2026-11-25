@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import JSZip from 'jszip';
+import { HEIC } from './heic';
 
 /** A noisy photo drawn in the page and saved as a high-quality image. */
 async function photo(page: Page, width: number, height: number, type = 'image/jpeg') {
@@ -114,4 +115,40 @@ test('a file that is not really a photo is named, not fatal', async ({ page }) =
   ]);
   await page.getByRole('button', { name: 'Compress 2 photos' }).click();
   await expect(page.getByText(/Left out broken\.jpg/)).toBeVisible({ timeout: 15_000 });
+});
+
+test.describe('HEIC', () => {
+  // The HEIC decoder is a big file and slow to start when many browsers share one machine.
+  test.slow();
+
+  test('opens an iPhone photo on the device and saves it as JPG', async ({ page }) => {
+    await page.goto('./#/tools/compress-image');
+    await page
+      .getByTestId('file-input')
+      .setInputFiles([{ name: 'IMG_0042.HEIC', mimeType: 'image/heic', buffer: HEIC }]);
+    await expect(page.getByText(/HEIC becomes JPG/)).toBeVisible();
+    // The preview is drawn from the decoded photo, not a "cannot be shown" note.
+    await expect(page.getByTestId('photo-compare-after')).toHaveAttribute('src', /^blob:/, {
+      timeout: 90_000,
+    });
+    await expect(page.getByText(/cannot be shown/)).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Compress photo' }).click();
+    await expect(page.getByRole('heading', { name: /Your photo is (smaller|ready)/ })).toBeVisible({
+      timeout: 60_000,
+    });
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('link', { name: 'Download photo' }).click(),
+    ]);
+    expect(download.suggestedFilename()).toBe('IMG_0042-compressed.jpg');
+    const out = await readFile(await download.path());
+    expect(out.subarray(0, 2).toString('hex')).toBe('ffd8');
+    const size = await page.evaluate(async (b64) => {
+      const blob = await (await fetch(`data:image/jpeg;base64,${b64}`)).blob();
+      const bitmap = await createImageBitmap(blob);
+      return [bitmap.width, bitmap.height];
+    }, out.toString('base64'));
+    expect(size).toEqual([64, 48]);
+  });
 });
