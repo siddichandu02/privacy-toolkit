@@ -5,7 +5,7 @@ const PROMISES = ['Stays on your device', 'No tracking', 'No accounts'];
 
 export function Footer() {
   return (
-    <footer className="relative z-10 mt-24 border-t border-line">
+    <footer className="relative z-10 mt-24 border-t border-line pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-8 md:grid-cols-[1fr_auto] md:items-end">
         <div>
           <p className="font-display text-2xl leading-tight font-bold tracking-tight text-balance sm:text-3xl">
