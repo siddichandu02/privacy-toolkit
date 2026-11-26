@@ -534,6 +534,7 @@ export function SignaturePlacer({
           tabIndex={0}
           aria-label={`Page ${page + 1}. Scroll or drag to look around.`}
           data-testid="sign-view"
+          data-dock-avoid
           data-zoom={zoom.toFixed(3)}
           onPointerDown={onViewDown}
           onPointerMove={onViewMove}

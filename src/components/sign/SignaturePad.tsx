@@ -322,6 +322,7 @@ function DrawSurface({ strokes, color, onStrokesChange, onResize }: DrawSurfaceP
     <canvas
       ref={canvas}
       data-testid="signature-canvas"
+      data-dock-avoid
       aria-label="Signature drawing area"
       role="img"
       className="absolute inset-0 size-full cursor-crosshair touch-none"
@@ -371,7 +372,7 @@ function PadButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full border border-line px-3.5 py-1.5 text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted"
+      className="rounded-full border border-line px-3.5 py-1.5 text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted pointer-coarse:py-3"
     >
       {children}
     </button>
