@@ -3,6 +3,7 @@ import { AnimatedOutlet } from './components/layout/AnimatedOutlet';
 import { Footer } from './components/layout/Footer';
 import { Header } from './components/layout/Header';
 import { CommandCenter } from './components/palette/CommandCenter';
+import { OfflineNotice } from './offline/OfflineNotice';
 import { MeshBackground } from './components/layout/MeshBackground';
 import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
 import Home from './routes/Home';
@@ -23,6 +24,7 @@ function Layout() {
         <Footer />
       </div>
       <CommandCenter />
+      <OfflineNotice />
     </>
   );
 }
