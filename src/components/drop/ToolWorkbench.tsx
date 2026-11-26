@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { prefetchHelpers3D } from '../wait/scenes/three';
+import { ActionDock } from './ActionDock';
 import { DropZone, RejectionNotice } from './DropZone';
 import { FileList } from './FileList';
 import { UndoBar } from './UndoBar';
@@ -27,6 +28,7 @@ export function ToolWorkbench({
   const still = useStillMotion();
   const own = useFileQueue();
   const queue = outside ?? own;
+  const [footerEl, setFooterEl] = useState<HTMLDivElement | null>(null);
   // Shared by the full and compact zones so a message survives the swap.
   const [rejected, setRejected] = useState<Rejection[]>([]);
   const rules = rulesFor(tool.input);
@@ -104,7 +106,11 @@ export function ToolWorkbench({
             ) : (
               <RejectionNotice rejected={rejected} onDismiss={() => setRejected([])} />
             )}
-            {footer ? <div className="mt-8">{footer}</div> : null}
+            {footer ? (
+              <div ref={setFooterEl} className="mt-8">
+                {footer}
+              </div>
+            ) : null}
           </motion.div>
         ) : (
           <motion.div key="empty" {...swap} transition={{ duration: 0.22 }}>
@@ -118,6 +124,9 @@ export function ToolWorkbench({
           </motion.div>
         )}
       </AnimatePresence>
+      {footer && hasFiles ? (
+        <ActionDock root={footerEl} accent={tool.accent} hidden={queue.removed !== null} />
+      ) : null}
       <UndoBar
         removed={queue.removed}
         accent={tool.accent}

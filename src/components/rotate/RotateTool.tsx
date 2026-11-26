@@ -291,6 +291,7 @@ function RotatePanel({ file, accent, edits, onEditsChange, onSave }: RotatePanel
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={() => onSave(Array.from({ length: count }, (_, i) => ({ ...at(i) })))}
           disabled={!ready}
           className="shrink-0"

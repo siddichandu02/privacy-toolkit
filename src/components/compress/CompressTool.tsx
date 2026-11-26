@@ -185,6 +185,7 @@ function CompressPanel({ file, accent, level, onLevelChange, onCompress }: Compr
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={onCompress}
           className="shrink-0"
           icon={<SqueezeIcon />}

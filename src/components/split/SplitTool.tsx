@@ -281,6 +281,7 @@ function SplitPanel({
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={() => onSplit(ranges)}
           disabled={!ready}
           className="shrink-0"

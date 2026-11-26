@@ -289,6 +289,7 @@ function ConvertPanel({ items, accent, settings, onChange, onConvert }: PanelPro
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={onConvert}
           className="shrink-0"
           icon={<SwapIcon />}

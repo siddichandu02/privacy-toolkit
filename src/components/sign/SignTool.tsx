@@ -293,6 +293,7 @@ function SignPanel({
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={() =>
             onSign(
               spot.scope === 'all' && count > 1

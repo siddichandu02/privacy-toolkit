@@ -450,6 +450,7 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={onCompress}
           className="shrink-0"
           icon={<SqueezeIcon />}

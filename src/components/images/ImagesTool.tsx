@@ -249,6 +249,7 @@ function LayoutPanel({ items, accent, options, onChange, onMake }: LayoutPanelPr
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={onMake}
           aria-describedby={hintId}
           className="shrink-0"

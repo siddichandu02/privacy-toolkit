@@ -152,6 +152,7 @@ function MergeAction({
         variant="accent"
         accent={accent}
         size="lg"
+        data-main-action
         onClick={onMerge}
         disabled={!ready}
         aria-describedby={hintId}

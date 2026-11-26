@@ -293,6 +293,7 @@ function ExifPanel({ items, details, accent, onClean }: PanelProps) {
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={onClean}
           className="w-full shrink-0 sm:w-auto"
           icon={<ShredIcon />}

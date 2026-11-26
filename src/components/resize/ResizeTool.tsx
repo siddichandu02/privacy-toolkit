@@ -480,6 +480,7 @@ function ResizePanel({ items, index, onPick, photo, accent, onCut }: PanelProps)
           variant="accent"
           accent={accent}
           size="lg"
+          data-main-action
           onClick={cut}
           disabled={!ready}
           className="shrink-0"
