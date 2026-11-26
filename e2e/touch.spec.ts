@@ -60,11 +60,12 @@ test.describe('on a phone', () => {
     await expect(page.getByTestId('file-row')).toHaveCount(5);
     await page.evaluate(() => window.scrollTo(0, 0));
     const dock = page.getByTestId('action-dock');
-    await expect(dock.getByRole('button', { name: 'Merge 5 PDFs' })).toBeVisible();
-    const tile = await boxOf(dock.getByRole('button'));
+    const copy = page.getByTestId('action-dock-button');
+    await expect(copy).toHaveText('Merge 5 PDFs');
+    const tile = await boxOf(copy);
     expect(tile.height).toBeGreaterThanOrEqual(44);
 
-    await dock.getByRole('button', { name: 'Merge 5 PDFs' }).click();
+    await copy.click();
     await expect(page.getByRole('heading', { name: 'Your PDF is ready' })).toBeVisible({
       timeout: 30_000,
     });
@@ -97,4 +98,72 @@ test.describe('on a phone', () => {
     const palette = page.getByRole('dialog', { name: 'Search tools and actions' });
     await expect(palette).toHaveAttribute('data-placement', 'top');
   });
+});
+
+/** Controls on screen whose touch area is under 44 px either way (footer links aside). */
+async function smallTargets(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out = new Set<string>();
+    const controls = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        'main button, header button, header a[href], main a[href], main [role=button]',
+      ),
+    );
+    for (const el of controls) {
+      const box = el.getBoundingClientRect();
+      if (box.width === 0 || box.height === 0 || el.closest('.sr-only')) continue;
+      // A `tap` control reaches past its edges with an invisible ::after.
+      const after = getComputedStyle(el, '::after');
+      const reach = after.content !== 'none' && after.position === 'absolute';
+      const w = Math.max(box.width, reach ? parseFloat(after.width) || 0 : 0);
+      const h = Math.max(box.height, reach ? parseFloat(after.height) || 0 : 0);
+      if (w < 43.5 || h < 43.5) {
+        const name = (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40);
+        out.add(`${name} ${Math.round(w)}x${Math.round(h)}`);
+      }
+    }
+    return Array.from(out);
+  });
+}
+
+test.describe('tap targets on a phone', () => {
+  test.skip(({ isMobile }) => !isMobile, 'touch screens only');
+
+  const png = {
+    name: 'photo.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAKklEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAA8GMnAAHhLe1jAAAAAElFTkSuQmCC',
+      'base64',
+    ),
+  };
+  const tools: [string, 'pdf' | 'image', string][] = [
+    ['merge', 'pdf', 'Merge PDFs'],
+    ['split', 'pdf', 'Split'],
+    ['rotate', 'pdf', 'Turn page 1 right'],
+    ['sign', 'pdf', 'Next page'],
+    ['images-to-pdf', 'image', 'Show the next page'],
+    ['resize', 'image', 'Re-centre'],
+    ['exif', 'image', 'Remove photo.png'],
+  ];
+
+  test('home controls are at least 44 px to touch', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(await smallTargets(page)).toEqual([]);
+  });
+
+  for (const [id, kind, ready] of tools) {
+    test(`${id} controls are at least 44 px to touch`, async ({ page }) => {
+      await page.goto(`./#/tools/${id}`);
+      await page
+        .getByTestId('file-input')
+        .first()
+        .setInputFiles(kind === 'pdf' ? [pdf('three.pdf', 3)] : [png]);
+      await expect(page.getByRole('button', { name: ready }).first()).toBeVisible({
+        timeout: 15_000,
+      });
+      expect(await smallTargets(page)).toEqual([]);
+    });
+  }
 });
