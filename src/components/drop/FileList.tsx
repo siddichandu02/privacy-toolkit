@@ -1,10 +1,29 @@
-import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion';
-import { useEffect, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  Reorder,
+  useDragControls,
+  useMotionValue,
+  useMotionValueEvent,
+  useTransform,
+  type PanInfo,
+} from 'framer-motion';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { useStillMotion } from '../../useStillMotion';
 import { accentSoft, accentText, type Accent } from '../ui/accent';
 import { isPdf, makePreview, type FilePreview } from './preview';
 import type { QueuedFile } from './useFileQueue';
 import { formatBytes } from './validate';
+import { swipeRemoves, SWIPE_ARM } from './swipe';
 
 export interface FileListProps {
   items: readonly QueuedFile[];
@@ -246,6 +265,33 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
     }
   };
 
+  // Swipe a slip left with a finger to remove it (the Undo slip can bring it back).
+  const x = useMotionValue(0);
+  const slip = useRef<HTMLDivElement>(null);
+  const swipe = useDragControls();
+  const [armed, setArmed] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const underOpacity = useTransform(x, [-SWIPE_ARM, -12, 0], [1, 0.6, 0]);
+  // The glass slip is see-through, so only uncover the strip it has slid away from.
+  const underClip = useTransform(
+    x,
+    (v) => `inset(0 0 0 calc(100% - ${Math.max(0, -v) + 2}px) round var(--radius-card))`,
+  );
+  useMotionValueEvent(x, 'change', (v) => setArmed(v <= -SWIPE_ARM));
+
+  const onSlipPointerDown = (e: PointerEvent) => {
+    if (still || leaving || e.pointerType !== 'touch') return;
+    if ((e.target as Element).closest('button')) return;
+    swipe.start(e);
+  };
+
+  const onSwipeEnd = (_: unknown, info: PanInfo) => {
+    const width = slip.current?.offsetWidth ?? 320;
+    if (!swipeRemoves(info.offset.x, info.velocity.x, width)) return;
+    setLeaving(true);
+    void animate(x, -width - 24, { type: 'spring', stiffness: 380, damping: 40 }).then(onRemove);
+  };
+
   return (
     <Reorder.Item
       value={item}
@@ -253,96 +299,135 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
       dragControls={controls}
       initial={still ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      // Removed slips crumple a little and drop away.
+      // Removed slips crumple a little and drop away; swiped ones just fade, already off to the side.
       exit={
-        still
-          ? { opacity: 0 }
+        still || leaving
+          ? { opacity: 0, transition: { duration: 0.18 } }
           : { opacity: 0, x: 28, y: 6, scale: 0.82, rotate: 7, transition: { duration: 0.22 } }
       }
       whileDrag={still ? undefined : { scale: 1.03, rotate: -1, zIndex: 10 }}
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-      className="relative flex items-center gap-2 rounded-card border border-line bg-surface p-2 pr-2.5 shadow-soft backdrop-blur-xl sm:gap-3 sm:p-2.5 sm:pr-3"
+      className="relative"
       data-testid="file-row"
       style={{ '--slip': `var(--${accent})` } as CSSProperties}
     >
-      {/* A light glint runs across a slip when it lands in the list. */}
       {still ? null : (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
-        >
-          <motion.span
-            className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-[color-mix(in_srgb,var(--slip)_22%,transparent)] to-transparent"
-            initial={{ x: '0%' }}
-            animate={{ x: '450%' }}
-            transition={{ duration: 0.75, ease: 'easeOut', delay: 0.08 }}
-          />
-        </span>
-      )}
-      {/* Moved with a key or button: the rim flashes in the tool colour. */}
-      {bump > 0 ? (
         <motion.span
-          key={bump}
           aria-hidden="true"
-          data-testid="slip-flash"
-          className="pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-[var(--slip)]"
-          initial={{ opacity: 0.9, scale: still ? 1 : 1.015 }}
-          animate={{ opacity: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        />
-      ) : null}
-      {ordered ? (
-        <button
-          type="button"
-          aria-label={`Reorder ${name}, position ${index + 1} of ${count}. Use the arrow keys.`}
-          onPointerDown={(e) => controls.start(e)}
-          onKeyDown={onGripKey}
-          className="flex h-12 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-strong hover:text-fg active:cursor-grabbing"
+          data-testid="swipe-under"
+          data-armed={armed}
+          className="absolute inset-0 flex items-center justify-end gap-2 rounded-card border border-coral/40 bg-coral/15 pr-5 font-semibold text-coral"
+          style={{ opacity: underOpacity, clipPath: underClip }}
         >
-          <GripIcon />
-        </button>
-      ) : null}
-
-      <Thumb preview={preview} pdf={isPdf(item.file)} accent={accent} />
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold" title={name}>
-          {ordered ? (
-            <motion.span
-              key={index}
-              initial={still ? false : { scale: 1.5, y: -2 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 520, damping: 14 }}
-              className={`mr-1.5 inline-block origin-bottom font-display font-bold ${accentText[accent]}`}
-            >
-              {index + 1}.
-            </motion.span>
-          ) : null}
-          {name}
-        </p>
-        <p className="mt-0.5 text-sm text-muted">
-          {formatBytes(item.file.size)}
-          {pages !== null ? `, ${pages} ${pages === 1 ? 'page' : 'pages'}` : null}
-        </p>
-      </div>
-
-      {ordered ? (
-        <div className="hidden shrink-0 sm:flex">
-          <IconButton label={`Move ${name} up`} disabled={index === 0} onClick={() => onMove(-1)}>
-            <path d="M5 12.5 10 7.5l5 5" />
-          </IconButton>
-          <IconButton
-            label={`Move ${name} down`}
-            disabled={index === count - 1}
-            onClick={() => onMove(1)}
+          <motion.svg
+            viewBox="0 0 20 20"
+            className="size-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            animate={{ scale: armed ? 1.25 : 1, rotate: armed ? -12 : 0 }}
+            transition={{ type: 'spring', stiffness: 600, damping: 15 }}
           >
-            <path d="M5 7.5 10 12.5l5-5" />
-          </IconButton>
+            <path d="M4 6h12M8 6V4.5h4V6M6 6l.8 10h6.4L14 6" />
+          </motion.svg>
+          {armed ? 'Let go to remove' : 'Remove'}
+        </motion.span>
+      )}
+      <motion.div
+        ref={slip}
+        drag={still ? false : 'x'}
+        dragControls={swipe}
+        dragListener={false}
+        dragDirectionLock
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={{ left: 0.9, right: 0.04 }}
+        dragMomentum={false}
+        onDragEnd={onSwipeEnd}
+        onPointerDown={onSlipPointerDown}
+        className="relative flex items-center gap-2 rounded-card border border-line bg-surface p-2 pr-2.5 shadow-soft backdrop-blur-xl sm:gap-3 sm:p-2.5 sm:pr-3"
+        style={{ x, touchAction: 'pan-y' }}
+      >
+        {/* A light glint runs across a slip when it lands in the list. */}
+        {still ? null : (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+          >
+            <motion.span
+              className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-[color-mix(in_srgb,var(--slip)_22%,transparent)] to-transparent"
+              initial={{ x: '0%' }}
+              animate={{ x: '450%' }}
+              transition={{ duration: 0.75, ease: 'easeOut', delay: 0.08 }}
+            />
+          </span>
+        )}
+        {/* Moved with a key or button: the rim flashes in the tool colour. */}
+        {bump > 0 ? (
+          <motion.span
+            key={bump}
+            aria-hidden="true"
+            data-testid="slip-flash"
+            className="pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-[var(--slip)]"
+            initial={{ opacity: 0.9, scale: still ? 1 : 1.015 }}
+            animate={{ opacity: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          />
+        ) : null}
+        {ordered ? (
+          <button
+            type="button"
+            aria-label={`Reorder ${name}, position ${index + 1} of ${count}. Use the arrow keys.`}
+            onPointerDown={(e) => controls.start(e)}
+            onKeyDown={onGripKey}
+            className="flex h-12 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-strong hover:text-fg active:cursor-grabbing"
+          >
+            <GripIcon />
+          </button>
+        ) : null}
+
+        <Thumb preview={preview} pdf={isPdf(item.file)} accent={accent} />
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold" title={name}>
+            {ordered ? (
+              <motion.span
+                key={index}
+                initial={still ? false : { scale: 1.5, y: -2 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 14 }}
+                className={`mr-1.5 inline-block origin-bottom font-display font-bold ${accentText[accent]}`}
+              >
+                {index + 1}.
+              </motion.span>
+            ) : null}
+            {name}
+          </p>
+          <p className="mt-0.5 text-sm text-muted">
+            {formatBytes(item.file.size)}
+            {pages !== null ? `, ${pages} ${pages === 1 ? 'page' : 'pages'}` : null}
+          </p>
         </div>
-      ) : null}
-      <IconButton label={`Remove ${name}`} onClick={onRemove} danger>
-        <path d="M6 6l8 8M14 6l-8 8" />
-      </IconButton>
+
+        {ordered ? (
+          <div className="hidden shrink-0 sm:flex">
+            <IconButton label={`Move ${name} up`} disabled={index === 0} onClick={() => onMove(-1)}>
+              <path d="M5 12.5 10 7.5l5 5" />
+            </IconButton>
+            <IconButton
+              label={`Move ${name} down`}
+              disabled={index === count - 1}
+              onClick={() => onMove(1)}
+            >
+              <path d="M5 7.5 10 12.5l5-5" />
+            </IconButton>
+          </div>
+        ) : null}
+        <IconButton label={`Remove ${name}`} onClick={onRemove} danger>
+          <path d="M6 6l8 8M14 6l-8 8" />
+        </IconButton>
+      </motion.div>
     </Reorder.Item>
   );
 }
