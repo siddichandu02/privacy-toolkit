@@ -1,6 +1,8 @@
-import { motion } from 'framer-motion';
+import { motion, useDragControls, type PanInfo } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { PHONE_QUERY, useMedia } from '../../useMedia';
 import { useStillMotion } from '../../useStillMotion';
+import { shouldDismiss } from './sheetDrag';
 import { getReturnFocus } from './store';
 
 interface SheetProps {
@@ -9,15 +11,31 @@ interface SheetProps {
   children: ReactNode;
   className?: string;
   testId?: string;
+  /**
+   * Where it opens on phones. Most sheets rise from the bottom edge, within
+   * thumb reach; the search stays at the top so the keyboard never covers it.
+   */
+  phone?: 'bottom' | 'top';
 }
 
 /**
  * A modal sheet of paper that unfolds down from a crease at its top edge.
- * Locks page scroll, keeps Tab inside, closes on Escape or a backdrop click,
- * and hands focus back to whatever had it before.
+ * On phones it slides up from the bottom instead and can be pulled down by its
+ * grip to close. Locks page scroll, keeps Tab inside, closes on Escape or a
+ * backdrop click, and hands focus back to whatever had it before.
  */
-export function Sheet({ label, onClose, children, className = '', testId }: SheetProps) {
+export function Sheet({
+  label,
+  onClose,
+  children,
+  className = '',
+  testId,
+  phone = 'bottom',
+}: SheetProps) {
   const still = useStillMotion();
+  const isPhone = useMedia(PHONE_QUERY);
+  const bottom = isPhone && phone === 'bottom';
+  const drag = useDragControls();
   const panel = useRef<HTMLDivElement>(null);
   // Read during render, before an autofocused field inside takes focus.
   const [opener] = useState(() => getReturnFocus() ?? document.activeElement);
@@ -67,17 +85,68 @@ export function Sheet({ label, onClose, children, className = '', testId }: Shee
     };
   }, [opener]);
 
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    if (shouldDismiss(info.offset.y, info.velocity.y)) close.current();
+  };
+
+  const backdrop = (
+    <motion.div
+      aria-hidden="true"
+      className="absolute inset-0 bg-canvas/65 backdrop-blur-md"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
+      onClick={() => onClose()}
+    />
+  );
+
+  if (bottom) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center pt-[calc(2.5rem+env(safe-area-inset-top))]">
+        {backdrop}
+        <motion.div
+          ref={panel}
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          tabIndex={-1}
+          data-testid={testId}
+          data-placement="bottom"
+          className={`sheet-paper sheet-bottom relative flex max-h-full w-full flex-col overflow-hidden rounded-t-panel border border-b-0 border-line-strong bg-canvas-raised pb-[env(safe-area-inset-bottom)] shadow-lifted outline-none ${className}`}
+          initial={still ? { opacity: 0 } : { y: '100%' }}
+          animate={still ? { opacity: 1 } : { y: 0 }}
+          exit={still ? { opacity: 0 } : { y: '100%' }}
+          transition={
+            still ? { duration: 0.15 } : { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }
+          }
+          drag={still ? false : 'y'}
+          dragControls={drag}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.04, bottom: 0.9 }}
+          dragMomentum={false}
+          onDragEnd={onDragEnd}
+        >
+          <div
+            data-testid="sheet-grip"
+            aria-hidden="true"
+            className="sheet-grip flex h-7 shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
+            onPointerDown={(e) => {
+              if (!still) drag.start(e);
+            }}
+          >
+            <span className="h-1.5 w-10 rounded-full bg-line-strong" />
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex justify-center px-3 pt-[calc(min(12vh,7rem)+env(safe-area-inset-top))] sm:px-6">
-      <motion.div
-        aria-hidden="true"
-        className="absolute inset-0 bg-canvas/65 backdrop-blur-md"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }}
-        onClick={() => onClose()}
-      />
+      {backdrop}
       <div className="relative w-full max-w-xl [perspective:1400px]">
         <motion.div
           ref={panel}
@@ -86,6 +155,7 @@ export function Sheet({ label, onClose, children, className = '', testId }: Shee
           aria-label={label}
           tabIndex={-1}
           data-testid={testId}
+          data-placement="top"
           className={`sheet-paper relative max-h-[min(76vh,40rem)] overflow-hidden rounded-panel border border-line-strong bg-canvas-raised shadow-lifted outline-none ${className}`}
           style={{ transformOrigin: '50% 0%' }}
           initial={still ? { opacity: 0 } : { opacity: 0, rotateX: -58, y: -10 }}

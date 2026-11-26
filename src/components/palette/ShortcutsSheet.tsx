@@ -76,7 +76,7 @@ export function ShortcutsSheet({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-xl text-muted transition-colors hover:bg-surface-strong hover:text-fg"
+          className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-muted transition-colors hover:bg-surface-strong hover:text-fg"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
             <path

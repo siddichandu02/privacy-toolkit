@@ -182,7 +182,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Sheet label="Search tools and actions" onClose={onClose} testId="command-palette">
+    <Sheet label="Search tools and actions" onClose={onClose} testId="command-palette" phone="top">
       <div className="flex items-center gap-3 border-b-2 border-line px-5 transition-colors focus-within:border-violet">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5 shrink-0 text-muted">
           <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
