@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useState } from 'react';
 import { install, remindLater, useInstallState } from '../../offline/install';
 import { useOfflineState } from '../../offline/offline';
+import { IosSteps } from '../install/IosSteps';
 import { Button } from '../ui';
 
 const touchScreen = () =>
@@ -62,25 +63,6 @@ function HomeScreen({ placed, leaning }: { placed: boolean; leaning: boolean }) 
         </div>
       </div>
     </div>
-  );
-}
-
-function ShareIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="inline size-[1.15em] -translate-y-px align-middle text-sky"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 15V4m0 0L8 8m4-4 4 4M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -170,18 +152,7 @@ export function InstallSlip({ className = '' }: { className?: string }) {
                     It opens in its own window and works with no connection, even on a plane. Your
                     files still never leave your device.
                   </p>
-                  {state === 'ios' ? (
-                    <ol className="mt-4 space-y-1.5 text-[0.95rem]" data-testid="install-steps">
-                      <li>
-                        <span className="font-semibold">1.</span> Tap <ShareIcon />{' '}
-                        <span className="font-semibold">Share</span> in Safari&rsquo;s toolbar.
-                      </li>
-                      <li>
-                        <span className="font-semibold">2.</span> Choose{' '}
-                        <span className="font-semibold">Add to Home Screen</span>.
-                      </li>
-                    </ol>
-                  ) : null}
+                  {state === 'ios' ? <IosSteps className="mt-4" /> : null}
                   <OfflineLine />
                   <div className="mt-5 flex flex-wrap justify-center gap-3 sm:justify-start">
                     {state === 'prompt' ? (
