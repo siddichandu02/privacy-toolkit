@@ -316,7 +316,11 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
           aria-hidden="true"
           data-testid="swipe-under"
           data-armed={armed}
-          className="absolute inset-0 flex items-center justify-end gap-2 rounded-card border border-coral/40 bg-coral/15 pr-5 font-semibold text-coral"
+          className={`absolute inset-0 flex items-center justify-end gap-2 rounded-card border pr-5 font-semibold transition-colors duration-150 ${
+            armed
+              ? 'border-coral bg-coral text-on-accent'
+              : 'border-coral/40 bg-coral/15 text-coral'
+          }`}
           style={{ opacity: underOpacity, clipPath: underClip }}
         >
           <motion.svg
@@ -332,7 +336,7 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
           >
             <path d="M4 6h12M8 6V4.5h4V6M6 6l.8 10h6.4L14 6" />
           </motion.svg>
-          {armed ? 'Let go to remove' : 'Remove'}
+          Remove
         </motion.span>
       )}
       <motion.div
