@@ -70,14 +70,16 @@ function OfflineLine() {
   const offline = useOfflineState();
   if (offline === 'off') return null;
   return (
-    <p className="mt-3 flex items-center gap-2 text-sm text-muted" data-testid="offline-status">
+    <p className="mt-3 text-sm text-muted" data-testid="offline-status">
       <span
-        className={`size-2 shrink-0 rounded-full ${offline === 'ready' ? 'bg-mint' : 'animate-pulse bg-sunshine motion-reduce:animate-none'}`}
+        className={`mr-2 inline-block size-2 -translate-y-px rounded-full align-middle ${offline === 'ready' ? 'bg-mint' : 'animate-pulse bg-sunshine motion-reduce:animate-none'}`}
         aria-hidden="true"
       />
-      {offline === 'ready'
-        ? 'Already saved on this device, so every tool works offline in this browser too.'
-        : 'Saving the tools on this device for offline use...'}
+      <span>
+        {offline === 'ready'
+          ? 'Already saved on this device, so every tool works offline in this browser too.'
+          : 'Saving the tools on this device for offline use...'}
+      </span>
     </p>
   );
 }
