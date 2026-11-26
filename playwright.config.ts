@@ -15,6 +15,9 @@ export default defineConfig({
   use: {
     baseURL: BASE,
     trace: 'on-first-retry',
+    // The offline copy would answer requests before page.route sees them.
+    // offline.spec.ts turns it back on.
+    serviceWorkers: 'block',
     // Tool flows skip the six second wait story; story.spec.ts covers it.
     storageState: {
       cookies: [],
