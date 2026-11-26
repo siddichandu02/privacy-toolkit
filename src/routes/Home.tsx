@@ -3,6 +3,7 @@ import { Fragment, useId, useState } from 'react';
 import { CompressDemo } from '../components/home/CompressDemo';
 import { HeroDrop } from '../components/home/HeroDrop';
 import { HeroStory } from '../components/home/HeroStory';
+import { InstallSlip } from '../components/home/InstallSlip';
 import { PageDrop } from '../components/home/PageDrop';
 import { PrivacyProof } from '../components/privacy/PrivacyProof';
 import { PromiseStrip } from '../components/PromiseStrip';
@@ -113,6 +114,8 @@ export default function Home() {
         <CompressDemo className="mt-20 sm:mt-28" />
 
         <PromiseStrip className="mt-16 sm:mt-24" />
+
+        <InstallSlip className="mt-6" />
       </div>
     </PageDrop>
   );
