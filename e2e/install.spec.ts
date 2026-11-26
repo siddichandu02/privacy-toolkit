@@ -38,3 +38,17 @@ test('"Not now" keeps the offer away after a reload', async ({ page }) => {
   await offerInstall(page, 'accepted');
   await expect(page.getByTestId('install-slip')).toHaveCount(0);
 });
+
+test('the command palette still installs it after "Not now"', async ({ page }) => {
+  await page.goto('./');
+  await offerInstall(page, 'accepted');
+  await page.getByTestId('install-slip').getByRole('button', { name: 'Not now' }).click();
+  await expect(page.getByTestId('install-slip')).toHaveCount(0);
+  await page.keyboard.press('ControlOrMeta+k');
+  await page.getByRole('combobox', { name: 'Search tools and actions' }).fill('install');
+  await page.getByRole('option', { name: /Install the app/ }).click();
+  await expect(page.getByText('Added to your apps')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { prompted?: boolean }).prompted)).toBe(
+    true,
+  );
+});

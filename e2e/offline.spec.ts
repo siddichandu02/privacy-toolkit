@@ -21,6 +21,10 @@ test('after one visit the app opens and merges with no connection', async ({ pag
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toContainText('right in your browser');
+  // The privacy check says the tools come from the copy on this device.
+  await page.getByRole('button', { name: 'How can I check?' }).click();
+  await expect(page.getByTestId('saved-copy')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('offline-tip')).toContainText("You're offline");
 
   // A tool that was never opened online: its page, worker and pdf.js all come from the copy.
   await page.goto('./#/tools/merge');
