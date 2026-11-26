@@ -385,7 +385,7 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
             aria-label={`Reorder ${name}, position ${index + 1} of ${count}. Use the arrow keys.`}
             onPointerDown={(e) => controls.start(e)}
             onKeyDown={onGripKey}
-            className="flex h-12 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-strong hover:text-fg active:cursor-grabbing"
+            className="tap flex h-12 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-strong hover:text-fg active:cursor-grabbing"
           >
             <GripIcon />
           </button>
@@ -496,7 +496,7 @@ function IconButton({
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className={`flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted transition-[color,background-color,scale] duration-150 hover:bg-surface-strong active:scale-90 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent motion-reduce:active:scale-100 ${danger ? 'hover:text-coral' : 'hover:text-fg'}`}
+      className={`flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted transition-[color,background-color,scale] duration-150 hover:bg-surface-strong active:scale-90 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent motion-reduce:active:scale-100 pointer-coarse:size-11 ${danger ? 'hover:text-coral' : 'hover:text-fg'}`}
     >
       <svg
         viewBox="0 0 20 20"

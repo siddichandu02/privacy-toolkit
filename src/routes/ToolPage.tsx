@@ -29,7 +29,7 @@ function ToolView({ tool }: { tool: ToolInfo }) {
     <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:px-8 sm:pt-20">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg"
+        className="tap inline-flex items-center gap-1.5 rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg"
       >
         <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
           <path

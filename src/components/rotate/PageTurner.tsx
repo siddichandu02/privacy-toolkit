@@ -38,7 +38,7 @@ export function PageTurner({ pages, accent, edits, onTurn, onToggleKeep }: PageT
   return (
     <ul
       aria-label="Pages"
-      className="grid grid-cols-2 gap-x-3 gap-y-5 min-[420px]:grid-cols-3 sm:gap-x-4 md:grid-cols-4"
+      className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-4 md:grid-cols-4 min-[420px]:pointer-fine:grid-cols-3"
       style={{ '--turn': color } as CSSProperties}
     >
       {Array.from({ length: pages.count }, (_, i) => {
@@ -171,7 +171,7 @@ function TileButton({
       disabled={disabled}
       whileTap={still || disabled ? undefined : { scale: 0.86 }}
       transition={{ type: 'spring', stiffness: 600, damping: 26 }}
-      className={`grid size-8 shrink-0 place-items-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+      className={`grid size-8 shrink-0 place-items-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-35 pointer-coarse:size-11 ${
         pressed
           ? 'border-coral/50 bg-coral/15 text-coral'
           : danger

@@ -63,7 +63,7 @@ export function Segmented<T extends string>({
           return (
             <label
               key={o.id}
-              className={`relative rounded-xl px-2 py-2.5 text-sm font-semibold whitespace-nowrap transition-[color,scale] duration-150 active:scale-[0.97] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] motion-reduce:active:scale-100 sm:px-3 ${
+              className={`relative rounded-xl px-2 py-2.5 text-sm font-semibold whitespace-nowrap transition-[color,scale] duration-150 active:scale-[0.97] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] motion-reduce:active:scale-100 sm:px-3 pointer-coarse:py-3 ${
                 disabled ? 'cursor-not-allowed' : 'cursor-pointer'
               } ${on ? 'text-fg' : 'text-muted hover:text-fg'}`}
               style={{ '--pick': `var(--${accent})` } as CSSProperties}

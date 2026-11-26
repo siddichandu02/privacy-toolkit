@@ -24,7 +24,7 @@ export function PrivacyPill({ since, className = '' }: { since: number; classNam
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((o) => !o)}
-        className={`group inline-flex items-center gap-2.5 rounded-full border bg-surface py-1.5 pr-3 pl-2.5 text-sm font-semibold shadow-soft backdrop-blur-xl transition-[transform,border-color] duration-200 hover:-translate-y-0.5 active:scale-95 ${
+        className={`group tap inline-flex items-center gap-2.5 rounded-full border bg-surface py-1.5 pr-3 pl-2.5 text-sm font-semibold shadow-soft backdrop-blur-xl transition-[transform,border-color] duration-200 hover:-translate-y-0.5 active:scale-95 ${
           clean ? 'border-mint/30 hover:border-mint/60' : 'border-coral/50'
         }`}
       >

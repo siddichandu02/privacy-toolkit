@@ -530,7 +530,7 @@ function ZoomBar({
         type="button"
         onClick={() => onChange(CENTERED)}
         disabled={disabled || (view.zoom === 1 && view.x === 0.5 && view.y === 0.5)}
-        className="rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg disabled:opacity-40 disabled:hover:text-muted"
+        className="tap rounded-lg text-sm font-semibold text-muted transition-colors hover:text-fg disabled:opacity-40 disabled:hover:text-muted"
       >
         Re-centre
       </button>

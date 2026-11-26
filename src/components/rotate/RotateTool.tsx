@@ -318,7 +318,7 @@ function Chip({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center justify-center gap-1 rounded-full border border-line px-1.5 py-2 whitespace-nowrap text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted sm:gap-1.5 sm:py-1.5 sm:pr-3.5 sm:pl-3"
+      className="inline-flex items-center justify-center gap-1 rounded-full border border-line px-1.5 py-2 whitespace-nowrap text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted sm:gap-1.5 sm:py-1.5 sm:pr-3.5 sm:pl-3 pointer-coarse:py-3"
     >
       {children}
     </button>

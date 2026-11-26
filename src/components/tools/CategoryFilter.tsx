@@ -68,7 +68,7 @@ export function CategoryFilter({ options, value, onChange, className = '' }: Cat
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(option.value)}
               onKeyDown={(e) => move(e, i)}
-              className={`relative flex h-10 cursor-pointer items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors duration-200 focus-visible:rounded-xl ${selected ? 'text-on-violet' : 'text-muted hover:text-fg'}`}
+              className={`relative flex h-10 cursor-pointer items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors duration-200 focus-visible:rounded-xl pointer-coarse:h-11 ${selected ? 'text-on-violet' : 'text-muted hover:text-fg'}`}
             >
               {selected ? (
                 <motion.span

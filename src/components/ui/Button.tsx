@@ -15,7 +15,7 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'h-9 gap-1.5 px-3.5 text-sm rounded-xl',
+  sm: 'h-9 gap-1.5 px-3.5 text-sm rounded-xl pointer-coarse:h-11',
   md: 'h-11 gap-2 px-5 text-[0.95rem] rounded-control',
   lg: 'h-14 gap-2.5 px-7 text-lg rounded-[1.125rem]',
 };

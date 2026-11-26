@@ -351,7 +351,7 @@ function StepButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-9 place-items-center rounded-full transition-colors hover:bg-surface-strong hover:text-fg disabled:opacity-30 disabled:hover:bg-transparent"
+      className="grid size-9 place-items-center rounded-full transition-colors hover:bg-surface-strong hover:text-fg disabled:opacity-30 disabled:hover:bg-transparent pointer-coarse:size-11"
     >
       <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
         <path

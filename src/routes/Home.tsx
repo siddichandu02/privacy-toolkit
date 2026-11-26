@@ -73,7 +73,7 @@ export default function Home() {
                 aria-expanded={proofOpen}
                 aria-controls={proofId}
                 onClick={() => setProofOpen((o) => !o)}
-                className="rounded font-semibold whitespace-nowrap text-fg underline decoration-mint/70 decoration-2 underline-offset-4 hover:decoration-mint"
+                className="tap rounded font-semibold whitespace-nowrap text-fg underline decoration-mint/70 decoration-2 underline-offset-4 hover:decoration-mint"
               >
                 {proofOpen ? 'Hide the check' : 'How can I check?'}
               </button>

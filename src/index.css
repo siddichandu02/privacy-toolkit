@@ -562,3 +562,22 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
 }
+
+/*
+ * Grows a small control's touch area to at least 44 px on touch screens
+ * without changing how it looks or where it sits.
+ */
+@utility tap {
+  position: relative;
+  @media (pointer: coarse) {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      translate: -50% -50%;
+    }
+  }
+}

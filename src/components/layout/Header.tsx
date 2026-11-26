@@ -30,7 +30,7 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-20 sm:px-8">
         <Link
           to="/"
-          className="group mr-auto flex items-center gap-2.5 rounded-xl"
+          className="group tap mr-auto flex items-center gap-2.5 rounded-xl"
           aria-label="Privacy Toolkit, home"
         >
           <motion.span

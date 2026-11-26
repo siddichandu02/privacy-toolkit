@@ -72,7 +72,7 @@ export function ToolWorkbench({
                   queue.removeAll();
                   setRejected([]);
                 }}
-                className="rounded-lg text-sm font-semibold text-muted transition-colors hover:text-coral"
+                className="tap rounded-lg text-sm font-semibold text-muted transition-colors hover:text-coral"
               >
                 {items.length === 1 ? 'Remove' : 'Remove all'}
               </button>

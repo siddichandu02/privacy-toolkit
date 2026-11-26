@@ -146,7 +146,7 @@ export function HeroStory({ className = '' }: { className?: string }) {
               onClick={() => setPaused(!isPaused)}
               aria-label={isPaused ? 'Play the story' : 'Pause the story'}
               title={isPaused ? 'Play' : 'Pause'}
-              className="-mt-1 -mr-1 grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-[color,background-color,scale] hover:bg-surface-strong hover:text-fg active:scale-90 motion-reduce:active:scale-100"
+              className="tap -mt-1 -mr-1 grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-[color,background-color,scale] hover:bg-surface-strong hover:text-fg active:scale-90 motion-reduce:active:scale-100"
             >
               <svg viewBox="0 0 16 16" className="size-3.5" fill="currentColor" aria-hidden="true">
                 {isPaused ? (
@@ -160,7 +160,7 @@ export function HeroStory({ className = '' }: { className?: string }) {
           {/* Phones: a short list. Wider screens: three steps side by side. */}
           <ol
             aria-label="Three steps"
-            className="mt-2 space-y-1 lg:mt-4 lg:grid lg:grid-cols-3 lg:gap-5 lg:space-y-0"
+            className="mt-2 space-y-1 lg:mt-4 lg:grid lg:grid-cols-3 lg:gap-5 lg:space-y-0 pointer-coarse:space-y-0"
           >
             {STEPS.map((s, i) => {
               const on = i === step;
@@ -169,7 +169,7 @@ export function HeroStory({ className = '' }: { className?: string }) {
                   <button
                     type="button"
                     onClick={() => setStep(i as StoryStep)}
-                    className={`group w-full cursor-pointer rounded-lg py-0.5 text-left transition-opacity duration-300 ${
+                    className={`group w-full cursor-pointer rounded-lg py-0.5 text-left transition-opacity duration-300 pointer-coarse:py-3 lg:pointer-coarse:py-0.5 ${
                       on ? '' : 'lg:opacity-55 lg:hover:opacity-100'
                     }`}
                   >
