@@ -103,7 +103,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         key: 'install',
         group: 'Actions',
         title: reach === 'ios' ? 'Add to Home Screen' : 'Install the app',
-        detail: 'Open it in its own window, even with no connection.',
+        detail: 'Its own window, works with no connection.',
         accent: 'mint',
         icon: <InstallIcon />,
         words: 'install app home screen offline pwa desktop add download',
