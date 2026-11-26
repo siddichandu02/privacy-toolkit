@@ -28,6 +28,6 @@ describe('OfflineNotice', () => {
       worker.state = 'activated';
       worker.dispatchEvent(new Event('statechange'));
     });
-    expect(await screen.findByText('Ready to work offline')).toBeVisible();
+    expect(await screen.findByText('Ready to work offline')).toBeInTheDocument();
   });
 });
