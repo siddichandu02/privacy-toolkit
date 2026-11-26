@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { __test } from '../../lib/netWatch';
+import { resetOffline, startOffline } from '../../offline/offline';
 import { PrivacyProof } from './PrivacyProof';
 
 const setOnline = (value: boolean) => {
@@ -11,6 +12,7 @@ const setOnline = (value: boolean) => {
 describe('PrivacyProof', () => {
   afterEach(() => {
     __test.reset();
+    resetOffline();
     setOnline(true);
   });
 
@@ -54,5 +56,22 @@ describe('PrivacyProof', () => {
     expect(screen.getByTestId('offline-tip')).toHaveTextContent(/turn off your wi-fi/i);
     act(() => setOnline(false));
     expect(await screen.findByText(/you're offline/i)).toBeInTheDocument();
+  });
+
+  it('says when the tools are saved on this device', async () => {
+    render(<PrivacyProof />);
+    expect(screen.queryByTestId('saved-copy')).toBeNull();
+    const worker = Object.assign(new EventTarget(), { state: 'installing' as ServiceWorkerState });
+    const sw = {
+      controller: null,
+      register: async () => ({ installing: worker }),
+    } as unknown as ServiceWorkerContainer;
+    await act(() => startOffline(sw, '/sw.js'));
+    expect(screen.getByTestId('saved-copy')).toHaveTextContent(/saving the tools/i);
+    act(() => {
+      worker.state = 'activated';
+      worker.dispatchEvent(new Event('statechange'));
+    });
+    expect(screen.getByTestId('saved-copy')).toHaveTextContent(/saved on this device/i);
   });
 });

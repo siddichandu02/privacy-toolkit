@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { tally, useNetEntries, type NetEntry } from '../../lib/netWatch';
 import { useStillMotion } from '../../useStillMotion';
 import { formatBytes } from '../drop/validate';
+import { useOfflineState } from '../../offline/offline';
 import { useOnline } from './useOnline';
 
 /** The last part of a URL path, e.g. "merge.worker-abc.js". */
@@ -30,6 +31,7 @@ export function PrivacyProof({
 }) {
   const entries = useNetEntries();
   const online = useOnline();
+  const saved = useOfflineState();
   const still = useStillMotion();
   const t = tally(entries, since);
   const clean = t.outsideRequests === 0;
@@ -105,6 +107,29 @@ export function PrivacyProof({
         </div>
       </div>
 
+      {saved === 'off' ? null : (
+        <p
+          className="flex items-center gap-2.5 border-t border-line px-5 py-3 text-sm sm:px-6"
+          data-testid="saved-copy"
+          data-state={saved}
+        >
+          <DeviceIcon saving={saved === 'saving'} still={still} />
+          <span className="min-w-0 text-muted">
+            {saved === 'ready' ? (
+              <>
+                <span className="font-semibold text-fg">Saved on this device.</span> The tools open
+                and run from your browser&rsquo;s own copy, with or without a connection.
+              </>
+            ) : (
+              <>
+                <span className="font-semibold text-fg">Saving the tools on this device.</span> Only
+                the app&rsquo;s own code is kept, never your files.
+              </>
+            )}
+          </span>
+        </p>
+      )}
+
       <AnimatePresence initial={false} mode="wait">
         <motion.p
           key={online ? 'on' : 'off'}
@@ -124,6 +149,35 @@ export function PrivacyProof({
         </motion.p>
       </AnimatePresence>
     </section>
+  );
+}
+
+/** A laptop with the app tucked inside: a tick once saved, a filling bar while saving. */
+function DeviceIcon({ saving, still }: { saving: boolean; still: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`size-5 shrink-0 ${saving ? 'text-sunshine' : 'text-mint'}`}
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4" y="5" width="16" height="11" rx="1.8" />
+      <path d="M2.5 19.5h19" />
+      {saving ? (
+        <motion.path
+          d="M8 10.5h8"
+          initial={{ pathLength: still ? 1 : 0 }}
+          animate={{ pathLength: 1 }}
+          transition={still ? { duration: 0 } : { duration: 1.4, repeat: Infinity }}
+        />
+      ) : (
+        <path d="m9 10.5 2 2 4-4" />
+      )}
+    </svg>
   );
 }
 
