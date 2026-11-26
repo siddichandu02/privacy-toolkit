@@ -49,7 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <ol
         aria-label="Notifications"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2.5 p-4 sm:inset-x-auto sm:right-0 sm:items-end sm:p-6"
+        className="pointer-events-none fixed inset-x-0 bottom-[env(safe-area-inset-bottom)] z-[60] flex flex-col items-center gap-2.5 p-4 sm:inset-x-auto sm:right-[env(safe-area-inset-right)] sm:items-end sm:p-6"
       >
         <AnimatePresence initial={false}>
           {items.map((item) => (

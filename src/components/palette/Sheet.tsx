@@ -68,7 +68,7 @@ export function Sheet({ label, onClose, children, className = '', testId }: Shee
   }, [opener]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center px-3 pt-[min(12vh,7rem)] sm:px-6">
+    <div className="fixed inset-0 z-50 flex justify-center px-3 pt-[calc(min(12vh,7rem)+env(safe-area-inset-top))] sm:px-6">
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 bg-canvas/65 backdrop-blur-md"
