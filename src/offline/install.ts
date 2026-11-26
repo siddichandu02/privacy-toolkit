@@ -46,19 +46,22 @@ export function isIosSafari(ua: string, touchPoints: number): boolean {
 }
 
 let state: InstallState = 'none';
+let reach: InstallState = 'none';
 
-function compute(): InstallState {
+function compute(askedFor: boolean): InstallState {
   if (installed || standalone()) return 'installed';
-  if (Date.now() < laterUntil()) return 'none';
+  if (!askedFor && Date.now() < laterUntil()) return 'none';
   if (offer) return 'prompt';
   if (isIosSafari(navigator.userAgent, navigator.maxTouchPoints)) return 'ios';
   return 'none';
 }
 
 function refresh() {
-  const next = compute();
-  if (next === state) return;
+  const next = compute(false);
+  const nextReach = compute(true);
+  if (next === state && nextReach === reach) return;
   state = next;
+  reach = nextReach;
   emit();
 }
 
@@ -93,6 +96,16 @@ export function useInstallState(): InstallState {
   return useSyncExternalStore(subscribe, getInstallState, () => 'none');
 }
 
+/**
+ * Like the install state, but ignores "Not now". Used where someone goes
+ * looking for it on purpose, such as the command palette.
+ */
+export const getInstallReach = () => reach;
+
+export function useInstallReach(): InstallState {
+  return useSyncExternalStore(subscribe, getInstallReach, () => 'none');
+}
+
 /** Show the browser's install dialog. True when it was accepted. */
 export async function install(): Promise<boolean> {
   const event = offer;
@@ -124,5 +137,6 @@ export function resetInstall() {
   installed = false;
   hiddenUntil = null;
   state = 'none';
+  reach = 'none';
   listeners.clear();
 }

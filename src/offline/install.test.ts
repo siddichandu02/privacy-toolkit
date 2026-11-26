@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  getInstallReach,
   getInstallState,
   install,
   isIosSafari,
@@ -74,6 +75,15 @@ describe('install offer', () => {
     expect(getInstallState()).toBe('prompt');
     remindLater();
     expect(getInstallState()).toBe('none');
+  });
+
+  it('still lets you install on purpose after "Not now"', () => {
+    const target = new EventTarget() as Window;
+    listenForInstall(target);
+    target.dispatchEvent(offer());
+    remindLater();
+    expect(getInstallState()).toBe('none');
+    expect(getInstallReach()).toBe('prompt');
   });
 
   it('says installed once the app is added', () => {
