@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { useId, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { install, useInstallReach } from '../../offline/install';
 import { prefetchTool } from '../../routes/toolLoaders';
 import { useTheme } from '../../theme/useTheme';
 import { getTool, rankTools, TOOLS, toolPath, type ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { Pip } from '../pip/Pip';
 import { ToolIcon } from '../tools/ToolIcon';
+import { useToast } from '../ui';
 import { accentSoft, accentText, type Accent } from '../ui/accent';
 import { useRecentTools } from './recent';
 import { Key, Sheet } from './Sheet';
@@ -34,6 +36,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const { pathname } = useLocation();
   const { theme, toggleTheme } = useTheme();
   const recent = useRecentTools();
+  const reach = useInstallReach();
+  const { toast } = useToast();
   const still = useStillMotion();
   const listId = useId();
   const [query, setQuery] = useState('');
@@ -94,6 +98,34 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       },
     ];
 
+    if (reach === 'prompt' || reach === 'ios') {
+      actions.push({
+        key: 'install',
+        group: 'Actions',
+        title: reach === 'ios' ? 'Add to Home Screen' : 'Install the app',
+        detail: 'Open it in its own window, even with no connection.',
+        accent: 'mint',
+        icon: <InstallIcon />,
+        words: 'install app home screen offline pwa desktop add download',
+        run: () => {
+          if (reach === 'ios') {
+            openOverlay('install');
+            return;
+          }
+          onClose();
+          void install().then((added) => {
+            if (added) {
+              toast({
+                title: 'Added to your apps',
+                description: 'It opens in its own window and works offline.',
+                tone: 'success',
+              });
+            }
+          });
+        },
+      });
+    }
+
     const q = fold(query);
     if (!q) {
       const recentTools = recent
@@ -115,7 +147,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         return words.every((w) => hay.includes(w));
       }),
     ];
-  }, [query, recent, theme, toggleTheme, navigate, pathname, onClose]);
+  }, [query, recent, theme, toggleTheme, navigate, pathname, onClose, reach, toast]);
 
   const shown = Math.min(active, Math.max(commands.length - 1, 0));
   const current = commands[shown];
@@ -314,6 +346,15 @@ function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
       <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1Z" {...s} />
+    </svg>
+  );
+}
+
+function InstallIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+      <rect x="6" y="2.5" width="12" height="19" rx="2.5" {...s} />
+      <path d="M12 7v7m0 0-3-3m3 3 3-3M10 18.5h4" {...s} />
     </svg>
   );
 }

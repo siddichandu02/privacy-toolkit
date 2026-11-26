@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
-/** Which overlay is open: the tool search, the shortcuts sheet, or neither. */
-export type Overlay = 'palette' | 'shortcuts' | null;
+/** Which overlay is open: the tool search, the shortcuts sheet, the iPhone install steps, or none. */
+export type Overlay = 'palette' | 'shortcuts' | 'install' | null;
 
 let current: Overlay = null;
 let returnTo: Element | null = null;

@@ -1,6 +1,7 @@
 import { AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
+import { InstallSheet } from './InstallSheet';
 import { ShortcutsSheet } from './ShortcutsSheet';
 import { closeOverlay, getOverlay, openOverlay, useOverlay } from './store';
 
@@ -35,6 +36,7 @@ export function CommandCenter() {
     <AnimatePresence>
       {overlay === 'palette' ? <CommandPalette key="palette" onClose={closeOverlay} /> : null}
       {overlay === 'shortcuts' ? <ShortcutsSheet key="shortcuts" onClose={closeOverlay} /> : null}
+      {overlay === 'install' ? <InstallSheet key="install" onClose={closeOverlay} /> : null}
     </AnimatePresence>
   );
 }

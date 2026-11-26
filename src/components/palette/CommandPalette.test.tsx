@@ -1,5 +1,12 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { afterEach, vi } from 'vitest';
+import {
+  listenForInstall,
+  remindLater,
+  resetInstall,
+  type InstallPromptEvent,
+} from '../../offline/install';
 import { renderApp } from '../../test/renderApp';
 import { rememberTool, resetRecentCache } from './recent';
 import { closeOverlay } from './store';
@@ -157,5 +164,49 @@ describe('shortcuts sheet', () => {
     expect(close).toHaveFocus();
     await user.tab();
     expect(close).toHaveFocus();
+  });
+});
+
+describe('install from the palette', () => {
+  const IPHONE =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+
+  beforeEach(() => resetInstall());
+  afterEach(() => vi.restoreAllMocks());
+
+  it('has no install action when the browser offers none', async () => {
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.keyboard('{Control>}k{/Control}install');
+    expect(within(palette()).queryByRole('option', { name: /install/i })).toBeNull();
+  });
+
+  it('shows the browser dialog, even after "Not now"', async () => {
+    const target = new EventTarget() as Window;
+    listenForInstall(target);
+    const e = new Event('beforeinstallprompt') as InstallPromptEvent;
+    e.prompt = vi.fn(async () => {});
+    e.userChoice = Promise.resolve({ outcome: 'accepted' as const });
+    target.dispatchEvent(e);
+    remindLater();
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.keyboard('{Control>}k{/Control}install');
+    expect(selected()).toHaveTextContent('Install the app');
+    await user.keyboard('{Enter}');
+    expect(e.prompt).toHaveBeenCalled();
+    expect(await screen.findByText('Added to your apps')).toBeInTheDocument();
+  });
+
+  it('shows the two Safari steps on an iPhone', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(IPHONE);
+    listenForInstall(new EventTarget() as Window);
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.keyboard('{Control>}k{/Control}home screen{Enter}');
+    const sheet = await screen.findByRole('dialog', { name: 'Add to Home Screen' });
+    expect(within(sheet).getByTestId('install-steps')).toHaveTextContent('Add to Home Screen');
+    await user.click(within(sheet).getByRole('button', { name: 'Got it' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });
