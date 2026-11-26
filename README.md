@@ -49,6 +49,13 @@ back in one ZIP, and the finished card lists each file with its own save button 
 Every image tool opens iPhone HEIC photos, decoded on the device. Compress image saves them as
 JPG, and Images to PDF puts them on the page as JPEG so the PDF stays photo-sized.
 
+## Offline and install
+
+After the first visit the whole app (every tool, its workers and the fonts) is kept in your
+browser, so it opens and works with no connection. It can also be installed: Chrome, Edge and
+Android show an "Install app" offer on the home page, and on iPhone or iPad you add it from
+Safari's Share menu. The offline copy only holds the app's own files, never anything you open.
+
 ## Keyboard
 
 Press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac) on any page to search
