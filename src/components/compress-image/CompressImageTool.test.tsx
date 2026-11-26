@@ -147,6 +147,34 @@ describe('CompressImageTool', () => {
     expect(state.start).toHaveBeenCalledWith([photo], expect.objectContaining({ format: 'webp' }));
   });
 
+  it('says a GIF keeps only its first frame', async () => {
+    const { user } = await setup([
+      new File([new Uint8Array(64)], 'wave.gif', { type: 'image/gif' }),
+    ]);
+    expect(screen.getByText(/GIF becomes PNG and keeps only its first frame/)).toBeVisible();
+    await user.click(screen.getByRole('radio', { name: 'JPG' }));
+    expect(
+      screen.getByText(/See-through parts turn white\. A moving GIF keeps only/),
+    ).toBeVisible();
+  });
+
+  it('says when a photo was too big to save at full size', () => {
+    state.job = done({
+      items: [
+        {
+          name: 'pano-compressed.jpg',
+          type: 'image/jpeg',
+          before: 4000,
+          after: 1000,
+          kept: false,
+          shrunk: true,
+        },
+      ],
+    });
+    render(ui());
+    expect(screen.getByText(/pano-compressed\.jpg was too big for this browser/)).toBeVisible();
+  });
+
   it('explains a photo it cannot show', async () => {
     state.preview = { preview: null, busy: false, failed: true };
     await setup([new File([new Uint8Array(64)], 'phone.heic', { type: 'image/heic' })]);

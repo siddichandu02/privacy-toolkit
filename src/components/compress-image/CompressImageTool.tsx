@@ -63,6 +63,22 @@ const FORMAT_HINTS: Record<OutputFormat, string> = {
   webp: 'Usually the smallest. Opens in every current browser.',
 };
 
+const isGif = (file: File) => /\.gif$/i.test(file.name) || file.type === 'image/gif';
+
+/** The "Save as" hint, with a word on HEIC and GIF photos when they are in the list. */
+function formatHint(format: OutputFormat, files: readonly File[]) {
+  const parts = [FORMAT_HINTS[format]];
+  if (format === 'same' && files.some((f) => sourceType(f) === 'image/heic'))
+    parts.push('HEIC becomes JPG, so every app can open it.');
+  if (files.some(isGif))
+    parts.push(
+      format === 'same'
+        ? 'GIF becomes PNG and keeps only its first frame.'
+        : 'A moving GIF keeps only its first frame.',
+    );
+  return parts.join(' ');
+}
+
 /** Plain word for how the quality will look. */
 function qualityWord(q: number) {
   if (q >= 0.85) return 'Almost untouched';
@@ -404,11 +420,10 @@ function CompressImagePanel({ items, accent, settings, onChange, onCompress }: P
             value={settings.format}
             onChange={(format) => onChange({ ...settings, format })}
             accent={accent}
-            hint={
-              settings.format === 'same' && items.some((i) => sourceType(i.file) === 'image/heic')
-                ? `${FORMAT_HINTS.same} HEIC becomes JPG, so every app can open it.`
-                : FORMAT_HINTS[settings.format]
-            }
+            hint={formatHint(
+              settings.format,
+              items.map((i) => i.file),
+            )}
           />
           <Segmented
             legend="Longest side (pixels)"

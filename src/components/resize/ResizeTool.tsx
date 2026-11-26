@@ -352,6 +352,8 @@ function ResizePanel({ items, index, onPick, photo, accent, onCut }: PanelProps)
         ? `Every photo is cut to the same size. You moved the frame on ${photosWord(moved)}; the rest are centred.`
         : 'Every photo is cut to the same size, centred. Pick a photo above to move its frame.',
     );
+  if (items.some((i) => /\.gif$/i.test(i.file.name) || i.file.type === 'image/gif'))
+    notes.push('GIFs are saved as PNG, and a moving GIF keeps only its first frame.');
   if (presetId === 'passport' || presetId === 'us-passport')
     notes.push(
       'Official rules vary: most ask for a plain light background, your face centred and no glasses. Check yours before printing.',

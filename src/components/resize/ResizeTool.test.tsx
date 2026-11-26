@@ -138,6 +138,11 @@ describe('ResizeTool', () => {
     expect(screen.getByRole('button', { name: 'Pick a size' })).toBeDisabled();
   });
 
+  it('says a GIF comes back as PNG with only its first frame', async () => {
+    await setup(file('wave.gif', 'image/gif'));
+    expect(screen.getByTestId('resize-notes')).toHaveTextContent(/GIFs are saved as PNG/);
+  });
+
   it('opens a HEIC photo on the device to show it and sends the picked file', async () => {
     const png = new File(['png'], 'IMG_1.HEIC', { type: 'image/png' });
     state.decode.mockResolvedValue(png);
