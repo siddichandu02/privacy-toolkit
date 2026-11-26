@@ -121,4 +121,33 @@ describe('ConvertTool', () => {
     expect(screen.getByRole('heading', { name: 'Your photo is now PNG' })).toBeVisible();
     expect(screen.getByText(/cannot save JPG, so you get PNG/)).toBeVisible();
   });
+
+  it('names the photos that were saved a little smaller', () => {
+    state.job = done({
+      name: 'converted-photos.zip',
+      items: [
+        {
+          name: 'a.jpg',
+          from: 'image/heic',
+          type: 'image/jpeg',
+          before: 3000,
+          after: 1000,
+          shrunk: true,
+        },
+        {
+          name: 'b.jpg',
+          from: 'image/heic',
+          type: 'image/jpeg',
+          before: 3000,
+          after: 1000,
+          shrunk: true,
+        },
+        { name: 'c.jpg', from: 'image/png', type: 'image/jpeg', before: 3000, after: 1000 },
+      ],
+    });
+    render(ui());
+    expect(
+      screen.getByText(/2 photos were too big for this browser to draw at full size/),
+    ).toBeVisible();
+  });
 });
