@@ -16,6 +16,12 @@ const TOOLS = [
 ];
 const PDF_TOOLS = new Set(['merge', 'split', 'rotate', 'sign', 'compress-pdf']);
 
+const pdf = (name: string, pages = 1) => ({
+  name,
+  mimeType: 'application/pdf',
+  buffer: makePdf(pages, name),
+});
+
 /** WCAG 2.1 A and AA rules only; the 3D canvas and decorative layers are left out. */
 async function scan(page: Page) {
   const result = await new AxeBuilder({ page })
@@ -75,5 +81,74 @@ for (const theme of ['dark', 'light'] as const) {
         expect(await scan(page)).toEqual([]);
       });
     }
+
+    test('done cards have no WCAG AA problems', async ({ page }) => {
+      await page.goto('./#/tools/merge');
+      await page.getByTestId('file-input').setInputFiles([pdf('a.pdf', 2), pdf('b.pdf', 1)]);
+      await page.getByRole('button', { name: 'Merge 2 PDFs' }).click();
+      await expect(page.getByRole('heading', { name: 'Your PDF is ready' })).toBeVisible({
+        timeout: 15_000,
+      });
+      await page.waitForTimeout(600);
+      expect(await scan(page)).toEqual([]);
+
+      await page.goto('./#/tools/convert');
+      await page.getByTestId('file-input').setInputFiles([await photo(page)]);
+      await page.getByRole('button', { name: /^Convert to/ }).click();
+      await expect(page.getByRole('heading', { name: /Your photo is now/ })).toBeVisible({
+        timeout: 15_000,
+      });
+      await page.waitForTimeout(600);
+      expect(await scan(page)).toEqual([]);
+    });
+
+    test('the error card has no WCAG AA problems', async ({ page }) => {
+      await page.goto('./#/tools/merge');
+      await page.route(/\/merge\.worker-[\w-]+\.js/, (route) =>
+        route.fulfill({ status: 404, body: 'Not found' }),
+      );
+      await page.getByTestId('file-input').setInputFiles([pdf('a.pdf'), pdf('b.pdf')]);
+      await page.getByRole('button', { name: 'Merge 2 PDFs' }).click();
+      await expect(page.getByRole('alert')).toBeVisible({ timeout: 15_000 });
+      await page.waitForTimeout(600);
+      expect(await scan(page)).toEqual([]);
+    });
+
+    test('the search palette and shortcuts sheet have no WCAG AA problems', async ({ page }) => {
+      await page.goto('./');
+      await page.getByRole('button', { name: 'Search tools' }).click();
+      const palette = page.getByRole('dialog', { name: /search tools and actions/i });
+      await palette.getByRole('combobox').fill('pdf');
+      await expect(palette.getByRole('option').first()).toBeVisible();
+      await page.waitForTimeout(400);
+      expect(await scan(page)).toEqual([]);
+      await page.keyboard.press('Escape');
+      await expect(palette).toHaveCount(0);
+
+      await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      await page.keyboard.press('?');
+      await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible();
+      await page.waitForTimeout(400);
+      expect(await scan(page)).toEqual([]);
+    });
+
+    test('home suggestions after a drop have no WCAG AA problems', async ({ page }) => {
+      await page.goto('./');
+      await page.getByTestId('hero-file-input').setInputFiles([pdf('a.pdf'), pdf('b.pdf')]);
+      await expect(page.getByRole('group', { name: 'What should we do with it?' })).toBeVisible();
+      await page.waitForTimeout(400);
+      expect(await scan(page)).toEqual([]);
+    });
+
+    test('the lost page has no WCAG AA problems', async ({ page }) => {
+      await page.goto('./#/tools/spilt');
+      const unfold = page.getByRole('button', { name: 'Unfold the crumpled page' });
+      await expect(unfold).toBeVisible();
+      expect(await scan(page)).toEqual([]);
+      await unfold.click();
+      await expect(page.getByText('Found the way back.')).toBeVisible();
+      await page.waitForTimeout(400);
+      expect(await scan(page)).toEqual([]);
+    });
   });
 }
