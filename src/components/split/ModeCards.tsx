@@ -52,7 +52,7 @@ export function ModeCards({ accent, mode, pageCount, onChange }: ModeCardsProps)
       {single ? (
         <p className="mt-1 text-sm text-muted">This PDF has 1 page, so it can only be extracted.</p>
       ) : null}
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+      <div className="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-3">
         {SPLIT_MODES.map((m) => {
           const on = m.id === mode;
           const off = single && m.id !== 'extract';
@@ -60,7 +60,7 @@ export function ModeCards({ accent, mode, pageCount, onChange }: ModeCardsProps)
             <label
               key={m.id}
               data-testid={`split-mode-${m.id}`}
-              className={`group relative flex cursor-pointer items-center gap-4 rounded-2xl border-2 p-3.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] sm:flex-col sm:items-start sm:gap-3 sm:p-4 ${
+              className={`group relative flex cursor-pointer items-center gap-3 rounded-2xl border-2 py-3 pr-9 pl-3 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] sm:flex-col sm:items-start sm:gap-3 sm:p-4 sm:pr-4 ${
                 on
                   ? 'border-[var(--pick)] bg-[color-mix(in_srgb,var(--pick)_9%,transparent)]'
                   : 'border-line bg-canvas/40 hover:border-line-strong'
@@ -78,23 +78,23 @@ export function ModeCards({ accent, mode, pageCount, onChange }: ModeCardsProps)
               />
               <motion.span
                 aria-hidden="true"
-                className="block w-24 shrink-0 sm:w-full"
+                className="block w-20 shrink-0 sm:w-full"
                 animate={on && !still ? { y: [0, -3, 0] } : { y: 0 }}
                 transition={{ duration: 0.35 }}
               >
                 <ModeDiagram mode={m.id} accent={accent} on={on} />
               </motion.span>
               <span className="min-w-0">
-                <span className="block font-display text-lg font-bold tracking-tight">
+                <span className="block font-display text-base leading-tight font-bold tracking-tight sm:text-lg">
                   {m.title}
                 </span>
-                <span className="mt-0.5 block text-sm leading-snug text-muted">
+                <span className="mt-0.5 block text-[0.8125rem] leading-snug text-muted sm:text-sm">
                   {m.blurb(pageCount)}
                 </span>
               </span>
               <span
                 aria-hidden="true"
-                className={`absolute top-3 right-3 grid size-5 place-items-center rounded-full border-2 transition-colors ${
+                className={`absolute top-1/2 right-3 grid size-5 -translate-y-1/2 place-items-center rounded-full border-2 transition-colors sm:top-3 sm:translate-y-0 ${
                   on ? 'border-[var(--pick)] bg-[var(--pick)]' : 'border-line-strong'
                 }`}
               >
