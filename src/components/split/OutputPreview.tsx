@@ -59,7 +59,7 @@ export function OutputPreview({ files, pages, accent, zipName, colored }: Output
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               aria-hidden="true"
-              className="h-28 w-[5.5rem] rounded-xl border-2 border-dashed border-line-strong"
+              className="h-36 w-[6.5rem] rounded-xl border-2 border-dashed border-line-strong sm:w-28"
             />
           ) : (
             shown.map((file, i) => (
@@ -72,13 +72,13 @@ export function OutputPreview({ files, pages, accent, zipName, colored }: Output
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={still ? { opacity: 0 } : { opacity: 0, scale: 0.85 }}
                 transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                className="w-[5.5rem] sm:w-24"
+                className="w-[6.5rem] sm:w-28"
                 style={
                   { '--part': colored ? partColor(i, accent) : `var(--${accent})` } as CSSProperties
                 }
               >
                 <FileStack pages={pages} first={file.pages[0] ?? 1} count={file.pages.length} />
-                <p className="mt-2 truncate text-xs font-semibold" title={file.name}>
+                <p className="mt-2 line-clamp-2 text-xs font-semibold break-all" title={file.name}>
                   {file.name}
                 </p>
                 <p className="text-xs text-muted">{file.label}</p>
@@ -92,7 +92,7 @@ export function OutputPreview({ files, pages, accent, zipName, colored }: Output
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid h-28 w-[5.5rem] place-items-center rounded-xl border border-line bg-surface text-center sm:w-24"
+              className="grid h-36 w-[6.5rem] place-items-center rounded-xl border border-line bg-surface text-center sm:w-28"
             >
               <span>
                 <span className="block font-display text-xl font-bold">+{more}</span>
@@ -110,7 +110,7 @@ export function OutputPreview({ files, pages, accent, zipName, colored }: Output
 function FileStack({ pages, first, count }: { pages: PdfPages; first: number; count: number }) {
   const behind = Math.min(2, count - 1);
   return (
-    <div className="relative h-28 pt-1.5 pr-1.5" aria-hidden="true">
+    <div className="relative h-36 pt-1.5 pr-1.5" aria-hidden="true">
       {Array.from({ length: behind }, (_, i) => (
         <span
           key={i}
