@@ -63,6 +63,13 @@ every tool by name or by what you want to do ("join", "passport", "gps"). The to
 lately come first, and are also listed above the tool grid on the home page. They are kept in
 your browser's local storage and nowhere else. Press <kbd>?</kbd> to see every shortcut.
 
+## On a phone
+
+Swipe a file to the left to remove it (Undo brings it back). When the list gets long, the main
+button stays at the bottom of the screen so you never have to scroll to find it. Sheets such as
+the shortcuts list slide up from the bottom and close when you pull them down. Pinch to zoom
+works where you place a signature or crop a photo.
+
 ## Develop
 
 Requires Node 22 or newer.
