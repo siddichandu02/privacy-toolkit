@@ -159,9 +159,13 @@ describe('shortcuts sheet', () => {
     const user = userEvent.setup();
     renderApp('/');
     await user.keyboard('?');
-    const close = within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' });
+    const sheet = within(screen.getByRole('dialog'));
+    const close = sheet.getByRole('button', { name: 'Close' });
+    const list = sheet.getByRole('region', { name: 'Shortcut list' });
     await user.tab();
     expect(close).toHaveFocus();
+    await user.tab();
+    expect(list).toHaveFocus();
     await user.tab();
     expect(close).toHaveFocus();
   });
