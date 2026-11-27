@@ -82,7 +82,7 @@ export function CategoryFilter({ options, value, onChange, className = '' }: Cat
               ) : null}
               <span className="relative">{option.label}</span>
               <span
-                className={`relative min-w-5 rounded-md px-1 text-xs tabular-nums ${selected ? 'bg-white/20' : 'bg-surface-strong'}`}
+                className={`relative min-w-5 rounded-md px-1 text-xs tabular-nums ${selected ? 'bg-black/20' : 'bg-surface-strong'}`}
                 aria-label={`${option.count} tools`}
               >
                 {option.count}

@@ -13,7 +13,7 @@ export const accentFill: Record<Accent, string> = {
 };
 
 export const accentText: Record<Accent, string> = {
-  violet: 'text-violet',
+  violet: 'text-violet-ink',
   coral: 'text-coral',
   mint: 'text-mint',
   sunshine: 'text-sunshine',

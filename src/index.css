@@ -22,6 +22,8 @@
   --violet: #7c5cff;
   /* Slightly deeper violet for filled buttons so white text passes AA */
   --violet-fill: #6b4dff;
+  /* Lighter violet for small text on dark surfaces (AA 4.5:1) */
+  --violet-ink: #9580ff;
   --coral: #ff6b8b;
   --mint: #3ddc97;
   --sunshine: #ffc857;
@@ -48,8 +50,9 @@
 
   --violet: #6440f0;
   --violet-fill: #6440f0;
+  --violet-ink: #6440f0;
   --coral: #c8335a;
-  --mint: #0f7d52;
+  --mint: #0d7550;
   --sunshine: #946100;
   --sky: #0b7299;
   --on-accent: #ffffff;
@@ -74,6 +77,7 @@
 
   --color-violet: var(--violet);
   --color-violet-fill: var(--violet-fill);
+  --color-violet-ink: var(--violet-ink);
   --color-coral: var(--coral);
   --color-mint: var(--mint);
   --color-sunshine: var(--sunshine);
