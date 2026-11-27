@@ -152,3 +152,22 @@ for (const theme of ['dark', 'light'] as const) {
     });
   });
 }
+
+test('progress and the playing step stay visible in high contrast', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+  await page.goto('./');
+  await expect(page.getByTestId('hero-story')).toBeVisible();
+  const highlight = await page.evaluate(() => {
+    const probe = document.createElement('span');
+    probe.style.backgroundColor = 'Highlight';
+    document.body.append(probe);
+    const color = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return color;
+  });
+  const fills = await page
+    .locator('.fc-fill')
+    .evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor));
+  expect(fills.length).toBeGreaterThan(0);
+  for (const fill of fills) expect(fill).toBe(highlight);
+});
