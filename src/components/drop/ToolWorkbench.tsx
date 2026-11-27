@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { ToolInfo } from '../../tools';
 import { useStillMotion } from '../../useStillMotion';
 import { prefetchHelpers3D } from '../wait/scenes/three';
 import { ActionDock } from './ActionDock';
 import { DropZone, RejectionNotice } from './DropZone';
 import { FileList } from './FileList';
+import { focusIsLost, focusSoon } from './focusSoon';
 import { UndoBar } from './UndoBar';
 import { useFileQueue, type FileQueue } from './useFileQueue';
 import { formatBytes, rulesFor, type Rejection } from './validate';
@@ -36,6 +37,17 @@ export function ToolWorkbench({
   // Undo only makes sense while the list is on screen.
   useEffect(() => forget, [forget]);
   const hasFiles = items.length > 0;
+  const root = useRef<HTMLElement>(null);
+  // Undo brings the files back; put focus on the first one if the Undo button
+  // (now gone) had it, so keyboard users land where the file reappears.
+  const undo = () => {
+    const back = queue.removed?.entries[0]?.item.id;
+    const a = document.activeElement;
+    const fromSlip = a instanceof Element && a.closest('[data-testid="undo-bar"]');
+    queue.undo();
+    if (back && (fromSlip || focusIsLost()))
+      focusSoon(root.current, `[data-file-id="${back}"] [data-remove]`);
+  };
   // Fetch the 3D helpers for the wait story once there are files, so they are
   // ready (even offline) by the time the tool runs.
   useEffect(() => {
@@ -52,7 +64,7 @@ export function ToolWorkbench({
       };
 
   return (
-    <section aria-label="Your files" className="mt-12 sm:mt-16">
+    <section ref={root} aria-label="Your files" className="mt-12 sm:mt-16">
       <AnimatePresence mode="wait" initial={false}>
         {hasFiles ? (
           <motion.div key="list" {...swap} transition={{ duration: 0.22 }}>
@@ -71,6 +83,8 @@ export function ToolWorkbench({
                 onClick={() => {
                   queue.removeAll();
                   setRejected([]);
+                  // The list (and this button) leave; the drop sheet takes focus.
+                  focusSoon(root.current, '[data-testid="drop-sheet"]');
                 }}
                 className="tap rounded-lg text-sm font-semibold text-muted transition-colors hover:text-coral"
               >
@@ -89,7 +103,12 @@ export function ToolWorkbench({
               noun={tool.input.kind === 'pdf' ? 'PDFs' : 'images'}
               onReorder={queue.setItems}
               onMove={queue.move}
-              onRemove={queue.remove}
+              onRemove={(id) => {
+                // The last slip going from the keyboard: focus moves to the drop sheet.
+                if (items.length === 1 && root.current?.contains(document.activeElement))
+                  focusSoon(root.current, '[data-testid="drop-sheet"]');
+                queue.remove(id);
+              }}
             />
             {room ? (
               <div className="mt-4">
@@ -127,12 +146,7 @@ export function ToolWorkbench({
       {footer && hasFiles ? (
         <ActionDock root={footerEl} accent={tool.accent} hidden={queue.removed !== null} />
       ) : null}
-      <UndoBar
-        removed={queue.removed}
-        accent={tool.accent}
-        onUndo={queue.undo}
-        onDone={queue.forget}
-      />
+      <UndoBar removed={queue.removed} accent={tool.accent} onUndo={undo} onDone={queue.forget} />
     </section>
   );
 }

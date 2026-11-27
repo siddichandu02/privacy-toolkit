@@ -2,7 +2,8 @@ import { act, render, renderHook, screen, waitFor, within } from '@testing-libra
 import userEvent from '@testing-library/user-event';
 import { MotionConfig } from 'framer-motion';
 import { describe, expect, it, vi } from 'vitest';
-import { addedMessage, FileList } from './FileList';
+import { addedMessage } from './announce';
+import { FileList } from './FileList';
 import { handOff } from './handoff';
 import { moveItem, useFileQueue } from './useFileQueue';
 

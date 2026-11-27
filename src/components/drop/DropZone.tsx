@@ -223,6 +223,7 @@ export function DropZone({
         role="button"
         tabIndex={0}
         aria-label={name}
+        data-testid={compact ? undefined : 'drop-sheet'}
         aria-describedby={rejected.length > 0 ? `${hintId} ${errorId}` : hintId}
         data-dragging={over}
         onClick={open}

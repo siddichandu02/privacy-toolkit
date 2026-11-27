@@ -23,6 +23,8 @@ import { accentSoft, accentText, type Accent } from '../ui/accent';
 import { isPdf, makePreview, type FilePreview } from './preview';
 import type { QueuedFile } from './useFileQueue';
 import { formatBytes } from './validate';
+import { addedMessage } from './announce';
+import { focusSoon } from './focusSoon';
 import { swipeRemoves, SWIPE_ARM } from './swipe';
 
 export interface FileListProps {
@@ -41,17 +43,6 @@ export interface FileListProps {
 export const FOLD_AFTER = 8;
 /** Slips still shown while the list is folded. */
 export const FOLD_PEEK = 5;
-
-/**
- * What a screen reader hears when files join the list, e.g. "a.pdf added. 3 PDFs
- * in the list." Several at once are counted rather than read out one by one.
- */
-export function addedMessage(names: readonly string[], total: number, noun = 'files') {
-  if (names.length === 0) return '';
-  const what = names.length === 1 ? `${names[0]} added.` : `${names.length} ${noun} added.`;
-  const one = noun.replace(/s$/, '');
-  return `${what} ${total} ${total === 1 ? one : noun} in the list.`;
-}
 
 /** Load a preview for a file and revoke its object URL when the row goes away. */
 function usePreview(file: File): FilePreview | 'loading' | 'failed' {
@@ -124,6 +115,14 @@ export function FileList({
   };
 
   const remove = (item: QueuedFile) => {
+    // Removed from the keyboard: hand focus to the slip that takes its place
+    // (or the one above), instead of letting it fall back to the page.
+    const a = document.activeElement;
+    if (a instanceof Element && a.closest('[data-file-id]')) {
+      const at = items.findIndex((i) => i.id === item.id);
+      const next = items[at + 1] ?? items[at - 1];
+      if (next) focusSoon(document, `[data-file-id="${next.id}"] [data-remove]`);
+    }
     onRemove(item.id);
     setAnnouncement(`${item.file.name} removed.`);
   };
@@ -336,6 +335,7 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
       className="relative"
       data-testid="file-row"
+      data-file-id={item.id}
       style={{ '--slip': `var(--${accent})` } as CSSProperties}
     >
       {still ? null : (
@@ -468,7 +468,7 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
             </IconButton>
           </div>
         ) : null}
-        <IconButton label={`Remove ${name}`} onClick={onRemove} danger>
+        <IconButton label={`Remove ${name}`} onClick={onRemove} danger remove>
           <path d="M6 6l8 8M14 6l-8 8" />
         </IconButton>
       </motion.div>
@@ -521,17 +521,21 @@ function IconButton({
   onClick,
   disabled,
   danger,
+  remove,
   children,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   danger?: boolean;
+  /** Marks the slip's remove button, so focus can find it after a neighbour goes. */
+  remove?: boolean;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
+      data-remove={remove ? '' : undefined}
       aria-label={label}
       title={label}
       onClick={onClick}
