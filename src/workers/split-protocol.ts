@@ -1,11 +1,10 @@
-import type { PageRange } from '../lib/pdf/ranges';
-import type { SplitMode, SplitResult, SplitStage } from '../lib/pdf/split';
+import type { SplitRequest, SplitResult, SplitStage } from '../lib/pdf/split';
 import type { WorkerReply } from './useWorkerJob';
 
 export interface SplitWorkerRequest {
   file: File;
-  ranges: PageRange[];
-  mode: SplitMode;
+  files: SplitRequest['files'];
+  zipName: string;
 }
 
 /** The result without `type`, which would clash with the message type. */

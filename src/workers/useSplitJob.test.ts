@@ -29,7 +29,7 @@ function setup() {
 }
 
 const file = new File(['x'], 'a.pdf', { type: 'application/pdf' });
-const request = { file, ranges: [{ from: 1, to: 2 }], mode: 'extract' as const };
+const request = { file, files: [{ name: 'a-pages-1-2.pdf', pages: [1, 2] }], zipName: 'a.zip' };
 
 describe('useSplitJob', () => {
   it('sends the request and ends with a typed blob', () => {

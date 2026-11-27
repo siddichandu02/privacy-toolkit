@@ -25,8 +25,8 @@ describe('password-protected PDFs', () => {
       splitPdf({
         name: 'secret.pdf',
         bytes: await makeLockedPdf(),
-        ranges: [{ from: 1, to: 1 }],
-        mode: 'extract',
+        files: [{ name: 'out.pdf', pages: [1] }],
+        zipName: 'out.zip',
       }),
     ).rejects.toThrow(LOCKED);
   });

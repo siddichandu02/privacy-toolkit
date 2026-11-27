@@ -1,7 +1,8 @@
 import JSZip from 'jszip';
 import { PDFDocument } from 'pdf-lib';
 import { describe, expect, it } from 'vitest';
-import { SplitError, splitName, splitPdf, type SplitProgress } from './split';
+import { SplitError, splitPdf, type SplitProgress } from './split';
+import { planSplit } from './split-plan';
 
 /** Pages get widths 101, 102, ... so tests can tell which ones came out. */
 async function makePdf(pages: number): Promise<Uint8Array> {
@@ -14,15 +15,16 @@ const widths = (doc: PDFDocument) => doc.getPages().map((p) => p.getWidth());
 
 describe('splitPdf', () => {
   it('extracts chosen pages into one file, in the order given', async () => {
-    const result = await splitPdf({
-      name: 'report.pdf',
-      bytes: await makePdf(6),
-      ranges: [
+    const plan = planSplit(
+      'report.pdf',
+      'extract',
+      [
         { from: 5, to: 6 },
         { from: 1, to: 2 },
       ],
-      mode: 'extract',
-    });
+      6,
+    );
+    const result = await splitPdf({ name: 'report.pdf', bytes: await makePdf(6), ...plan });
     expect(result).toMatchObject({
       name: 'report-extract.pdf',
       type: 'application/pdf',
@@ -32,51 +34,41 @@ describe('splitPdf', () => {
     expect(widths(await PDFDocument.load(result.bytes))).toEqual([105, 106, 101, 102]);
   });
 
-  it('does not repeat pages that ranges share', async () => {
-    const result = await splitPdf({
-      name: 'a.pdf',
-      bytes: await makePdf(4),
-      ranges: [
-        { from: 1, to: 3 },
-        { from: 2, to: 4 },
-      ],
-      mode: 'extract',
-    });
-    expect(result.pages).toBe(4);
-  });
-
-  it('makes one PDF per range inside a zip', async () => {
-    const result = await splitPdf({
-      name: 'book.pdf',
-      bytes: await makePdf(5),
-      ranges: [
+  it('makes one PDF per part inside a zip', async () => {
+    const plan = planSplit(
+      'book.pdf',
+      'parts',
+      [
         { from: 1, to: 2 },
         { from: 4, to: 4 },
       ],
-      mode: 'separate',
-    });
+      5,
+    );
+    const result = await splitPdf({ name: 'book.pdf', bytes: await makePdf(5), ...plan });
     expect(result).toMatchObject({
-      name: 'book-split.zip',
+      name: 'book-parts.zip',
       type: 'application/zip',
       files: 2,
       pages: 3,
     });
     const zip = await JSZip.loadAsync(result.bytes);
-    const names = Object.keys(zip.files).sort();
-    expect(names).toEqual(['1-book-pages-1-2.pdf', '2-book-page-4.pdf']);
-    const second = await zip.file('2-book-page-4.pdf')?.async('uint8array');
-    expect(second).toBeDefined();
+    expect(Object.keys(zip.files).sort()).toEqual(['book-part-1.pdf', 'book-part-2.pdf']);
+    const second = await zip.file('book-part-2.pdf')?.async('uint8array');
     expect(widths(await PDFDocument.load(second ?? new Uint8Array()))).toEqual([104]);
   });
 
-  it('skips the zip when separate mode has one range', async () => {
-    const result = await splitPdf({
-      name: 'book.pdf',
-      bytes: await makePdf(5),
-      ranges: [{ from: 2, to: 3 }],
-      mode: 'separate',
-    });
-    expect(result).toMatchObject({ name: 'book-pages-2-3.pdf', type: 'application/pdf' });
+  it('makes one PDF per page', async () => {
+    const plan = planSplit('a.pdf', 'every', [], 3);
+    const result = await splitPdf({ name: 'a.pdf', bytes: await makePdf(3), ...plan });
+    expect(result).toMatchObject({ name: 'a-pages.zip', files: 3, pages: 3 });
+    const zip = await JSZip.loadAsync(result.bytes);
+    expect(Object.keys(zip.files).sort()).toEqual(['a-page-1.pdf', 'a-page-2.pdf', 'a-page-3.pdf']);
+  });
+
+  it('skips the zip when there is one file', async () => {
+    const plan = planSplit('book.pdf', 'parts', [{ from: 2, to: 3 }], 5);
+    const result = await splitPdf({ name: 'book.pdf', bytes: await makePdf(5), ...plan });
+    expect(result).toMatchObject({ name: 'book-part-1.pdf', type: 'application/pdf' });
   });
 
   it('reports every stage and ends at packing 1', async () => {
@@ -85,11 +77,11 @@ describe('splitPdf', () => {
       {
         name: 'a.pdf',
         bytes: await makePdf(3),
-        ranges: [
-          { from: 1, to: 1 },
-          { from: 3, to: 3 },
+        files: [
+          { name: 'x.pdf', pages: [1] },
+          { name: 'y.pdf', pages: [3] },
         ],
-        mode: 'separate',
+        zipName: 'a.zip',
       },
       (p) => events.push(p),
     );
@@ -105,8 +97,8 @@ describe('splitPdf', () => {
       splitPdf({
         name: 'broken.pdf',
         bytes: new TextEncoder().encode('nope'),
-        ranges: [{ from: 1, to: 1 }],
-        mode: 'extract',
+        files: [{ name: 'x.pdf', pages: [1] }],
+        zipName: 'x.zip',
       }),
     ).rejects.toThrow(
       new SplitError('broken.pdf could not be read. It may be damaged or not really a PDF.'),
@@ -118,42 +110,23 @@ describe('splitPdf', () => {
       splitPdf({
         name: 'a.pdf',
         bytes: await makePdf(2),
-        ranges: [{ from: 2, to: 3 }],
-        mode: 'extract',
+        files: [{ name: 'x.pdf', pages: [2, 3] }],
+        zipName: 'x.zip',
       }),
     ).rejects.toThrow(/It has 2 pages/);
   });
 
-  it('needs at least one range', async () => {
+  it('needs at least one page', async () => {
     await expect(
-      splitPdf({ name: 'a.pdf', bytes: await makePdf(1), ranges: [], mode: 'extract' }),
+      splitPdf({ name: 'a.pdf', bytes: await makePdf(1), files: [], zipName: 'x.zip' }),
     ).rejects.toThrow(SplitError);
-  });
-});
-
-describe('splitName', () => {
-  it('names single pages, ranges, extracts and zips', () => {
-    expect(splitName('Report.PDF', [{ from: 3, to: 3 }], 'extract')).toBe('Report-page-3.pdf');
-    expect(splitName('a.pdf', [{ from: 1, to: 4 }], 'extract')).toBe('a-pages-1-4.pdf');
-    expect(
-      splitName(
-        'a.pdf',
-        [
-          { from: 1, to: 1 },
-          { from: 3, to: 3 },
-        ],
-        'extract',
-      ),
-    ).toBe('a-extract.pdf');
-    expect(
-      splitName(
-        '.pdf',
-        [
-          { from: 1, to: 1 },
-          { from: 3, to: 3 },
-        ],
-        'separate',
-      ),
-    ).toBe('document-split.zip');
+    await expect(
+      splitPdf({
+        name: 'a.pdf',
+        bytes: await makePdf(1),
+        files: [{ name: 'x.pdf', pages: [] }],
+        zipName: 'x.zip',
+      }),
+    ).rejects.toThrow(SplitError);
   });
 });

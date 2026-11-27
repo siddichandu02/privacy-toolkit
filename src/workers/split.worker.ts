@@ -7,10 +7,10 @@ const post = (msg: SplitReply, transfer: Transferable[] = []) =>
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
 
 self.onmessage = async (event: MessageEvent<SplitWorkerRequest>) => {
-  const { file, ranges, mode } = event.data;
+  const { file, files, zipName } = event.data;
   try {
     const { type: mime, ...result } = await splitPdf(
-      { name: file.name, bytes: await file.arrayBuffer(), ranges, mode },
+      { name: file.name, bytes: await file.arrayBuffer(), files, zipName },
       (p) => post({ type: 'progress', ...p }),
     );
     post({ type: 'done', mime, ...result }, [result.bytes.buffer]);
