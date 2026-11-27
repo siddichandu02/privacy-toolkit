@@ -169,16 +169,21 @@ export function HeroStory({ className = '' }: { className?: string }) {
                   <button
                     type="button"
                     onClick={() => setStep(i as StoryStep)}
-                    className={`group w-full cursor-pointer rounded-lg py-0.5 text-left transition-opacity duration-300 pointer-coarse:py-3 lg:pointer-coarse:py-0.5 ${
-                      on ? '' : 'lg:opacity-55 lg:hover:opacity-100'
-                    }`}
+                    className="group w-full cursor-pointer rounded-lg py-0.5 text-left pointer-coarse:py-3 lg:pointer-coarse:py-0.5"
                   >
-                    <span aria-hidden="true" className="mb-3 hidden lg:block">
+                    {/* Only the bar fades on steps that are not playing; faded text
+                        would fall below AA contrast. */}
+                    <span
+                      aria-hidden="true"
+                      className={`mb-3 hidden transition-opacity duration-300 lg:block ${
+                        on ? '' : 'opacity-55 group-hover:opacity-100'
+                      }`}
+                    >
                       {bar(i)}
                     </span>
                     <span
                       className={`flex items-center gap-2 text-sm transition-colors duration-300 sm:text-[0.95rem] ${
-                        on ? 'font-semibold text-fg' : 'text-muted group-hover:text-fg lg:text-fg'
+                        on ? 'font-semibold text-fg' : 'text-muted group-hover:text-fg'
                       }`}
                     >
                       <span
