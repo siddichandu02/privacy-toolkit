@@ -203,10 +203,13 @@ function CleanCheck({ blob, accent }: { blob: Blob; accent: Accent }) {
   }, [blob]);
   if (left === null) return null;
   return (
-    <p className="flex items-center gap-2 text-sm text-muted" data-testid="clean-check">
+    <p
+      className="mx-auto flex max-w-xs items-start gap-2 text-left text-sm text-muted"
+      data-testid="clean-check"
+    >
       <span
         aria-hidden="true"
-        className={`grid size-5 shrink-0 place-items-center rounded-full bg-current ${accentText[accent]}`}
+        className={`mt-px grid size-5 shrink-0 place-items-center rounded-full bg-current ${accentText[accent]}`}
       >
         <svg viewBox="0 0 12 12" className="size-3 text-canvas">
           <path
