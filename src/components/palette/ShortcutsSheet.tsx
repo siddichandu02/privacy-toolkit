@@ -88,7 +88,13 @@ export function ShortcutsSheet({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
       </div>
-      <div className="max-h-[min(60vh,32rem)] overflow-y-auto overscroll-contain px-6 py-2">
+      {/* Focusable so the list can be scrolled with arrow keys when it runs long. */}
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Shortcut list"
+        className="max-h-[min(60vh,32rem)] overflow-y-auto overscroll-contain px-6 py-2 focus-visible:outline-offset-[-3px]"
+      >
         {list.map((g) => (
           <section key={g.title} className="border-b border-line py-4 last:border-b-0">
             <h3 className="font-display text-base font-bold tracking-tight">{g.title}</h3>
