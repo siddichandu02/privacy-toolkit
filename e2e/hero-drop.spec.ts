@@ -42,7 +42,7 @@ test('single-file tools take just the first file', async ({ page }) => {
   await page.getByTestId('hero-file-input').setInputFiles([pdf('a.pdf'), pdf('b.pdf')]);
   await page.getByRole('button', { name: /Split PDF/ }).click();
   await expect(page.getByTestId('file-row')).toHaveCount(1);
-  await expect(page.getByText('a.pdf')).toBeVisible();
+  await expect(page.getByTestId('file-row')).toContainText('a.pdf');
 });
 
 test('the hero story and the tool grid heading fit on a laptop screen', async ({ page }, info) => {
