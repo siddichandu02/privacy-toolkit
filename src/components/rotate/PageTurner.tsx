@@ -96,6 +96,12 @@ export function PageTurner({ pages, accent, edits, onTurn, onToggleKeep }: PageT
                     {angle}°
                   </span>
                 ) : null}
+                <span
+                  aria-hidden="true"
+                  className={`absolute right-1.5 bottom-1.5 hidden min-w-6 rounded-md bg-canvas/85 px-1.5 py-0.5 text-center text-xs font-bold tabular-nums backdrop-blur-sm pointer-coarse:max-sm:block ${removed ? 'text-muted line-through' : 'text-fg'}`}
+                >
+                  {page}
+                </span>
                 {removed ? (
                   <span aria-hidden="true" className="absolute inset-0 grid place-items-center">
                     <span className="-rotate-12 rounded-lg border-2 border-coral bg-canvas/90 px-2 py-0.5 font-display text-sm font-extrabold tracking-tight text-coral">
@@ -105,7 +111,9 @@ export function PageTurner({ pages, accent, edits, onTurn, onToggleKeep }: PageT
                 ) : null}
               </div>
 
-              <div className="mt-2 flex items-center justify-between gap-1">
+              {/* Narrow touch screens: the number sits on the tile so three
+                  finger-sized buttons fit in a two column grid. */}
+              <div className="mt-2 flex items-center gap-1 pointer-coarse:max-sm:grid pointer-coarse:max-sm:grid-cols-3">
                 <TileButton
                   label={`Turn page ${page} left`}
                   onClick={() => onTurn(i, -1)}
@@ -114,28 +122,26 @@ export function PageTurner({ pages, accent, edits, onTurn, onToggleKeep }: PageT
                   <TurnIcon dir={-1} />
                 </TileButton>
                 <span
-                  className={`text-sm font-semibold tabular-nums ${removed ? 'text-muted line-through' : 'text-fg'}`}
+                  className={`flex-1 text-center text-sm font-semibold tabular-nums pointer-coarse:max-sm:hidden ${removed ? 'text-muted line-through' : 'text-fg'}`}
                   aria-hidden="true"
                 >
                   {page}
                 </span>
-                <div className="flex gap-1">
-                  <TileButton
-                    label={`Turn page ${page} right`}
-                    onClick={() => onTurn(i, 1)}
-                    disabled={removed}
-                  >
-                    <TurnIcon dir={1} />
-                  </TileButton>
-                  <TileButton
-                    label={removed ? `Keep page ${page}` : `Remove page ${page}`}
-                    onClick={() => onToggleKeep(i)}
-                    pressed={removed}
-                    danger
-                  >
-                    {removed ? <UndoIcon /> : <BinIcon />}
-                  </TileButton>
-                </div>
+                <TileButton
+                  label={`Turn page ${page} right`}
+                  onClick={() => onTurn(i, 1)}
+                  disabled={removed}
+                >
+                  <TurnIcon dir={1} />
+                </TileButton>
+                <TileButton
+                  label={removed ? `Keep page ${page}` : `Remove page ${page}`}
+                  onClick={() => onToggleKeep(i)}
+                  pressed={removed}
+                  danger
+                >
+                  {removed ? <UndoIcon /> : <BinIcon />}
+                </TileButton>
               </div>
             </div>
           </li>
@@ -171,7 +177,7 @@ function TileButton({
       disabled={disabled}
       whileTap={still || disabled ? undefined : { scale: 0.86 }}
       transition={{ type: 'spring', stiffness: 600, damping: 26 }}
-      className={`grid size-8 shrink-0 place-items-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-35 pointer-coarse:size-11 ${
+      className={`tap grid size-8 shrink-0 place-items-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-35 pointer-coarse:size-11 pointer-coarse:max-sm:w-full ${
         pressed
           ? 'border-coral/50 bg-coral/15 text-coral'
           : danger
