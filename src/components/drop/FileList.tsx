@@ -316,7 +316,7 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
           aria-hidden="true"
           data-testid="swipe-under"
           data-armed={armed}
-          className={`absolute inset-0 flex items-center justify-end gap-2 rounded-card border pr-5 font-semibold transition-colors duration-150 ${
+          className={`absolute inset-0 flex items-center justify-end rounded-card border pr-5 font-semibold transition-colors duration-150 ${
             armed
               ? 'border-coral bg-coral text-on-accent'
               : 'border-coral/40 bg-coral/15 text-coral'
@@ -336,7 +336,20 @@ function FileRow({ item, index, count, accent, ordered, bump, onMove, onRemove }
           >
             <path d="M4 6h12M8 6V4.5h4V6M6 6l.8 10h6.4L14 6" />
           </motion.svg>
-          Remove
+          {/* The word only joins the bin once letting go would remove the
+              file, so a short drag never shows it cut off. */}
+          <motion.span
+            className="overflow-hidden whitespace-nowrap"
+            initial={false}
+            animate={{
+              width: armed ? 'auto' : 0,
+              opacity: armed ? 1 : 0,
+              marginLeft: armed ? 8 : 0,
+            }}
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+          >
+            Remove
+          </motion.span>
         </motion.span>
       )}
       <motion.div
