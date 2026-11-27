@@ -8,6 +8,7 @@ import {
   type DragEvent,
   type KeyboardEvent,
 } from 'react';
+import { TOUCH_QUERY, useMedia } from '../../useMedia';
 import { useStillMotion } from '../../useStillMotion';
 import { Pip } from '../pip/Pip';
 import { accentFill, accentSoft, accentText, type Accent } from '../ui/accent';
@@ -176,6 +177,15 @@ export function DropZone({
         .filter(Boolean)
         .join(', ');
 
+  const touch = useMedia(TOUCH_QUERY);
+  // The spoken name starts with the words on screen (WCAG 2.5.3), which
+  // differ between mouse and touch.
+  const name = compact
+    ? `Add more ${rules.kindLabel}`
+    : touch
+      ? `Choose ${noun}`
+      : `Drop ${noun} here or choose ${noun}`;
+
   const title = over
     ? single
       ? 'Let go to add it'
@@ -212,7 +222,7 @@ export function DropZone({
       <motion.div
         role="button"
         tabIndex={0}
-        aria-label={compact ? `Add more ${rules.kindLabel}` : `Choose ${noun}`}
+        aria-label={name}
         aria-describedby={rejected.length > 0 ? `${hintId} ${errorId}` : hintId}
         data-dragging={over}
         onClick={open}

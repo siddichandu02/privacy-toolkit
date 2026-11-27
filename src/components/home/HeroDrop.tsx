@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toolPath, type ToolInfo } from '../../tools';
+import { TOUCH_QUERY, useMedia } from '../../useMedia';
 import { useStillMotion } from '../../useStillMotion';
 import { handOff } from '../drop/handoff';
 import { IMAGE_RULES, PDF_RULES, extensionOf, formatBytes, rulesFor } from '../drop/validate';
@@ -44,6 +45,7 @@ const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).inclu
  */
 export function HeroDrop({ className = '', id }: { className?: string; id?: string }) {
   const still = useStillMotion();
+  const touch = useMedia(TOUCH_QUERY);
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
@@ -227,7 +229,7 @@ export function HeroDrop({ className = '', id }: { className?: string; id?: stri
                 id={`${headingId}-zone`}
                 role="button"
                 tabIndex={0}
-                aria-label="Choose a file to start"
+                aria-label={touch ? 'Choose a file to start' : 'Drop a file to start or choose one'}
                 aria-describedby={`${headingId}-hint`}
                 onClick={open}
                 onKeyDown={onKeyDown}
