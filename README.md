@@ -17,7 +17,7 @@ there are no analytics, no trackers and no third-party requests at runtime. Font
 Ready now:
 
 - **Merge PDF**: join PDFs in the order you choose.
-- **Split PDF**: pull out page ranges, as one PDF or one PDF per range (zipped).
+- **Split PDF**: three ways to cut a PDF. Extract pages into one new PDF, split into parts (your own ranges, every N pages or N equal parts, zipped), or split every page into its own PDF. A live preview shows each file that will come out, and pages on the grid take the colour of the file they go to.
 - **Rotate pages**: turn pages and drop the ones you do not need.
 - **Images to PDF**: one page per image, A4, Letter or sized to the photo, with margins.
   Phone photos are turned upright using their EXIF orientation.
