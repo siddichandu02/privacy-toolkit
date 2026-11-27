@@ -105,22 +105,114 @@ describe('SplitTool', () => {
     await user.click(screen.getByRole('button', { name: 'Extract 3 pages' }));
     expect(state.start).toHaveBeenCalledWith({
       file,
-      ranges: [
-        { from: 5, to: 6 },
-        { from: 1, to: 1 },
-      ],
-      mode: 'extract',
+      files: [{ name: 'report-extract.pdf', pages: [5, 6, 1], label: 'pages 1, 5-6' }],
+      zipName: 'report-extract.zip',
     });
   });
 
-  it('labels each range with its PDF in separate mode', async () => {
+  it('offers three modes and starts on extract', async () => {
+    await setup();
+    expect(screen.getByRole('radio', { name: /Extract pages/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Split into parts/ })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: /Split every page/ })).toHaveAccessibleName(
+      /6 PDFs, one for each page/,
+    );
+  });
+
+  it('previews the files as ranges are typed', async () => {
+    const { user } = await setup();
+    expect(screen.getByTestId('split-out-summary')).toHaveTextContent('Nothing yet');
+    await user.type(input(), '2-4');
+    const one = screen.getAllByTestId('output-file');
+    expect(one).toHaveLength(1);
+    expect(one[0]).toHaveTextContent('report-pages-2-4.pdf');
+    expect(one[0]).toHaveTextContent('pages 2-4');
+  });
+
+  it('labels each range with its PDF in parts mode', async () => {
     const { user, file } = await setup();
-    await user.type(input(), '1-2, 4');
-    await user.click(screen.getByLabelText('Separate PDFs'));
+    await user.click(screen.getByRole('radio', { name: /Split into parts/ }));
+    await user.type(screen.getByLabelText('Ranges, one file each'), '1-2, 4');
     const tags = screen.getAllByTestId('page-group').map((t) => t.textContent);
     expect(tags).toEqual(['PDF 1', 'PDF 1', 'PDF 2']);
+    const cards = screen.getAllByTestId('output-file').map((c) => c.textContent);
+    expect(cards).toEqual([
+      expect.stringContaining('report-part-1.pdfpages 1-2'),
+      expect.stringContaining('report-part-2.pdfpage 4'),
+    ]);
+    expect(screen.getByTestId('split-out-summary')).toHaveTextContent(
+      '2 PDFs, packed in report-parts.zip.',
+    );
     await user.click(screen.getByRole('button', { name: 'Split into 2 PDFs' }));
-    expect(state.start).toHaveBeenCalledWith(expect.objectContaining({ file, mode: 'separate' }));
+    expect(state.start).toHaveBeenCalledWith(
+      expect.objectContaining({ file, zipName: 'report-parts.zip' }),
+    );
+  });
+
+  it('asks for a second range instead of making one file in parts mode', async () => {
+    const { user } = await setup();
+    await user.click(screen.getByRole('radio', { name: /Split into parts/ }));
+    await user.type(screen.getByLabelText('Ranges, one file each'), '1-3');
+    expect(screen.getByTestId('lone-part-hint')).toHaveTextContent(
+      'Add another range (e.g. 1-3, 5-7) to get separate files.',
+    );
+    expect(screen.getByRole('button', { name: 'Split PDF' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Or extract these pages' }));
+    expect(screen.getByRole('radio', { name: /Extract pages/ })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'Extract 3 pages' })).toBeEnabled();
+  });
+
+  it('builds parts on the grid: click starts one, shift-click grows it', async () => {
+    const { user } = await setup();
+    await user.click(screen.getByRole('radio', { name: /Split into parts/ }));
+    await user.click(screen.getByRole('button', { name: 'Page 1' }));
+    await user.keyboard('{Shift>}');
+    await user.click(screen.getByRole('button', { name: 'Page 3' }));
+    await user.keyboard('{/Shift}');
+    await user.click(screen.getByRole('button', { name: 'Page 5' }));
+    expect(screen.getByLabelText('Ranges, one file each')).toHaveValue('1-3, 5');
+    expect(screen.getByRole('button', { name: 'Page 5, PDF 2' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('presets fill the ranges', async () => {
+    const { user } = await setup();
+    await user.click(screen.getByRole('radio', { name: /Split into parts/ }));
+    const ranges = () => screen.getByLabelText('Ranges, one file each');
+    await user.click(screen.getByRole('button', { name: 'Every 2 pages' }));
+    expect(ranges()).toHaveValue('1-2, 3-4, 5-6');
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    expect(ranges()).toHaveValue('1-3, 4-6');
+    await user.click(screen.getByRole('button', { name: 'Into 2 equal parts' }));
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    expect(ranges()).toHaveValue('1-2, 3-4, 5-6');
+    await user.click(screen.getByRole('button', { name: 'Every page' }));
+    expect(screen.getAllByTestId('output-file')).toHaveLength(6);
+    await user.type(ranges(), '0');
+    expect(screen.getByRole('button', { name: 'Custom ranges' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('splits every page with one click', async () => {
+    const { user, file } = await setup();
+    await user.click(screen.getByRole('radio', { name: /Split every page/ }));
+    expect(screen.queryByLabelText('Pages to keep')).toBeNull();
+    expect(screen.getAllByTestId('output-file')).toHaveLength(6);
+    await user.click(screen.getByRole('button', { name: 'Split into 6 PDFs' }));
+    const req = state.start.mock.calls.at(-1)?.[0] as { file: File; files: { name: string }[] };
+    expect(req.file).toBe(file);
+    expect(req.files.map((f) => f.name)).toEqual([
+      'report-page-1.pdf',
+      'report-page-2.pdf',
+      'report-page-3.pdf',
+      'report-page-4.pdf',
+      'report-page-5.pdf',
+      'report-page-6.pdf',
+    ]);
   });
 
   it('shows real progress while running', async () => {
@@ -165,8 +257,8 @@ describe('SplitTool', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(state.start).toHaveBeenLastCalledWith({
       file,
-      ranges: [{ from: 2, to: 2 }],
-      mode: 'extract',
+      files: [{ name: 'report-page-2.pdf', pages: [2], label: 'page 2' }],
+      zipName: 'report-extract.zip',
     });
   });
 });
