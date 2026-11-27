@@ -9,6 +9,7 @@ import { useFileQueue } from '../drop/useFileQueue';
 import { formatBytes } from '../drop/validate';
 import { DoneCard } from '../result/DoneCard';
 import { ErrorCard } from '../result/ErrorCard';
+import { ZipContents } from '../result/ZipContents';
 import { type WaitStep } from '../wait/progress';
 import { useStory } from '../wait/useStory';
 import { useThumbnails } from '../wait/useThumbnails';
@@ -126,6 +127,15 @@ export function SplitTool({ tool }: { tool: ToolInfo }) {
                   job.files > 1
                     ? `${pdfsWord(job.files)} in one zip, ${pagesWord(job.pages)} in all, ${formatBytes(job.blob.size)}.`
                     : `${pagesWord(job.pages)}, ${formatBytes(job.blob.size)}.`
+                }
+                extra={
+                  job.files > 1 && lastPlan ? (
+                    <ZipContents
+                      blob={job.blob}
+                      accent={tool.accent}
+                      items={lastPlan.files.map((f) => ({ name: f.name, detail: f.label }))}
+                    />
+                  ) : null
                 }
                 downloadLabel={job.files > 1 ? 'Download zip' : 'Download PDF'}
                 actions={[

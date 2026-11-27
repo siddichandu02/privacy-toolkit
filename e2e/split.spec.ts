@@ -113,6 +113,15 @@ test('split into parts: each range becomes its own PDF', async ({ page }) => {
     'book-part-1.pdf': 3,
     'book-part-2.pdf': 2,
   });
+
+  // One part can be saved on its own from the list.
+  const [single] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Save book-part-2.pdf' }).click(),
+  ]);
+  expect(single.suggestedFilename()).toBe('book-part-2.pdf');
+  const part = await PDFDocument.load(await readFile(await single.path()));
+  expect(part.getPageCount()).toBe(2);
 });
 
 test('split into parts with the equal parts preset', async ({ page }) => {
