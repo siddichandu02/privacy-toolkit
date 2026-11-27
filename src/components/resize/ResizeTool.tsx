@@ -545,7 +545,7 @@ function ShapeMark({ width, height, on }: { width: number; height: number; on: b
   const w = a >= 1 ? 26 : 26 * a;
   const h = a >= 1 ? 26 / a : 26;
   return (
-    <svg viewBox="0 0 30 30" className="size-8 shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 30 30" className="size-6 shrink-0 min-[400px]:size-8" aria-hidden="true">
       <rect
         x={15 - w / 2}
         y={15 - h / 2}
@@ -579,14 +579,14 @@ function PresetPicker({
   return (
     <fieldset className="min-w-0">
       <legend className="mb-3 font-display text-xl font-bold tracking-tight">Size</legend>
-      <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {options.map((o) => {
           const on = o.id === value;
           const preset = 'width' in o ? o : null;
           return (
             <label
               key={o.id}
-              className={`flex min-w-0 cursor-pointer items-center gap-2.5 rounded-xl border-2 px-2.5 py-2 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] ${
+              className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border-2 px-2 py-2 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pick)] min-[400px]:gap-2.5 min-[400px]:px-2.5 ${
                 on
                   ? `border-current ${accentText[accent]} bg-canvas/40`
                   : 'border-line text-fg hover:border-line-strong'
@@ -606,7 +606,11 @@ function PresetPicker({
               {preset ? (
                 <ShapeMark width={preset.width} height={preset.height} on={on} />
               ) : (
-                <svg viewBox="0 0 30 30" className="size-8 shrink-0" aria-hidden="true">
+                <svg
+                  viewBox="0 0 30 30"
+                  className="size-6 shrink-0 min-[400px]:size-8"
+                  aria-hidden="true"
+                >
                   <path
                     d="M6 11V6h5M19 6h5v5M24 19v5h-5M11 24H6v-5"
                     fill="none"
@@ -617,7 +621,7 @@ function PresetPicker({
                 </svg>
               )}
               <span className="flex min-w-0 flex-col leading-tight">
-                <span className="truncate text-sm font-bold">{o.label}</span>{' '}
+                <span className="text-sm font-bold text-balance break-words">{o.label}</span>{' '}
                 <span className="truncate text-xs text-muted tabular-nums">
                   {preset ? `${times(preset.width, preset.height)}` : 'Your numbers'}
                   {preset ? (
