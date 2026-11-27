@@ -117,10 +117,10 @@ export function WaitStage({
         aria-valuemax={100}
         aria-valuenow={pct}
         aria-valuetext={`${step?.label ?? ''}, ${pct}%`}
-        className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-surface-strong"
+        className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-surface-strong fc-track"
       >
         <motion.div
-          className={`h-full w-full origin-left rounded-full ${accentDot[accent]}`}
+          className={`h-full w-full origin-left rounded-full fc-fill ${accentDot[accent]}`}
           initial={false}
           animate={{ scaleX: value }}
           transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 140, damping: 24 }}
@@ -142,7 +142,7 @@ export function WaitStage({
                 className={`grid size-5 shrink-0 place-items-center rounded-full border text-[11px] font-bold transition-colors duration-300 ${
                   state === 'next'
                     ? 'border-line-strong'
-                    : `border-transparent ${accentFill[accent]}`
+                    : `fc-fill border-transparent ${accentFill[accent]}`
                 }`}
               >
                 {state === 'done' ? (

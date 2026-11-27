@@ -95,7 +95,7 @@ export function ModeCards({ accent, mode, pageCount, onChange }: ModeCardsProps)
               <span
                 aria-hidden="true"
                 className={`absolute top-1/2 right-3 grid size-5 -translate-y-1/2 place-items-center rounded-full border-2 transition-colors sm:top-3 sm:translate-y-0 ${
-                  on ? 'border-[var(--pick)] bg-[var(--pick)]' : 'border-line-strong'
+                  on ? 'fc-fill border-[var(--pick)] bg-[var(--pick)]' : 'border-line-strong'
                 }`}
               >
                 {on ? (

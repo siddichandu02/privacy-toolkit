@@ -83,10 +83,10 @@ export function HeroStory({ className = '' }: { className?: string }) {
 
   /** The fill bar for one step: full when done, filling while it plays. */
   const bar = (i: number) => (
-    <span className="block h-1 overflow-hidden rounded-full bg-line">
+    <span className="block h-1 overflow-hidden rounded-full bg-line fc-track">
       <span
         key={`${round}-${step}-${i}`}
-        className={`block h-full origin-left rounded-full bg-violet ${
+        className={`block h-full origin-left rounded-full fc-fill bg-violet ${
           i < step
             ? 'scale-x-100'
             : i > step
@@ -189,7 +189,7 @@ export function HeroStory({ className = '' }: { className?: string }) {
                       <span
                         aria-hidden="true"
                         className={`grid size-5 shrink-0 place-items-center rounded-full text-[0.7rem] font-bold transition-colors duration-300 ${
-                          on ? 'bg-violet-fill text-on-violet' : 'border border-line-strong'
+                          on ? 'fc-fill bg-violet-fill text-on-violet' : 'border border-line-strong'
                         }`}
                       >
                         {i + 1}

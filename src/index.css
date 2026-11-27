@@ -585,3 +585,23 @@ body {
     }
   }
 }
+
+/*
+ * Windows high contrast (forced colors) paints every background as plain
+ * canvas, which would hide progress fills and filled "this one" markers.
+ * These hooks hand them the system highlight colour instead.
+ */
+@utility fc-fill {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Highlight !important;
+    border-color: Highlight !important;
+    color: HighlightText !important;
+  }
+}
+
+@utility fc-track {
+  @media (forced-colors: active) {
+    outline: 1px solid CanvasText;
+  }
+}
