@@ -2,7 +2,7 @@ import { act, render, renderHook, screen, waitFor, within } from '@testing-libra
 import userEvent from '@testing-library/user-event';
 import { MotionConfig } from 'framer-motion';
 import { describe, expect, it, vi } from 'vitest';
-import { FileList } from './FileList';
+import { addedMessage, FileList } from './FileList';
 import { handOff } from './handoff';
 import { moveItem, useFileQueue } from './useFileQueue';
 
@@ -46,7 +46,24 @@ const names = () =>
     .getAllByTestId('file-row')
     .map((row) => row.querySelector('p[title]')?.getAttribute('title'));
 
+describe('addedMessage', () => {
+  it('names one file and counts several', () => {
+    expect(addedMessage(['a.pdf'], 1, 'PDFs')).toBe('a.pdf added. 1 PDF in the list.');
+    expect(addedMessage(['a.pdf', 'b.pdf'], 5, 'PDFs')).toBe('2 PDFs added. 5 PDFs in the list.');
+    expect(addedMessage([], 2)).toBe('');
+  });
+});
+
 describe('FileList', () => {
+  it('announces files as they are added', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByText('add'));
+    expect(screen.getByRole('status')).toHaveTextContent('3 PDFs added. 3 PDFs in the list.');
+    await user.click(screen.getByRole('button', { name: 'Remove two.pdf' }));
+    expect(screen.getByRole('status')).toHaveTextContent('two.pdf removed.');
+  });
+
   it('shows size and page count for each file', async () => {
     const user = userEvent.setup();
     render(<Harness />);

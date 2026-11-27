@@ -42,6 +42,17 @@ export const FOLD_AFTER = 8;
 /** Slips still shown while the list is folded. */
 export const FOLD_PEEK = 5;
 
+/**
+ * What a screen reader hears when files join the list, e.g. "a.pdf added. 3 PDFs
+ * in the list." Several at once are counted rather than read out one by one.
+ */
+export function addedMessage(names: readonly string[], total: number, noun = 'files') {
+  if (names.length === 0) return '';
+  const what = names.length === 1 ? `${names[0]} added.` : `${names.length} ${noun} added.`;
+  const one = noun.replace(/s$/, '');
+  return `${what} ${total} ${total === 1 ? one : noun} in the list.`;
+}
+
 /** Load a preview for a file and revoke its object URL when the row goes away. */
 function usePreview(file: File): FilePreview | 'loading' | 'failed' {
   const [state, setState] = useState<FilePreview | 'loading' | 'failed'>('loading');
@@ -85,6 +96,22 @@ export function FileList({
   const hidden = items.length - shown.length;
   // The slip that was just moved with a key or button, so it can flash.
   const [bump, setBump] = useState<{ id: string; n: number } | null>(null);
+
+  // Say when files arrive. Runs after paint, so the live region is already on
+  // the page (empty) when the words land and screen readers pick them up.
+  const seen = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const added = items.filter((i) => !seen.current.has(i.id));
+    seen.current = new Set(items.map((i) => i.id));
+    if (added.length > 0)
+      setAnnouncement(
+        addedMessage(
+          added.map((i) => i.file.name),
+          items.length,
+          noun,
+        ),
+      );
+  }, [items, noun]);
 
   const move = (item: QueuedFile, index: number, by: number) => {
     const to = index + by;
