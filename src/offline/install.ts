@@ -14,7 +14,7 @@ export interface InstallPromptEvent extends Event {
  */
 export type InstallState = 'none' | 'prompt' | 'ios' | 'installed';
 
-const KEY = 'ptk:install-later';
+const KEY = 'pdfpip:install-later';
 /** "Not now" hides the offer for this long. */
 export const LATER_MS = 30 * 24 * 60 * 60 * 1000;
 

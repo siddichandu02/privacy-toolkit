@@ -55,7 +55,7 @@ describe('InstallSlip', () => {
     });
     await user.click(screen.getByRole('button', { name: 'Not now' }));
     await waitFor(() => expect(screen.queryByTestId('install-slip')).toBeNull());
-    expect(Number(localStorage.getItem('ptk:install-later'))).toBeGreaterThan(Date.now());
+    expect(Number(localStorage.getItem('pdfpip:install-later'))).toBeGreaterThan(Date.now());
   });
 
   it('hides again when the dialog is turned down', async () => {

@@ -24,7 +24,7 @@ export default defineConfig({
       origins: [
         {
           origin: `http://localhost:${PORT}`,
-          localStorage: [{ name: 'ptk-story-ms', value: '0' }],
+          localStorage: [{ name: 'pdfpip:story-ms', value: '0' }],
         },
       ],
     },

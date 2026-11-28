@@ -14,7 +14,7 @@ const FINALE_SHARE = 0.2;
 const TICK_MS = 100;
 
 /** Lets the e2e suite (and impatient developers) shorten the story. */
-export const STORY_OVERRIDE_KEY = 'ptk-story-ms';
+export const STORY_OVERRIDE_KEY = 'pdfpip:story-ms';
 
 /** Minimum story length for this visit. Zero in unit tests. */
 export function storyLength(still: boolean): number {

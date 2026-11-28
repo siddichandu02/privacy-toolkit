@@ -41,6 +41,6 @@ describe('RecentTools', () => {
     await waitFor(() =>
       expect(screen.queryByRole('navigation', { name: 'Opened lately' })).not.toBeInTheDocument(),
     );
-    expect(localStorage.getItem('ptk:recent-tools')).toBeNull();
+    expect(localStorage.getItem('pdfpip:recent-tools')).toBeNull();
   });
 });

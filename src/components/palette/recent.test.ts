@@ -31,10 +31,10 @@ describe('recent tools', () => {
   it('ignores unknown ids and junk in storage', () => {
     rememberTool('teleport');
     expect(getRecentTools()).toEqual([]);
-    localStorage.setItem('ptk:recent-tools', '["split", 42, "nope"]');
+    localStorage.setItem('pdfpip:recent-tools', '["split", 42, "nope"]');
     resetRecentCache();
     expect(getRecentTools()).toEqual(['split']);
-    localStorage.setItem('ptk:recent-tools', '{broken');
+    localStorage.setItem('pdfpip:recent-tools', '{broken');
     resetRecentCache();
     expect(getRecentTools()).toEqual([]);
   });

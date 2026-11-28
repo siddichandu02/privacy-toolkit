@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { getTool } from '../../tools';
 
-const KEY = 'ptk:recent-tools';
+const KEY = 'pdfpip:recent-tools';
 const MAX = 4;
 const listeners = new Set<() => void>();
 const EMPTY: readonly string[] = [];

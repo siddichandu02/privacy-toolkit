@@ -6,11 +6,13 @@ import { ToastProvider } from './components/ui';
 import './index.css';
 import { listenForInstall } from './offline/install';
 import { startOffline } from './offline/offline';
+import { migrateStorageKeys } from './lib/storageKeys';
 import { prefetchTool, toolInHash } from './routes/toolLoaders';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found');
 
+migrateStorageKeys();
 listenForInstall();
 
 // Opened straight on a tool? Start fetching its code now instead of after the

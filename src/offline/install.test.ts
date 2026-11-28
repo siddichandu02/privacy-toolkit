@@ -64,7 +64,7 @@ describe('install offer', () => {
     target.dispatchEvent(offer('dismissed'));
     expect(await install()).toBe(false);
     expect(getInstallState()).toBe('none');
-    expect(Number(localStorage.getItem('ptk:install-later'))).toBeGreaterThan(Date.now());
+    expect(Number(localStorage.getItem('pdfpip:install-later'))).toBeGreaterThan(Date.now());
   });
 
   it('"Not now" hides it until the month is over', () => {

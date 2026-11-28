@@ -1,6 +1,6 @@
 export type Theme = 'dark' | 'light';
 
-export const STORAGE_KEY = 'pt-theme';
+export const STORAGE_KEY = 'pdfpip:theme';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
 /** The saved choice, or null when the user has not picked one yet. */

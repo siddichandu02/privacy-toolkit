@@ -56,7 +56,7 @@ for (const theme of ['dark', 'light'] as const) {
   test.describe(`${theme} theme`, () => {
     test.beforeEach(async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.addInitScript((t) => localStorage.setItem('pt-theme', t), theme);
+      await page.addInitScript((t) => localStorage.setItem('pdfpip:theme', t), theme);
     });
 
     test('home has no WCAG AA problems', async ({ page }) => {

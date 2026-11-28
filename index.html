@@ -28,7 +28,7 @@
       (function () {
         var t = null;
         try {
-          t = localStorage.getItem('pt-theme');
+          t = localStorage.getItem('pdfpip:theme') || localStorage.getItem('pt-theme');
         } catch (e) {}
         if (t !== 'light' && t !== 'dark') {
           t =
