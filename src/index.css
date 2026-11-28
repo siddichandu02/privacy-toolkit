@@ -569,6 +569,16 @@ body {
  * Grows a small control's touch area to at least 44 px on touch screens
  * without changing how it looks or where it sits.
  */
+/*
+ * Sections far below the first screen: the browser skips laying them out and
+ * painting them until they scroll close. The size is a first guess; once shown,
+ * the real height is remembered.
+ */
+@utility later {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
 @utility tap {
   position: relative;
   @media (pointer: coarse) {

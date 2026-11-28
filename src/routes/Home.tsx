@@ -111,9 +111,9 @@ export default function Home() {
           <ToolBrowser tools={TOOLS} />
         </section>
 
-        <CompressDemo className="mt-20 sm:mt-28" />
+        <CompressDemo className="mt-20 later sm:mt-28" />
 
-        <PromiseStrip className="mt-16 sm:mt-24" />
+        <PromiseStrip className="mt-16 later [contain-intrinsic-size:auto_220px] sm:mt-24" />
 
         <InstallSlip className="mt-6" />
       </div>
