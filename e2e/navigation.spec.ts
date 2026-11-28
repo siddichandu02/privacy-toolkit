@@ -5,9 +5,9 @@ test('opens a tool from the home page and comes back', async ({ page }) => {
   await page.getByRole('link', { name: 'Merge PDF' }).click();
   await expect(page).toHaveURL(/#\/tools\/merge$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Merge PDF' })).toBeVisible();
-  await expect(page).toHaveTitle('Merge PDF | Privacy Toolkit');
+  await expect(page).toHaveTitle('Merge PDF | PDFPip');
 
-  await page.getByRole('link', { name: /privacy toolkit, home/i }).click();
+  await page.getByRole('link', { name: /pdfpip, home/i }).click();
   await expect(
     page.getByRole('heading', { level: 1, name: /every pdf and image tool you need/i }),
   ).toBeVisible();

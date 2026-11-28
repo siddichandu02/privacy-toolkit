@@ -73,7 +73,7 @@ describe('tool routes', () => {
   it.each(TOOLS.map((t) => [t.id, t.name]))('renders /tools/%s', async (id, name) => {
     renderApp(`/tools/${id}`);
     expect(await screen.findByRole('heading', { level: 1, name })).toBeInTheDocument();
-    expect(document.title).toBe(`${name} | Privacy Toolkit`);
+    expect(document.title).toBe(`${name} | PDFPip`);
   });
 
   it('shows the not found page for an unknown tool', async () => {

@@ -85,7 +85,7 @@ function OfflineLine() {
 }
 
 /**
- * Offer to add the toolkit to the home screen or as a desktop app. Shown only
+ * Offer to add the app to the home screen or as a desktop app. Shown only
  * where the browser can do it; "Not now" hides it for a month.
  */
 export function InstallSlip({ className = '' }: { className?: string }) {
@@ -138,8 +138,8 @@ export function InstallSlip({ className = '' }: { className?: string }) {
                   </h2>
                   <p className="mt-2 leading-relaxed text-muted">
                     {phone
-                      ? 'Privacy Toolkit is on your home screen now. It opens in its own window and works offline.'
-                      : 'Privacy Toolkit is in your apps now. It opens in its own window and works offline.'}
+                      ? 'PDFPip is on your home screen now. It opens in its own window and works offline.'
+                      : 'PDFPip is in your apps now. It opens in its own window and works offline.'}
                   </p>
                 </>
               ) : (

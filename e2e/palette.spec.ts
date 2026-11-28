@@ -61,7 +61,7 @@ test('locks page scroll while open and fits a phone screen', async ({ page }) =>
 test('the home page lists tools opened lately', async ({ page }) => {
   await page.goto('./#/tools/exif');
   await expect(page.getByRole('heading', { level: 1, name: 'Remove EXIF' })).toBeVisible();
-  await page.getByRole('link', { name: /privacy toolkit, home/i }).click();
+  await page.getByRole('link', { name: /pdfpip, home/i }).click();
   const recent = page.getByRole('navigation', { name: 'Opened lately' });
   await expect(recent.getByRole('link', { name: 'Remove EXIF' })).toBeVisible();
   await recent.getByRole('button', { name: /clear/i }).click();

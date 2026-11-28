@@ -52,7 +52,7 @@ function listen<M>(
 }
 
 export const UPDATED_MESSAGE =
-  'Privacy Toolkit was updated while this page was open. Reload to get the new version, then add your files again.';
+  'PDFPip was updated while this page was open. Reload to get the new version, then add your files again.';
 
 /**
  * Runs one job in a Web Worker so the page stays smooth. Each run gets a fresh

@@ -6,7 +6,7 @@ describe('app shell', () => {
   it('has a header with a home link, nav and theme toggle', () => {
     renderApp('/tools/merge');
     const header = screen.getByRole('banner');
-    expect(within(header).getByRole('link', { name: /privacy toolkit, home/i })).toHaveAttribute(
+    expect(within(header).getByRole('link', { name: /pdfpip, home/i })).toHaveAttribute(
       'href',
       '/',
     );
@@ -55,7 +55,7 @@ describe('navigation', () => {
   it('comes back home from the header wordmark', async () => {
     const user = userEvent.setup();
     renderApp('/tools/sign');
-    await user.click(screen.getByRole('link', { name: /privacy toolkit, home/i }));
+    await user.click(screen.getByRole('link', { name: /pdfpip, home/i }));
     expect(
       await screen.findByRole('heading', {
         level: 1,

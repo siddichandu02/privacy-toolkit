@@ -68,9 +68,7 @@ describe('useNetEntries', () => {
   it('updates when the browser logs a request', () => {
     const { result } = renderHook(() => useNetEntries());
     const before = result.current.length;
-    act(() =>
-      __test.record([{ name: '/pdfpip/assets/x.js', startTime: 1, transferSize: 2 }]),
-    );
+    act(() => __test.record([{ name: '/pdfpip/assets/x.js', startTime: 1, transferSize: 2 }]));
     expect(result.current).toHaveLength(before + 1);
     expect(result.current.at(-1)).toMatchObject({ kind: 'app', bytes: 2 });
   });

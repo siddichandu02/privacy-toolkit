@@ -55,7 +55,7 @@ describe('ErrorCard after an update', () => {
     render(
       <ErrorCard
         title="The merge did not finish"
-        message="Privacy Toolkit was updated while this page was open."
+        message="PDFPip was updated while this page was open."
         reason="updated"
         fileName="a.pdf"
         onRetry={vi.fn()}

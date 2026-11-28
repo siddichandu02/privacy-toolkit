@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Privacy Toolkit",
-  "short_name": "Toolkit",
-  "description": "PDF and image tools that work on your device. Your files are never sent to a server.",
+  "name": "PDFPip",
+  "short_name": "PDFPip",
+  "description": "Free PDF and image tools that stay on your device.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

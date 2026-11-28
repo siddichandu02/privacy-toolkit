@@ -119,8 +119,8 @@ export async function imagesToPdf(
   if (sources.length === 0) throw new ImagesError('Add at least one image.');
   onProgress({ stage: 'reading', progress: 0 });
   const doc = await PDFDocument.create();
-  doc.setProducer('Privacy Toolkit');
-  doc.setCreator('Privacy Toolkit');
+  doc.setProducer('PDFPip');
+  doc.setCreator('PDFPip');
   onProgress({ stage: 'reading', progress: 1 });
 
   onProgress({ stage: 'working', progress: 0 });

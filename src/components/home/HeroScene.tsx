@@ -504,7 +504,7 @@ export function HeroScene({ step, className = '' }: { step: StoryStep; className
         strokeLinejoin="round"
       />
       <text x="232" y="34.2" textAnchor="middle" fontSize="8" className="fill-muted font-sans">
-        privacy-toolkit
+        pdfpip
       </text>
 
       {/* The dock, with Downloads at the end. */}
