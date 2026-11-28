@@ -16,12 +16,21 @@ describe('home route', () => {
 
   it('links to every planned tool', () => {
     renderApp('/');
-    const section = screen.getByRole('region', { name: /pick a tool/i });
+    const section = screen.getByRole('region', { name: /all tools/i });
     expect(within(section).getAllByRole('link')).toHaveLength(TOOLS.length);
     expect(within(section).getByRole('link', { name: 'Merge PDF' })).toHaveAttribute(
       'href',
       '/tools/merge',
     );
+  });
+
+  it('counts the tools and points back to the drop area', async () => {
+    renderApp('/');
+    expect(screen.getByTestId('tools-count')).toHaveTextContent(String(TOOLS.length));
+    const tip = screen.getByRole('button', { name: /a file at the top/i });
+    Element.prototype.scrollIntoView ??= () => {};
+    await userEvent.click(tip);
+    expect(document.activeElement).toHaveAccessibleName(/file to start/i);
   });
 
   it('opens a live check that nothing is sent', async () => {
