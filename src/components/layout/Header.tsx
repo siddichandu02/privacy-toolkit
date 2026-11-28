@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { modKey, openOverlay } from '../palette/store';
 import { ThemeToggle } from '../ThemeToggle';
-import { WordmarkIcon } from './Wordmark';
+import { Wordmark, WordmarkIcon } from './Wordmark';
 
 export const REPO_URL = 'https://github.com/siddichandu02/pdfpip';
 
@@ -31,7 +31,7 @@ export function Header() {
         <Link
           to="/"
           className="group tap mr-auto flex items-center gap-2.5 rounded-xl"
-          aria-label="Privacy Toolkit, home"
+          aria-label="PDFPip, home"
         >
           <motion.span
             className="flex items-center gap-2.5"
@@ -39,10 +39,8 @@ export function Header() {
             animate="rest"
             whileHover={reduced ? undefined : 'hover'}
           >
-            <WordmarkIcon className="size-8 drop-shadow-[0_4px_12px_rgb(124_92_255/0.35)]" />
-            <span className="font-display text-lg leading-none font-bold tracking-tight whitespace-nowrap sm:text-xl">
-              Privacy Toolkit
-            </span>
+            <WordmarkIcon className="size-9 drop-shadow-[0_4px_12px_rgb(255_107_139/0.35)]" />
+            <Wordmark className="text-xl sm:text-2xl" />
           </motion.span>
         </Link>
         <SearchButton />
