@@ -167,7 +167,6 @@ body {
     radial-gradient(35% 30% at 80% 20%, rgb(255 107 139 / 0.28), transparent 70%),
     radial-gradient(40% 35% at 70% 80%, rgb(76 201 240 / 0.22), transparent 70%),
     radial-gradient(30% 25% at 25% 85%, rgb(61 220 151 / 0.16), transparent 70%);
-  filter: blur(40px);
   transition: opacity 400ms ease;
   animation: mesh-drift 38s ease-in-out infinite alternate;
 }
@@ -191,7 +190,6 @@ body {
       color-mix(in srgb, var(--tint) 22%, transparent),
       transparent 70%
     );
-  filter: blur(30px);
 }
 
 @keyframes mesh-drift {
