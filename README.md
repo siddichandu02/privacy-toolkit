@@ -1,14 +1,14 @@
-# Privacy Toolkit
+# PDFPip
 
-Free PDF and image tools that run entirely in your browser. Your files never leave your device.
+Free PDF and image tools that stay on your device. Everything runs in your browser, so your files are never sent anywhere.
 
-**Live site:** https://siddichandu02.github.io/privacy-toolkit/
+**Live site:** https://siddichandu02.github.io/pdfpip/
 
 > Work in progress. More tools are on the way.
 
 ## Why
 
-Most "free" online PDF and image tools send your files to a server to do the work. Privacy Toolkit
+Most "free" online PDF and image tools send your files to a server to do the work. PDFPip
 processes them locally, in your browser, using Web Workers. Your files are never sent anywhere, and
 there are no analytics, no trackers and no third-party requests at runtime. Fonts are self-hosted.
 
@@ -90,6 +90,11 @@ exifr (reading photo details), heic2any,
 three.js (the 3D paper helpers in the wait animations, loaded only when a tool has files),
 Vitest, Testing Library and Playwright. Deployed to GitHub Pages by GitHub Actions on every push to
 `main`.
+
+## Name
+
+The project was called Privacy Toolkit until November 2026. Saved settings (theme, recent tools)
+carry over to the new name on their own.
 
 ## License
 
