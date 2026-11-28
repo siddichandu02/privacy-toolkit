@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { paintMesh } from './paintMesh';
 import { useRouteAccent } from './useRouteAccent';
 
 /**
@@ -9,10 +10,23 @@ import { useRouteAccent } from './useRouteAccent';
 export function MeshBackground() {
   const accent = useRouteAccent();
   const reduced = useReducedMotion();
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [painted, setPainted] = useState(false);
+
+  // Paint before the first frame so the CSS gradients never have to be drawn.
+  useLayoutEffect(() => {
+    if (canvas.current && paintMesh(canvas.current)) setPainted(true);
+  }, []);
 
   return (
     <div aria-hidden="true" data-accent={accent ?? 'none'} className="mesh-root">
-      <div className="mesh" />
+      <canvas
+        ref={canvas}
+        data-painted={painted || undefined}
+        className="mesh"
+        width={1}
+        height={1}
+      />
       <AnimatePresence>
         {accent ? (
           <motion.div

@@ -15,6 +15,15 @@ describe('MeshBackground', () => {
     expect(document.querySelector('.mesh-accent')).not.toBeNull();
   });
 
+  it('falls back to the CSS gradients when the canvas cannot be painted', () => {
+    const spy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    renderApp('/');
+    const mesh = document.querySelector('canvas.mesh');
+    expect(mesh).not.toBeNull();
+    expect(mesh).not.toHaveAttribute('data-painted');
+    spy.mockRestore();
+  });
+
   it('is hidden from assistive tech', () => {
     renderApp('/tools/merge');
     expect(meshRoot()).toHaveAttribute('aria-hidden', 'true');
