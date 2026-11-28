@@ -30,3 +30,9 @@ export function prefetchTool(id: string) {
     // Opening the tool tries again and shows what went wrong.
   });
 }
+
+/** The tool a hash URL such as "#/tools/merge?x=1" opens, if it names a known one. */
+export function toolInHash(hash: string): string | null {
+  const id = /^#\/tools\/([\w-]+)\/?(?:[?#]|$)/.exec(hash)?.[1];
+  return id && Object.hasOwn(loaders, id) ? id : null;
+}

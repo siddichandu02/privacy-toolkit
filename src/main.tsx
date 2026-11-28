@@ -6,11 +6,17 @@ import { ToastProvider } from './components/ui';
 import './index.css';
 import { listenForInstall } from './offline/install';
 import { startOffline } from './offline/offline';
+import { prefetchTool, toolInHash } from './routes/toolLoaders';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found');
 
 listenForInstall();
+
+// Opened straight on a tool? Start fetching its code now instead of after the
+// first render, so the two happen side by side.
+const firstTool = toolInHash(window.location.hash);
+if (firstTool) prefetchTool(firstTool);
 if (import.meta.env.PROD) {
   // Keep a copy of the app on this device once the page has loaded, so it works offline.
   window.addEventListener('load', () => void startOffline());
