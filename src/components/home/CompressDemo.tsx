@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { prefetchTool } from '../../routes/toolLoaders';
 import { toolPath } from '../../tools';
@@ -36,23 +36,72 @@ function encode(canvas: HTMLCanvasElement, type: string, quality?: number): Prom
   });
 }
 
-/** Draws the sample once per visit. Null where the browser has no canvas (tests, very old browsers). */
-function useSample(): HTMLCanvasElement | null {
-  const [canvas] = useState(() => {
+/** Run once the browser has a quiet moment (a short timeout where there is no idle callback). */
+function whenIdle(run: () => void): () => void {
+  const { requestIdleCallback: ask, cancelIdleCallback: cancel } = globalThis;
+  if (typeof ask === 'function' && typeof cancel === 'function') {
+    const id = ask(run, { timeout: 1500 });
+    return () => cancel(id);
+  }
+  const id = setTimeout(run, 200);
+  return () => clearTimeout(id);
+}
+
+/**
+ * The sample canvas. Null where the browser has no canvas (tests, very old
+ * browsers). Painting is the slow part, so it waits until the section is close
+ * to the screen and the page is idle: `painted` turns true once it is done.
+ */
+function useSample(section: RefObject<HTMLElement | null>) {
+  const [canvas, setCanvas] = useState(() => {
     if (typeof document === 'undefined') return null;
     const c = document.createElement('canvas');
     c.width = SCENE_WIDTH;
     c.height = SCENE_HEIGHT;
     try {
-      const ctx = c.getContext('2d');
-      if (!ctx) return null;
-      paintScene(ctx);
+      return c.getContext('2d') ? c : null;
     } catch {
       return null;
     }
-    return c;
   });
-  return canvas;
+  const [painted, setPainted] = useState(false);
+
+  useEffect(() => {
+    const el = section.current;
+    if (!canvas || !el) return;
+    let cancelIdle = () => {};
+    const paint = () => {
+      cancelIdle = whenIdle(() => {
+        try {
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('no canvas');
+          paintScene(ctx);
+          setPainted(true);
+        } catch {
+          setCanvas(null);
+        }
+      });
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      paint();
+      return () => cancelIdle();
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        io.disconnect();
+        paint();
+      },
+      { rootMargin: '600px 0px' },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelIdle();
+    };
+  }, [canvas, section]);
+
+  return { canvas, painted };
 }
 
 /** Keeps one object URL alive and revokes the old one when it changes. */
@@ -87,11 +136,13 @@ function useEncoded(
  * level for the "after". Drag the line (or use the arrow keys) to compare.
  */
 export function CompressDemo({ className = '' }: { className?: string }) {
-  const canvas = useSample();
+  const section = useRef<HTMLElement>(null);
+  const { canvas, painted } = useSample(section);
   const still = useStillMotion();
   const [level, setLevel] = useState<Level>('balanced');
-  const before = useEncoded(canvas, 'image/png');
-  const after = useEncoded(canvas, 'image/jpeg', QUALITY[level]);
+  const ready = painted ? canvas : null;
+  const before = useEncoded(ready, 'image/png');
+  const after = useEncoded(ready, 'image/jpeg', QUALITY[level]);
 
   if (!canvas) return null;
 
@@ -99,7 +150,7 @@ export function CompressDemo({ className = '' }: { className?: string }) {
     before && after ? Math.max(0, Math.round((1 - after.bytes / before.bytes) * 100)) : null;
 
   return (
-    <section aria-labelledby="demo-heading" className={className}>
+    <section ref={section} aria-labelledby="demo-heading" className={className}>
       <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-14">
         <div className="min-w-0 lg:order-2">
           <h2
