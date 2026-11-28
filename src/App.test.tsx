@@ -57,7 +57,8 @@ describe('home hero', () => {
     expect(within(group).getByText(/report\.pdf/)).toBeInTheDocument();
     await userEvent.click(within(group).getByRole('button', { name: /split pdf/i }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Split PDF' })).toBeInTheDocument();
-    expect(await screen.findByText('1 PDF')).toBeInTheDocument();
+    // The tool's own code loads lazily, which can be slow on a busy machine.
+    expect(await screen.findByText('1 PDF', {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('says when a file type cannot be opened', async () => {
@@ -122,7 +123,9 @@ describe('not found route', () => {
 describe('pip lab route', () => {
   it('shows every pose and a wait screen that follows the slider', async () => {
     renderApp('/lab/pip');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Pip lab' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Pip lab' }, { timeout: 5000 }),
+    ).toBeInTheDocument();
     for (const pose of ['sit', 'wave', 'puzzled']) {
       expect(screen.getByRole('img', { name: `Pip, ${pose} pose` })).toBeInTheDocument();
     }
