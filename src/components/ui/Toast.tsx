@@ -76,8 +76,6 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
   return (
     <motion.li
       layout={!reduced}
-      role={item.tone === 'error' ? 'alert' : 'status'}
-      aria-atomic="true"
       initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
       exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9, transition: { duration: 0.18 } }}
@@ -108,7 +106,12 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
           <path d={tone.icon} />
         </svg>
       </span>
-      <div className="min-w-0 flex-1 pt-1">
+      {/* The live role sits inside the item: a list item can't be a status itself. */}
+      <div
+        role={item.tone === 'error' ? 'alert' : 'status'}
+        aria-atomic="true"
+        className="min-w-0 flex-1 pt-1"
+      >
         <p className="text-sm leading-tight font-semibold">{item.title}</p>
         {item.description ? (
           <p className="mt-1 text-sm leading-snug text-muted">{item.description}</p>
