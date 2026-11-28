@@ -26,6 +26,8 @@ describe('command palette', () => {
     const user = userEvent.setup();
     renderApp('/');
     await user.keyboard('{Control>}k{/Control}');
+    // The sheet's code loads on first use.
+    await screen.findByRole('dialog', {}, { timeout: 5000 });
     const input = within(palette()).getByRole('combobox');
     expect(input).toHaveFocus();
     expect(options().filter((o) => o.dataset.group === 'Tools')).toHaveLength(10);
@@ -128,7 +130,11 @@ describe('shortcuts sheet', () => {
     const user = userEvent.setup();
     renderApp('/');
     await user.keyboard('?');
-    const sheet = screen.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const sheet = await screen.findByRole(
+      'dialog',
+      { name: 'Keyboard shortcuts' },
+      { timeout: 5000 },
+    );
     expect(within(sheet).getByText('Search tools and actions')).toBeInTheDocument();
     expect(within(sheet).getByText('Turn right')).toBeInTheDocument();
     await user.click(within(sheet).getByRole('button', { name: 'Close' }));

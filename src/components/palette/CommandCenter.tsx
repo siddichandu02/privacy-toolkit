@@ -1,9 +1,21 @@
 import { AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
-import { CommandPalette } from './CommandPalette';
-import { InstallSheet } from './InstallSheet';
-import { ShortcutsSheet } from './ShortcutsSheet';
+import { lazy, Suspense, useEffect } from 'react';
+import { whenIdle } from '../../lib/whenIdle';
 import { closeOverlay, getOverlay, openOverlay, useOverlay } from './store';
+
+// The sheets are not needed for the first screen, so they load on their own
+// and are fetched in the first quiet moment after the page is up.
+const loadPalette = () => import('./CommandPalette');
+const loadShortcuts = () => import('./ShortcutsSheet');
+const loadInstall = () => import('./InstallSheet');
+const CommandPalette = lazy(() => loadPalette().then((m) => ({ default: m.CommandPalette })));
+const ShortcutsSheet = lazy(() => loadShortcuts().then((m) => ({ default: m.ShortcutsSheet })));
+const InstallSheet = lazy(() => loadInstall().then((m) => ({ default: m.InstallSheet })));
+
+/** Fetch every sheet's code without showing anything; safe to call more than once. */
+function preloadSheets() {
+  return Promise.all([loadPalette(), loadShortcuts(), loadInstall()]);
+}
 
 const isTyping = (el: Element | null) =>
   el instanceof HTMLInputElement ||
@@ -29,14 +41,20 @@ export function CommandCenter() {
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const cancelIdle = whenIdle(() => void preloadSheets().catch(() => {}), 4000);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      cancelIdle();
+    };
   }, []);
 
   return (
-    <AnimatePresence>
-      {overlay === 'palette' ? <CommandPalette key="palette" onClose={closeOverlay} /> : null}
-      {overlay === 'shortcuts' ? <ShortcutsSheet key="shortcuts" onClose={closeOverlay} /> : null}
-      {overlay === 'install' ? <InstallSheet key="install" onClose={closeOverlay} /> : null}
-    </AnimatePresence>
+    <Suspense fallback={null}>
+      <AnimatePresence>
+        {overlay === 'palette' ? <CommandPalette key="palette" onClose={closeOverlay} /> : null}
+        {overlay === 'shortcuts' ? <ShortcutsSheet key="shortcuts" onClose={closeOverlay} /> : null}
+        {overlay === 'install' ? <InstallSheet key="install" onClose={closeOverlay} /> : null}
+      </AnimatePresence>
+    </Suspense>
   );
 }
