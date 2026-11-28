@@ -8,6 +8,7 @@ import { formatBytes } from '../drop/validate';
 import { CompareSlider } from '../ui/CompareSlider';
 import { Segmented } from '../ui/Segmented';
 import { paintScene, SCENE_HEIGHT, SCENE_WIDTH } from './sampleScene';
+import { whenIdle } from '../../lib/whenIdle';
 
 type Level = 'light' | 'balanced' | 'strong';
 
@@ -34,17 +35,6 @@ function encode(canvas: HTMLCanvasElement, type: string, quality?: number): Prom
       quality,
     );
   });
-}
-
-/** Run once the browser has a quiet moment (a short timeout where there is no idle callback). */
-function whenIdle(run: () => void): () => void {
-  const { requestIdleCallback: ask, cancelIdleCallback: cancel } = globalThis;
-  if (typeof ask === 'function' && typeof cancel === 'function') {
-    const id = ask(run, { timeout: 1500 });
-    return () => cancel(id);
-  }
-  const id = setTimeout(run, 200);
-  return () => clearTimeout(id);
 }
 
 /**
