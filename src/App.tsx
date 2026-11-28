@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AnimatedOutlet } from './components/layout/AnimatedOutlet';
 import { Footer } from './components/layout/Footer';
@@ -8,8 +9,10 @@ import { MeshBackground } from './components/layout/MeshBackground';
 import { MAIN_ID, SkipLink } from './components/layout/SkipLink';
 import Home from './routes/Home';
 import NotFound from './routes/NotFound';
-import PipLab from './routes/PipLab';
 import ToolPage from './routes/ToolPage';
+
+// The scene bench pulls in every wait scene, so it loads only when visited.
+const PipLab = lazy(() => import('./routes/PipLab'));
 
 function Layout() {
   return (
@@ -36,7 +39,14 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="tools/:id" element={<ToolPage />} />
-        <Route path="lab/pip" element={<PipLab />} />
+        <Route
+          path="lab/pip"
+          element={
+            <Suspense fallback={null}>
+              <PipLab />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
