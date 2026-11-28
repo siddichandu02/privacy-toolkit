@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { entryScript, hasNewerVersion } from './appVersion';
 
 const page = (hash: string) =>
-  `<!doctype html><head><script>theme()</script><script type="module" crossorigin src="/privacy-toolkit/assets/index-${hash}.js"></script></head>`;
+  `<!doctype html><head><script>theme()</script><script type="module" crossorigin src="/pdfpip/assets/index-${hash}.js"></script></head>`;
 
 describe('entryScript', () => {
   it('finds the hashed entry module', () => {
@@ -24,7 +24,7 @@ describe('hasNewerVersion', () => {
   const loadedWith = (hash: string) => {
     const script = document.createElement('script');
     script.type = 'module';
-    script.setAttribute('src', `/privacy-toolkit/assets/index-${hash}.js`);
+    script.setAttribute('src', `/pdfpip/assets/index-${hash}.js`);
     document.head.append(script);
   };
   const serve = (body: string, ok = true) =>

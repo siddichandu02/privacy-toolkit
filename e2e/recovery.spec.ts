@@ -94,7 +94,7 @@ const loseWorker = (page: Page, worker: string) =>
 
 /** Answer the app's version check with a page that names a newer entry script. */
 const announceNewVersion = (page: Page) =>
-  page.route(/\/privacy-toolkit\/\?check=/, async (route) => {
+  page.route(/\/pdfpip\/\?check=/, async (route) => {
     const res = await route.fetch();
     const html = (await res.text()).replace(/assets\/index-[\w-]+\.js/, 'assets/index-NEWER123.js');
     await route.fulfill({ response: res, body: html });

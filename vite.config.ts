@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { offline } from './build/offline.ts';
 
-// GitHub Pages serves the site from /privacy-toolkit/
+// GitHub Pages serves the site from /pdfpip/
 export default defineConfig({
-  base: '/privacy-toolkit/',
+  base: '/pdfpip/',
   plugins: [react(), tailwindcss(), offline()],
   build: {
     // The biggest chunk left is the 3D wait-scene helpers (three.js), which only

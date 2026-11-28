@@ -8,7 +8,7 @@ describe('toEntry', () => {
   it('marks files from this site as app', () => {
     const e = toEntry(
       {
-        name: `${ORIGIN}/privacy-toolkit/assets/merge.worker-abc.js`,
+        name: `${ORIGIN}/pdfpip/assets/merge.worker-abc.js`,
         startTime: 5,
         transferSize: 900,
       },
@@ -69,7 +69,7 @@ describe('useNetEntries', () => {
     const { result } = renderHook(() => useNetEntries());
     const before = result.current.length;
     act(() =>
-      __test.record([{ name: '/privacy-toolkit/assets/x.js', startTime: 1, transferSize: 2 }]),
+      __test.record([{ name: '/pdfpip/assets/x.js', startTime: 1, transferSize: 2 }]),
     );
     expect(result.current).toHaveLength(before + 1);
     expect(result.current.at(-1)).toMatchObject({ kind: 'app', bytes: 2 });

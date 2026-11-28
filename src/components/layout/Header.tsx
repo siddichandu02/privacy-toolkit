@@ -5,7 +5,7 @@ import { modKey, openOverlay } from '../palette/store';
 import { ThemeToggle } from '../ThemeToggle';
 import { WordmarkIcon } from './Wordmark';
 
-export const REPO_URL = 'https://github.com/siddichandu02/privacy-toolkit';
+export const REPO_URL = 'https://github.com/siddichandu02/pdfpip';
 
 /** Sticky top bar. It stays transparent at the top and frosts once you scroll. */
 export function Header() {

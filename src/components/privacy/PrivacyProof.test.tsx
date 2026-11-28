@@ -20,7 +20,7 @@ describe('PrivacyProof', () => {
     render(<PrivacyProof />);
     act(() =>
       __test.record([
-        { name: '/privacy-toolkit/assets/merge.worker-abc.js', startTime: 1, transferSize: 2048 },
+        { name: '/pdfpip/assets/merge.worker-abc.js', startTime: 1, transferSize: 2048 },
       ]),
     );
     expect(screen.getByTestId('bytes-sent')).toHaveTextContent(/^0$/);

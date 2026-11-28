@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
-const BASE = `http://localhost:${PORT}/privacy-toolkit/`;
+const BASE = `http://localhost:${PORT}/pdfpip/`;
 
 export default defineConfig({
   testDir: './e2e',
