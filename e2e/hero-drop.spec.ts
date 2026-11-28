@@ -45,14 +45,17 @@ test('single-file tools take just the first file', async ({ page }) => {
   await expect(page.getByTestId('file-row')).toContainText('a.pdf');
 });
 
-test('the hero story and the tool grid heading fit on a laptop screen', async ({ page }, info) => {
+test('the hero story and the start of the tools section fit on a laptop screen', async ({
+  page,
+}, info) => {
   test.skip(info.project.name === 'mobile', 'desktop layout only');
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('./');
   const story = await page.getByTestId('hero-story').boundingBox();
   expect((story?.y ?? 9999) + (story?.height ?? 0)).toBeLessThan(800);
-  const heading = await page.getByRole('heading', { name: 'Or pick a tool' }).boundingBox();
-  expect(heading?.y ?? 9999).toBeLessThan(800 - 40);
+  // The dashed line that opens the tools section shows on the first screen.
+  const tools = await page.getByRole('region', { name: 'All tools' }).boundingBox();
+  expect(tools?.y ?? 9999).toBeLessThan(800 - 16);
 });
 
 /** A DataTransfer holding real PDFs, built inside the page. */
@@ -97,7 +100,7 @@ test('dragging a PDF anywhere lights up the tools that can open it', async ({ pa
 test('a file dropped on an empty part of the page lands in the hero', async ({ page }) => {
   await page.goto('./');
   const data = await pdfTransfer(page, ['a.pdf', 'b.pdf']);
-  const heading = page.getByRole('heading', { name: 'Or pick a tool' });
+  const heading = page.getByRole('heading', { name: 'All tools' });
   await heading.dispatchEvent('dragenter', { dataTransfer: data });
   await heading.dispatchEvent('drop', { dataTransfer: data });
 

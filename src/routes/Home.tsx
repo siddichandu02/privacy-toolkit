@@ -43,6 +43,12 @@ export default function Home() {
       .getElementById('start')
       ?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
 
+  // The tip under "All tools" takes you back up to the drop area and focuses it.
+  const goToDrop = () => {
+    showHero();
+    document.querySelector<HTMLElement>('#start [role="button"]')?.focus({ preventScroll: true });
+  };
+
   return (
     <PageDrop onLanded={showHero}>
       <div className="mx-auto flex max-w-6xl flex-col px-4 pt-6 pb-8 sm:px-8 sm:pt-12">
@@ -101,13 +107,37 @@ export default function Home() {
 
         <HeroStory className="mt-8 sm:mt-10" />
 
-        <section aria-labelledby="tools-heading" className="mt-8 sm:mt-12">
-          <h2
-            id="tools-heading"
-            className="font-display text-2xl font-bold tracking-tight sm:text-3xl"
-          >
-            Or pick a tool
-          </h2>
+        <section
+          aria-labelledby="tools-heading"
+          className="mt-10 border-t border-dashed border-line-strong pt-8 sm:mt-14 sm:pt-10"
+        >
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+            <h2
+              id="tools-heading"
+              className="flex items-center gap-3 font-display text-2xl font-bold tracking-tight sm:text-3xl"
+            >
+              All tools
+              <span
+                aria-hidden="true"
+                data-testid="tools-count"
+                className="inline-grid h-7 min-w-7 place-items-center rounded-full bg-violet/15 px-2 font-sans text-sm font-bold text-violet-ink tabular-nums ring-1 ring-violet/30"
+              >
+                {TOOLS.length}
+              </span>
+            </h2>
+            <p className="text-sm text-muted">
+              Tip:{' '}
+              <button
+                type="button"
+                onClick={goToDrop}
+                className="tap rounded font-semibold text-fg underline decoration-violet/60 decoration-2 underline-offset-4 hover:decoration-violet"
+              >
+                <span className="pointer-coarse:hidden">drop a file at the top</span>
+                <span className="hidden pointer-coarse:inline">choose a file at the top</span>
+              </button>{' '}
+              and we&rsquo;ll suggest the right tool.
+            </p>
+          </div>
           <ToolBrowser tools={TOOLS} />
         </section>
 

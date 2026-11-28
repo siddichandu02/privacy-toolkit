@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const grid = (page: import('@playwright/test').Page) =>
   page
-    .getByRole('region', { name: /pick a tool/i })
+    .getByRole('region', { name: /all tools/i })
     .getByRole('list')
     .getByRole('link');
 
@@ -45,7 +45,7 @@ test('keyboard: slash to search, enter on a card opens it', async ({ page, isMob
 test('grid has no horizontal scroll on small screens', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('./');
-  await page.getByRole('region', { name: /pick a tool/i }).scrollIntoViewIfNeeded();
+  await page.getByRole('region', { name: /all tools/i }).scrollIntoViewIfNeeded();
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
